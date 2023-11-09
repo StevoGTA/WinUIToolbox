@@ -1,0 +1,29 @@
+﻿<!--	ComboBox.xaml	©2022 Stevo Brock		All rights reserved.	-->
+
+<ResourceDictionary
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:local="using:WinRTToolbox">
+
+	<!-- External References -->
+	<ResourceDictionary.MergedDictionaries>
+		<XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+	</ResourceDictionary.MergedDictionaries>
+
+	<!-- CaptionComboBoxStyle -->
+	<Style x:Key="CaptionComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
+		<Setter Property="FontSize" Value="12"/>
+		<Setter Property="FontWeight" Value="Normal"/>
+		<Setter Property="Padding" Value="8, -2, -5, -2" />
+		<Setter Property="CornerRadius" Value="5" />
+		<Setter Property="ItemContainerStyle">
+			<Setter.Value>
+				<Style TargetType="ComboBoxItem">
+					<Setter Property="FontSize" Value="12"/>
+					<Setter Property="FontWeight" Value="Normal"/>
+				</Style>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+</ResourceDictionary>
