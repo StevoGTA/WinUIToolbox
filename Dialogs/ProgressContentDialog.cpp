@@ -6,13 +6,13 @@
 
 #include "CReferenceCountable.h"
 
-#include <winrt/Microsoft.UI.Xaml.h>
-#include <winrt/Microsoft.UI.Xaml.Controls.h>
-#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include <winrt/Windows.System.Threading.h>
-#include <winrt/Windows.System.Threading.Core.h>
+#include "winrt\Microsoft.UI.Xaml.h"
+#include "winrt\Microsoft.UI.Xaml.Controls.h"
+#include "winrt\Microsoft.UI.Xaml.Controls.Primitives.h"
+#include "winrt\Windows.Foundation.h"
+#include "winrt\Windows.Foundation.Collections.h"
+#include "winrt\Windows.System.Threading.h"
+#include "winrt\Windows.System.Threading.Core.h"
 
 using namespace winrt::Microsoft::UI::Dispatching;
 using namespace winrt::Microsoft::UI::Xaml;

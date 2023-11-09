@@ -10,7 +10,7 @@
 
 #undef Delete
 
-#include "winrt/Microsoft.UI.Xaml.Controls.h"
+#include "winrt\Microsoft.UI.Xaml.Controls.h"
 
 #define Delete(x)	{ delete x; x = nil; }
 

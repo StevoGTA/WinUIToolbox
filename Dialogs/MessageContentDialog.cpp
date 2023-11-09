@@ -4,7 +4,7 @@
 
 #include "MessageContentDialog.h"
 
-#include <winrt/Windows.Foundation.h>
+#include "winrt\Windows.Foundation.h"
 
 using namespace winrt;
 

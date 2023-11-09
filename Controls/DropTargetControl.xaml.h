@@ -10,22 +10,22 @@
 
 #include "Windows.h"
 
-#include "WinRTToolbox.DropTargetControl.g.h"
+#include "WinUIToolbox.DropTargetControl.g.h"
 
 #define Delete(x)	{ delete x; x = nil; }
 
-#include "winrt/Microsoft.UI.Xaml.h"
-#include "winrt/Microsoft.UI.Xaml.Markup.h"
-#include "winrt/Microsoft.UI.Xaml.Controls.Primitives.h"
-#include "winrt/Windows.Foundation.h"
+#include "winrt\Microsoft.UI.Xaml.h"
+#include "winrt\Microsoft.UI.Xaml.Markup.h"
+#include "winrt\Microsoft.UI.Xaml.Controls.Primitives.h"
+#include "winrt\Windows.Foundation.h"
 
 using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Windows;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: winrt::WinRTToolbox::implementation
+// MARK: winrt::WinUIToolbox::implementation
 
-namespace winrt::WinRTToolbox::implementation {
+namespace winrt::WinUIToolbox::implementation {
 
 	struct DropTargetControl : DropTargetControlT<DropTargetControl> {
 
@@ -79,7 +79,7 @@ namespace winrt::WinRTToolbox::implementation {
 	};
 }
 
-namespace winrt::WinRTToolbox::factory_implementation
+namespace winrt::WinUIToolbox::factory_implementation
 {
 	struct DropTargetControl : DropTargetControlT<DropTargetControl, implementation::DropTargetControl> {
 	};
