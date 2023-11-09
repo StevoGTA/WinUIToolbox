@@ -27,35 +27,8 @@ using namespace winrt::Windows;
 
 namespace winrt::WinUIToolbox::implementation {
 
+	// MARK: DropTargetControl
 	struct DropTargetControl : DropTargetControlT<DropTargetControl> {
-
-		// Info
-		public:
-			struct Info {
-
-				// Procs
-				typedef	void	(*FoldersFilesProc)(const SFoldersFiles& foldersFiles, void* userData);
-
-				// Methods
-				public:
-							// Lifecycle methods
-							Info(FoldersFilesProc foldersFilesProc, void* userData) :
-								mFoldersFilesProc(foldersFilesProc), mUserData(userData)
-								{}
-							Info(const Info& other) :
-								mFoldersFilesProc(other.mFoldersFilesProc), mUserData(other.mUserData)
-								{}
-
-							// Instance methods
-					void	receive(const SFoldersFiles& foldersFiles) const
-								{ mFoldersFilesProc(foldersFiles, mUserData); }
-
-				// Properties
-				private:
-					FoldersFilesProc	mFoldersFilesProc;
-					void*				mUserData;
-			};
-
 		// Classes
 		private:
 			class Internals;
@@ -70,17 +43,24 @@ namespace winrt::WinUIToolbox::implementation {
 			void						OnDragOver(const DragEventArgs& dragEventArgs) const;
 			Foundation::IAsyncAction	OnDrop(const DragEventArgs& dragEventArgs) const;
 
-										// Instance methods
-			void						setInfo(const Info& info);
+										// Event methods
+			event_token					StorageItemsEvent(
+												const Windows::Foundation::EventHandler<
+														Windows::Foundation::Collections::IVectorView<
+																Windows::Storage::IStorageItem>>& handler);
+			void						StorageItemsEvent(const event_token& token) noexcept;
 
 		// Properties
 		private:
 			Internals*	mInternals;
 	};
 }
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: - winrt::WinUIToolbox::factory_implementation
 
 namespace winrt::WinUIToolbox::factory_implementation
 {
+	// MARK: DropTargetControl
 	struct DropTargetControl : DropTargetControlT<DropTargetControl, implementation::DropTargetControl> {
 	};
 }

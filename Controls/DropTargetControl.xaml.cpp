@@ -6,16 +6,14 @@
 
 #include "WinUIToolbox.DropTargetControl.g.cpp"
 
-#include "IStorageItem+Helpers.h"
-
 #include "winrt\Windows.ApplicationModel.DataTransfer.h"
-#include "winrt\Windows.UI.Xaml.Interop.h"
 
 using namespace winrt;
-using namespace winrt::Microsoft::UI::Xaml;
-using namespace winrt::WinUIToolbox::implementation;
-using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::ApplicationModel::DataTransfer;
+using namespace winrt::Windows::Foundation;
+using namespace winrt::Windows::Foundation::Collections;
+using namespace winrt::Windows::Storage;
+using namespace winrt::WinUIToolbox::implementation;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: DropTargetControl::Internals
@@ -24,7 +22,7 @@ class DropTargetControl::Internals {
 	public:
 		Internals() {}
 
-		OV<Info>	mInfo;
+		event<EventHandler<IVectorView<IStorageItem>>>	mStorageItemsEvent;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -67,15 +65,25 @@ void DropTargetControl::OnDragOver(const DragEventArgs& dragEventArgs) const
 IAsyncAction DropTargetControl::OnDrop(const DragEventArgs& dragEventArgs) const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Import
-	mInternals->mInfo->receive(IStorageItemGetFoldersFiles(co_await dragEventArgs.DataView().GetStorageItemsAsync()));
+	// Get Storage Items
+	auto	storageItems = co_await dragEventArgs.DataView().GetStorageItemsAsync();
+
+	// Trigger event
+	mInternals->mStorageItemsEvent(*this, storageItems);
 }
 
-// MARK: Instance methods
+// MARK: Event methods
 
 //----------------------------------------------------------------------------------------------------------------------
-void DropTargetControl::setInfo(const Info& info)
+event_token DropTargetControl::StorageItemsEvent(const EventHandler<IVectorView<IStorageItem>>& handler)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	mInternals->mInfo.setValue(info);
+	return mInternals->mStorageItemsEvent.add(handler);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void DropTargetControl::StorageItemsEvent(const event_token& token) noexcept
+//----------------------------------------------------------------------------------------------------------------------
+{
+	mInternals->mStorageItemsEvent.remove(token);
 }
