@@ -8,12 +8,10 @@
 
 #include "winrt\Windows.ApplicationModel.DataTransfer.h"
 
-using namespace winrt;
-using namespace winrt::Windows::ApplicationModel::DataTransfer;
-using namespace winrt::Windows::Foundation;
-using namespace winrt::Windows::Foundation::Collections;
-using namespace winrt::Windows::Storage;
 using namespace winrt::WinUIToolbox::implementation;
+
+using DataPackageOperation = winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation;
+using StandardDataFormats = winrt::Windows::ApplicationModel::DataTransfer::StandardDataFormats;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: DropTargetControl::Internals
@@ -22,7 +20,7 @@ class DropTargetControl::Internals {
 	public:
 		Internals() {}
 
-		event<EventHandler<IVectorView<IStorageItem>>>	mStorageItemsEvent;
+		event<IStorageItemVectorViewEventHandler>	mStorageItemsEvent;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -75,7 +73,7 @@ IAsyncAction DropTargetControl::OnDrop(const DragEventArgs& dragEventArgs) const
 // MARK: Event methods
 
 //----------------------------------------------------------------------------------------------------------------------
-event_token DropTargetControl::StorageItemsEvent(const EventHandler<IVectorView<IStorageItem>>& handler)
+event_token DropTargetControl::StorageItemsEvent(const IStorageItemVectorViewEventHandler& handler)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	return mInternals->mStorageItemsEvent.add(handler);

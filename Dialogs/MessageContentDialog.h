@@ -14,7 +14,7 @@
 
 #define Delete(x)	{ delete x; x = nil; }
 
-using namespace winrt::Microsoft::UI::Xaml::Controls;
+using ContentDialog = winrt::Microsoft::UI::Xaml::Controls::ContentDialog;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: MessageContentDialog

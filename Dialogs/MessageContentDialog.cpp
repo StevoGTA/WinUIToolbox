@@ -8,6 +8,8 @@
 
 using namespace winrt;
 
+using ContentDialogButtonClickEventArgs = winrt::Microsoft::UI::Xaml::Controls::ContentDialogButtonClickEventArgs;
+
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: Local proc definitions
 

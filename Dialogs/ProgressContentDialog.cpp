@@ -6,41 +6,42 @@
 
 #include "CReferenceCountable.h"
 
-#include "winrt\Microsoft.UI.Xaml.h"
-#include "winrt\Microsoft.UI.Xaml.Controls.h"
 #include "winrt\Microsoft.UI.Xaml.Controls.Primitives.h"
 #include "winrt\Windows.Foundation.h"
 #include "winrt\Windows.Foundation.Collections.h"
 #include "winrt\Windows.System.Threading.h"
-#include "winrt\Windows.System.Threading.Core.h"
 
-using namespace winrt::Microsoft::UI::Dispatching;
-using namespace winrt::Microsoft::UI::Xaml;
-using namespace winrt::Microsoft::UI::Xaml::Controls;
-using namespace winrt::Windows::Foundation;
-using namespace winrt::Windows::System::Threading;
+using ContentDialogButtonClickEventArgs = winrt::Microsoft::UI::Xaml::Controls::ContentDialogButtonClickEventArgs;
+using IAsyncAction = winrt::Windows::Foundation::IAsyncAction;
+using Orientation = winrt::Microsoft::UI::Xaml::Controls::Orientation;
+using ProgressBar = winrt::Microsoft::UI::Xaml::Controls::ProgressBar;
+using StackPanel = winrt::Microsoft::UI::Xaml::Controls::StackPanel;
+using TextAlignment = winrt::Microsoft::UI::Xaml::TextAlignment;
+using TextBlock = winrt::Microsoft::UI::Xaml::Controls::TextBlock;
+using ThicknessHelper = winrt::Microsoft::UI::Xaml::ThicknessHelper;
+using ThreadPool = winrt::Windows::System::Threading::ThreadPool;
 
 //----------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: ProgressContentDialogInternals
+// MARK: ProgressContentDialog::Internals
 
-class ProgressContentDialogInternals : public TReferenceCountableAutoDelete<ProgressContentDialogInternals> {
+class ProgressContentDialog::Internals : public TReferenceCountableAutoDelete<Internals> {
 	public:
-		ProgressContentDialogInternals(ProgressContentDialog& progressContentDialog, const TextBlock& messageTextBlock,
-				const ProgressBar& progressBar, const DispatcherQueue& dispatcherQueue) :
+		Internals(ProgressContentDialog& progressContentDialog, const TextBlock& messageTextBlock,
+				const ProgressBar& progressBar, const Dispatching::DispatcherQueue& dispatcherQueue) :
 			TReferenceCountableAutoDelete(),
 					mContentDialog(progressContentDialog),
 							mIsCancelled(false), mDispatcherQueue(dispatcherQueue),
 							mMessageTextBlock(messageTextBlock), mProgressBar(progressBar)
 			{}
 
-		ContentDialog	mContentDialog;
+		ContentDialog					mContentDialog;
 
-		bool			mIsCancelled;
-		DispatcherQueue	mDispatcherQueue;
+		bool							mIsCancelled;
+		Dispatching::DispatcherQueue	mDispatcherQueue;
 
-		TextBlock		mMessageTextBlock;
-		ProgressBar		mProgressBar;
+		TextBlock						mMessageTextBlock;
+		ProgressBar						mProgressBar;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -50,7 +51,7 @@ class ProgressContentDialogInternals : public TReferenceCountableAutoDelete<Prog
 // MARK: Lifecycle methods
 
 //----------------------------------------------------------------------------------------------------------------------
-ProgressContentDialog::ProgressContentDialog(Xaml::XamlRoot xamlRoot,
+ProgressContentDialog::ProgressContentDialog(const Xaml::XamlRoot& xamlRoot,
 		const Dispatching::DispatcherQueue& dispatcherQueue) : ContentDialog()
 //----------------------------------------------------------------------------------------------------------------------
 {
@@ -75,7 +76,7 @@ ProgressContentDialog::ProgressContentDialog(Xaml::XamlRoot xamlRoot,
 	XamlRoot(xamlRoot);
 
 	// Setup internals
-	mInternals = new ProgressContentDialogInternals(*this, messageTextBlock, progressBar, dispatcherQueue);
+	mInternals = new Internals(*this, messageTextBlock, progressBar, dispatcherQueue);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -94,9 +95,9 @@ CProgress::UpdateInfo ProgressContentDialog::getProgressUpdateInfo() const
 	// Return update info
 	return CProgress::UpdateInfo([](const CProgress& progress, void* userData) {
 		// Setup
-				CString							message(progress.getMessage());
-				OV<Float32>						value(progress.getValue());
-		const	ProgressContentDialogInternals&	internals = *((ProgressContentDialogInternals*) userData);
+				CString		message(progress.getMessage());
+				OV<Float32>	value(progress.getValue());
+		const	Internals&	internals = *((Internals*) userData);
 
 		// Update UI
 		internals.mDispatcherQueue.TryEnqueue([=, &internals]() {
