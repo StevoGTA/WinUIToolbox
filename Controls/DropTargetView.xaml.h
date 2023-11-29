@@ -1,18 +1,10 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	DropTargetControl.xaml.h			©2023 Stevo Brock		All rights reserved.
+//	DropTargetView.xaml.h			©2023 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #pragma once
 
-#include "SFoldersFiles.h"
-
-#undef Delete
-
-#include "Windows.h"
-
-#include "WinUIToolbox.DropTargetControl.g.h"
-
-#define Delete(x)	{ delete x; x = nil; }
+#include "WinUIToolbox.DropTargetView.g.h"
 
 #include "winrt\Microsoft.UI.Xaml.h"
 #include "winrt\Microsoft.UI.Xaml.Markup.h"
@@ -31,8 +23,8 @@ using IStorageItemVectorViewEventHandler = winrt::Windows::Foundation::EventHand
 
 namespace winrt::WinUIToolbox::implementation {
 
-	// MARK: DropTargetControl
-	struct DropTargetControl : DropTargetControlT<DropTargetControl> {
+	// MARK: DropTargetView
+	struct DropTargetView : DropTargetViewT<DropTargetView> {
 		// Classes
 		private:
 			class Internals;
@@ -40,8 +32,8 @@ namespace winrt::WinUIToolbox::implementation {
 		// Methods
 		public:
 							// Lifecycle methods
-							DropTargetControl();
-							~DropTargetControl();
+							DropTargetView();
+							~DropTargetView();
 
 							// Control methods
 			void			OnDragOver(const DragEventArgs& dragEventArgs) const;
@@ -61,7 +53,7 @@ namespace winrt::WinUIToolbox::implementation {
 
 namespace winrt::WinUIToolbox::factory_implementation
 {
-	// MARK: DropTargetControl
-	struct DropTargetControl : DropTargetControlT<DropTargetControl, implementation::DropTargetControl> {
+	// MARK: DropTargetView
+	struct DropTargetView : DropTargetViewT<DropTargetView, implementation::DropTargetView> {
 	};
 }

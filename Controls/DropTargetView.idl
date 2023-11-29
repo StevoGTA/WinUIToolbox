@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	DropTargetControl.idl			©2023 Stevo Brock		All rights reserved.
+//	DropTargetView.idl			©2023 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -7,11 +7,11 @@
 namespace WinUIToolbox {
 
 	//------------------------------------------------------------------------------------------------------------------
-	// MARK: DropTargetControl
+	// MARK: DropTargetView
 	[default_interface]
-	runtimeclass DropTargetControl : Microsoft.UI.Xaml.Controls.UserControl {
+	runtimeclass DropTargetView : Microsoft.UI.Xaml.Controls.UserControl {
 		// Methods
-		DropTargetControl();
+		DropTargetView();
 
 		// Events
 		event	Windows.Foundation.EventHandler<Windows.Foundation.Collections.IVectorView<Windows.Storage.IStorageItem> >	StorageItemsEvent;

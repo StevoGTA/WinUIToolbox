@@ -1,10 +1,10 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	DropTargetControl.xaml.cpp			©2023 Stevo Brock		All rights reserved.
+//	DropTargetView.xaml.cpp			©2023 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
-#include "DropTargetControl.xaml.h"
+#include "DropTargetView.xaml.h"
 
-#include "WinUIToolbox.DropTargetControl.g.cpp"
+#include "WinUIToolbox.DropTargetView.g.cpp"
 
 #include "winrt\Windows.ApplicationModel.DataTransfer.h"
 
@@ -14,9 +14,9 @@ using DataPackageOperation = winrt::Windows::ApplicationModel::DataTransfer::Dat
 using StandardDataFormats = winrt::Windows::ApplicationModel::DataTransfer::StandardDataFormats;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: DropTargetControl::Internals
+// MARK: DropTargetView::Internals
 
-class DropTargetControl::Internals {
+class DropTargetView::Internals {
 	public:
 		Internals() {}
 
@@ -25,12 +25,12 @@ class DropTargetControl::Internals {
 
 //----------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: - DropTargetControl
+// MARK: - DropTargetView
 
 // MARK: Lifecycle methods
 
 //----------------------------------------------------------------------------------------------------------------------
-DropTargetControl::DropTargetControl()
+DropTargetView::DropTargetView()
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
@@ -41,16 +41,16 @@ DropTargetControl::DropTargetControl()
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-DropTargetControl::~DropTargetControl()
+DropTargetView::~DropTargetView()
 //----------------------------------------------------------------------------------------------------------------------
 {
-	Delete(mInternals);
+	delete mInternals;
 }
 
 // MARK: Control methods
 
 //----------------------------------------------------------------------------------------------------------------------
-void DropTargetControl::OnDragOver(const DragEventArgs& dragEventArgs) const
+void DropTargetView::OnDragOver(const DragEventArgs& dragEventArgs) const
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Set accepted operation
@@ -60,7 +60,7 @@ void DropTargetControl::OnDragOver(const DragEventArgs& dragEventArgs) const
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-IAsyncAction DropTargetControl::OnDrop(const DragEventArgs& dragEventArgs) const
+IAsyncAction DropTargetView::OnDrop(const DragEventArgs& dragEventArgs) const
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Get Storage Items
@@ -73,14 +73,14 @@ IAsyncAction DropTargetControl::OnDrop(const DragEventArgs& dragEventArgs) const
 // MARK: Event methods
 
 //----------------------------------------------------------------------------------------------------------------------
-event_token DropTargetControl::StorageItemsEvent(const IStorageItemVectorViewEventHandler& handler)
+event_token DropTargetView::StorageItemsEvent(const IStorageItemVectorViewEventHandler& handler)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	return mInternals->mStorageItemsEvent.add(handler);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void DropTargetControl::StorageItemsEvent(const event_token& token) noexcept
+void DropTargetView::StorageItemsEvent(const event_token& token) noexcept
 //----------------------------------------------------------------------------------------------------------------------
 {
 	mInternals->mStorageItemsEvent.remove(token);
