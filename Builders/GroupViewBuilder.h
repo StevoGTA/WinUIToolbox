@@ -34,6 +34,8 @@ class GroupViewBuilder {
 								{ return Add(textBlock.as<FrameworkElement>()); }
 
 		GroupViewBuilder&	Add(FrameworkElement frameworkElement, double leadingInset, double trailingInset);
+		GroupViewBuilder&	Add(TextBlock& textBlock, double leadingInset, double trailingInset)
+								{ return Add(textBlock.as<FrameworkElement>(), leadingInset, trailingInset); }
 
 		GroupViewBuilder&	Add(const hstring& title, FrameworkElement frameworkElement, double leadingInset,
 									double trailingInset);
