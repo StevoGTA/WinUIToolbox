@@ -1,0 +1,21 @@
+//----------------------------------------------------------------------------------------------------------------------
+//	SectionView.idl			©2023 Stevo Brock		All rights reserved.
+//----------------------------------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: WinUIToolbox namespace
+namespace WinUIToolbox {
+
+	//------------------------------------------------------------------------------------------------------------------
+	// MARK: SectionView
+	[default_interface]
+	runtimeclass SectionView : Microsoft.UI.Xaml.Controls.UserControl {
+		// Lifecycle Methods
+		SectionView();
+
+		// Instance methods
+		[default_overload]
+		void	SetContent(Microsoft.UI.Xaml.UIElement[] uiElements);
+		void	SetContent(String string);
+	}
+}
