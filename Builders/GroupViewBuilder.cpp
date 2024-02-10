@@ -108,8 +108,21 @@ GroupViewBuilder&GroupViewBuilder:: Add(const hstring& title, FrameworkElement f
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-UIElement GroupViewBuilder::UIElement() const
+UIElement GroupViewBuilder::getUIElement() const
 //----------------------------------------------------------------------------------------------------------------------
 {
 	return mInternals->mExpander;
+}
+
+// MARK: Class methods
+
+//----------------------------------------------------------------------------------------------------------------------
+UIElement GroupViewBuilder::composeUIElement(const hstring& title, double itemLeadingInset,
+		FrameworkElement frameworkElement)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup
+	GroupViewBuilder	groupViewBuilder(title, itemLeadingInset);
+
+	return groupViewBuilder.Add(frameworkElement).getUIElement();
 }
