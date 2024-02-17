@@ -12,7 +12,16 @@
 
 using namespace winrt;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
-using namespace winrt::Windows::Foundation;
+
+using DateTime = winrt::Windows::Foundation::DateTime;
+using IInspectable = winrt::Windows::Foundation::IInspectable;
+using IPropertyValue = winrt::Windows::Foundation::IPropertyValue;
+using IStringable = winrt::Windows::Foundation::IStringable;
+using Point = winrt::Windows::Foundation::Point;
+using PropertyType = winrt::Windows::Foundation::PropertyType;
+using Rect = winrt::Windows::Foundation::Rect;
+using Size = winrt::Windows::Foundation::Size;
+using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: ComboBoxBuilder
