@@ -25,9 +25,10 @@ using ContentDialog = winrt::Microsoft::UI::Xaml::Controls::ContentDialog;
 
 class ProgressContentDialog : public ContentDialog {
 	// Procs
-	typedef	std::function<void*(const I<CProgress>& progress)>	Proc;
-	typedef	std::function<void()>								CancelProc;
-	typedef	std::function<void(void* result)>					CompletionProc;
+	public:
+		typedef	std::function<void*(const I<CProgress>& progress)>	Proc;
+		typedef	std::function<void()>								CancelProc;
+		typedef	std::function<void(void* result)>					CompletionProc;
 
 	// Classes
 	private:

@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	ComboBoxBuilder.h			©2023 Stevo Brock		All rights reserved.
+//	ComboBoxHelper.h			©2023 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #pragma once
@@ -9,6 +9,8 @@
 #include "winrt\Microsoft.UI.Xaml.h"
 #include "winrt\Microsoft.UI.Xaml.Controls.h"
 #include "winrt\Windows.Foundation.h"
+
+#include <functional>
 
 using namespace winrt;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
@@ -24,14 +26,19 @@ using Size = winrt::Windows::Foundation::Size;
 using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: ComboBoxBuilder
+// MARK: ComboBoxHelper
 
-class ComboBoxBuilder {
+class ComboBoxHelper {
 	// Options
 	public:
 		enum Options {
-			kOptionsNone	= 0,
+			kOptionsNone		= 0,
+			kOptionsClearItem	= 1 << 0,
 		};
+
+	// Procs
+	public:
+		typedef	std::function<bool(const IInspectable& tag)>	Proc;
 
 	// Classes
 	private:
@@ -132,14 +139,22 @@ class ComboBoxBuilder {
 	// Methods
 	public:
 				// Lifecycle methods
-				ComboBoxBuilder(ComboBox comboBox, Options options = kOptionsNone);
+				ComboBoxHelper(ComboBox comboBox, Options options = kOptionsNone);
 
 				// Instance methods
-		void	add(const hstring& content, const IInspectable& tag, bool isSelected = false);
-		void	add(const IStringable& tag, bool isSelected = false)
-					{ add(tag.ToString(), tag, isSelected); }
-		void	add(const IPropertyValue& comboBoxItem, bool isSelected = false);
-		void	addSeparator();
+		void	addItem(const hstring& content, const IInspectable& tag, bool isSelected = false);
+		void	addItem(const hstring& content, int tag, bool isSelected = false)
+					{ addItem(content, box_value<int>(tag), isSelected); }
+		void	addItem(const IStringable& tag, bool isSelected = false)
+					{ addItem(tag.ToString(), tag, isSelected); }
+		void	addItem(const IPropertyValue& comboBoxItem, bool isSelected = false);
+		void	addSeparatorItem();
+
+		bool	selectTag(std::function<bool(const IInspectable& tag)> proc) const;
+		bool	selectIntTag(std::function<bool(int tag)> proc) const;
+
+		void	selectedTagChanged(std::function<void(const IInspectable& tag)> proc) const;
+		void	selectedIntTagChanged(std::function<void(int tag)> proc) const;
 
 	// Properties
 	private:
