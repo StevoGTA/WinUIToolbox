@@ -10,10 +10,10 @@ namespace WinUIToolbox {
 	// MARK: DropTargetView
 	[default_interface]
 	runtimeclass DropTargetView : Microsoft.UI.Xaml.Controls.UserControl {
-		// Lifecycle Methods
-		DropTargetView();
+																							// Lifecycle Methods
+																							DropTargetView();
 
-		// Events
-		event	Windows.Foundation.EventHandler<Windows.Foundation.Collections.IVectorView<Windows.Storage.IStorageItem> >	StorageItemsEvent;
+																							// Events
+		event	Windows.Foundation.EventHandler<IVectorView<Windows.Storage.IStorageItem> >	StorageItemsEvent;
 	}
 }

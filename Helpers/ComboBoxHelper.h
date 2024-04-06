@@ -33,12 +33,8 @@ class ComboBoxHelper {
 	public:
 		enum Options {
 			kOptionsNone		= 0,
-			kOptionsClearItem	= 1 << 0,
+			kOptionsClearItems	= 1 << 0,
 		};
-
-	// Procs
-	public:
-		typedef	std::function<bool(const IInspectable& tag)>	Proc;
 
 	// Classes
 	private:

@@ -18,7 +18,7 @@ namespace winrt::WinUIToolbox::implementation {
 		// Methods
 		public:
 					// Lifecycle methods
-					SectionView() {}
+					SectionView() : SectionViewT<SectionView>() {}
 
 					// Instance methods
 			void	SetContent(const array_view<const winrt::Microsoft::UI::Xaml::UIElement>& uiElements);

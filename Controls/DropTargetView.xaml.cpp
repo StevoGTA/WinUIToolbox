@@ -30,7 +30,7 @@ class DropTargetView::Internals {
 // MARK: Lifecycle methods
 
 //----------------------------------------------------------------------------------------------------------------------
-DropTargetView::DropTargetView()
+DropTargetView::DropTargetView() : DropTargetViewT<DropTargetView>()
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup

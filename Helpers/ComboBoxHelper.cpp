@@ -37,7 +37,7 @@ ComboBoxHelper::ComboBoxHelper(ComboBox comboBox, Options options)
 	mInternals = new Internals(comboBox, options);
 
 	// Setup UI
-	if (options & kOptionsClearItem)
+	if (options & kOptionsClearItems)
 		// Clear items
 		mInternals->mComboBox.Items().Clear();
 }
@@ -149,11 +149,15 @@ void ComboBoxHelper::selectedIntTagChanged(std::function<void(int tag)> proc) co
 	mInternals->mComboBox.SelectionChanged(
 			[proc](const IInspectable& sender, const SelectionChangedEventArgs& selectionChangedEventArgs) {
 				// Setup
-				auto	tag = selectionChangedEventArgs.AddedItems().GetAt(0).as<ComboBoxItem>().Tag();
-				auto	intValue = tag.try_as<int>();
-				auto	value = intValue ? *intValue : std::stoi(std::basic_string<TCHAR>(tag.as<winrt::hstring>()));
+				auto	addedItems = selectionChangedEventArgs.AddedItems();
+				if (addedItems.Size() > 0) {
+					// Get info
+					auto	tag = addedItems.GetAt(0).as<ComboBoxItem>().Tag();
+					auto	intValue = tag.try_as<int>();
+					auto	value = intValue ? *intValue : std::stoi(std::basic_string<TCHAR>(tag.as<winrt::hstring>()));
 
-				// Call proc
-				proc(value);
+					// Call proc
+					proc(value);
+				}
 			});
 }
