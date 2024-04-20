@@ -134,23 +134,33 @@ class ComboBoxHelper {
 
 	// Methods
 	public:
-				// Lifecycle methods
-				ComboBoxHelper(ComboBox comboBox, Options options = kOptionsNone);
+								// Lifecycle methods
+								ComboBoxHelper(ComboBox comboBox, Options options = kOptionsNone);
+		virtual					~ComboBoxHelper();
+	
+								// Instance methods
+				void			addItem(const hstring& content, const IInspectable& tag, bool isSelected = false) const;
+				void			addItem(const hstring& content, int tag, bool isSelected = false) const
+									{ addItem(content, box_value<int>(tag), isSelected); }
+				void			addItem(const hstring& content, bool isSelected = false) const
+									{ addItem(content, box_value<int>(0), isSelected); }
+				void			addItem(const IStringable& tag, bool isSelected = false) const
+									{ addItem(tag.ToString(), tag, isSelected); }
+				void			addItem(const IPropertyValue& comboBoxItem, bool isSelected = false) const;
+				void			addSeparatorItem() const;
 
-				// Instance methods
-		void	addItem(const hstring& content, const IInspectable& tag, bool isSelected = false);
-		void	addItem(const hstring& content, int tag, bool isSelected = false)
-					{ addItem(content, box_value<int>(tag), isSelected); }
-		void	addItem(const IStringable& tag, bool isSelected = false)
-					{ addItem(tag.ToString(), tag, isSelected); }
-		void	addItem(const IPropertyValue& comboBoxItem, bool isSelected = false);
-		void	addSeparatorItem();
+				IInspectable	getSelectedTag() const;
+				int				getSelectedIntTag() const;
 
-		bool	selectTag(std::function<bool(const IInspectable& tag)> proc) const;
-		bool	selectIntTag(std::function<bool(int tag)> proc) const;
+				bool			selectTag(std::function<bool(const IInspectable& tag)> tagCompareProc) const;
+				bool			selectIntTag(int tag);
 
-		void	selectedTagChanged(std::function<void(const IInspectable& tag)> proc) const;
-		void	selectedIntTagChanged(std::function<void(int tag)> proc) const;
+				void			setSelectedTagChangedProc(std::function<void(const IInspectable& tag)> proc) const;
+				void			setSelectedIntTagChangedProc(std::function<void(int tag)> proc) const;
+
+	protected:
+								// Subclass methods
+				ComboBox		getComboBox() const;
 
 	// Properties
 	private:

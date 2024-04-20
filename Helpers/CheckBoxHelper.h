@@ -26,9 +26,7 @@ class CheckBoxHelper {
 				CheckBoxHelper(CheckBox checkbox);
 
 				// Instance methods
-		void	setStateChangedProc(
-						std::function<void(const IInspectable& sender, const RoutedEventArgs& routedEventArgs)>
-								stateChangedProc);
+		void	setStateChangedProc(std::function<void(bool isChecked)> stateChangedProc);
 
 	// Properties
 	private:
