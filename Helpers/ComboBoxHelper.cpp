@@ -196,7 +196,7 @@ void ComboBoxHelper::setSelectedIntTagChangedProc(std::function<void(int tag)> p
 			});
 }
 
-// MARK: Subclass methods\
+// MARK: Subclass methods
 
 //----------------------------------------------------------------------------------------------------------------------
 ComboBox ComboBoxHelper::getComboBox() const
