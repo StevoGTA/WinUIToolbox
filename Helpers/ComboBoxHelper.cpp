@@ -10,17 +10,19 @@
 using namespace winrt::Microsoft::UI::Xaml;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: ComboBoxHelper::Internals
+// MARK: Local data
+
+static	ComboBox	sComboBoxInUpdate(nullptr);
+
+//----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: - ComboBoxHelper::Internals
 
 class ComboBoxHelper::Internals {
 	public:
-		Internals(ComboBox comboBox, Options options) :
-			mComboBox(comboBox), mOptions(options), mMinimumWidth(0.0)
-			{}
+		Internals(ComboBox comboBox) : mComboBox(comboBox) {}
 
 		ComboBox	mComboBox;
-		Options		mOptions;
-		float		mMinimumWidth;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -34,12 +36,15 @@ ComboBoxHelper::ComboBoxHelper(ComboBox comboBox, Options options)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals = new Internals(comboBox, options);
+	mInternals = new Internals(comboBox);
 
 	// Setup UI
-	if (options & kOptionsClearItems)
+	if (options & kOptionsClearItems) {
 		// Clear items
+		sComboBoxInUpdate = mInternals->mComboBox;
 		mInternals->mComboBox.Items().Clear();
+		sComboBoxInUpdate = nullptr;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -64,9 +69,12 @@ void ComboBoxHelper::addItem(const hstring& content, const IInspectable& tag, bo
 	mInternals->mComboBox.Items().Append(comboBoxItem);
 
 	// Check selected
-	if (isSelected)
+	if (isSelected) {
 		// Select
+		sComboBoxInUpdate = mInternals->mComboBox;
 		mInternals->mComboBox.SelectedIndex(mInternals->mComboBox.Items().Size() - 1);
+		sComboBoxInUpdate = nullptr;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -77,9 +85,12 @@ void ComboBoxHelper::addItem(const IPropertyValue& comboBoxItem, bool isSelected
 	mInternals->mComboBox.Items().Append(comboBoxItem);
 
 	// Check selected
-	if (isSelected)
+	if (isSelected) {
 		// Select
+		sComboBoxInUpdate = mInternals->mComboBox;
 		mInternals->mComboBox.SelectedIndex(mInternals->mComboBox.Items().Size() - 1);
+		sComboBoxInUpdate = nullptr;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -123,7 +134,9 @@ bool ComboBoxHelper::selectTag(std::function<bool(const IInspectable& tag)> tagC
 		// Check tag
 		if (tagCompareProc(items.GetAt(i).as<ComboBoxItem>().Tag().as<IInspectable>())) {
 			// Found item
+			sComboBoxInUpdate = mInternals->mComboBox;
 			mInternals->mComboBox.SelectedIndex(i);
+			sComboBoxInUpdate = nullptr;
 
 			return true;
 		}
@@ -145,7 +158,9 @@ bool ComboBoxHelper::selectIntTag(int tag)
 		auto	value = intValue ? *intValue : std::stoi(std::basic_string<TCHAR>(tag_.as<winrt::hstring>()));
 		if (value == tag) {
 			// Found item
+			sComboBoxInUpdate = mInternals->mComboBox;
 			mInternals->mComboBox.SelectedIndex(i);
+			sComboBoxInUpdate = nullptr;
 
 			return true;
 		}
@@ -155,45 +170,45 @@ bool ComboBoxHelper::selectIntTag(int tag)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void ComboBoxHelper::setSelectedTagChangedProc(std::function<void(const IInspectable& tag)> proc) const
+void ComboBoxHelper::setSelectedItemChangedProc(std::function<void(const IInspectable& item)> proc) const
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup SelectionChanged
 	mInternals->mComboBox.SelectionChanged(
-			[proc](const IInspectable& sender, const SelectionChangedEventArgs& selectionChangedEventArgs) {
+			[this, proc](const IInspectable& sender, const SelectionChangedEventArgs& selectionChangedEventArgs) {
+				// Check if handling events
+				if (sender == sComboBoxInUpdate)
+					return;
+
 				// Setup
 				auto	addedItems = selectionChangedEventArgs.AddedItems();
 
-				// Check if have items
-				if (addedItems.Size() > 0)
-					// Call proc
-					proc(addedItems.GetAt(0).as<ComboBoxItem>().Tag());
+				// Call proc
+				proc(addedItems.GetAt(0));
 			});
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void ComboBoxHelper::setSelectedTagChangedProc(std::function<void(const IInspectable& tag)> proc) const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup
+	setSelectedItemChangedProc([proc](const IInspectable& item){ proc(item.as<ComboBoxItem>().Tag()); });
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 void ComboBoxHelper::setSelectedIntTagChangedProc(std::function<void(int tag)> proc) const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Setup SelectionChanged
-	mInternals->mComboBox.SelectionChanged(
-			[proc](const IInspectable& sender, const SelectionChangedEventArgs& selectionChangedEventArgs) {
-				// Setup
-				auto	addedItems = selectionChangedEventArgs.AddedItems();
+	// Setup
+	setSelectedTagChangedProc([proc](const IInspectable& tag) {
+		// Get info
+		auto	intValue = tag.try_as<int>();
+		auto	value = intValue ? *intValue : std::stoi(std::basic_string<TCHAR>(tag.as<winrt::hstring>()));
 
-				// Check if have items
-				if (addedItems.Size() > 0) {
-					// Get info
-					auto	tag = addedItems.GetAt(0).as<ComboBoxItem>().Tag();
-					auto	intValue = tag.try_as<int>();
-					auto	value =
-									intValue ?
-											*intValue : std::stoi(std::basic_string<TCHAR>(tag.as<winrt::hstring>()));
-
-					// Call proc
-					proc(value);
-				}
-			});
+		// Call proc
+		proc(value);
+	});
 }
 
 // MARK: Subclass methods

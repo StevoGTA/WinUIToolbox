@@ -155,6 +155,7 @@ class ComboBoxHelper {
 				bool			selectTag(std::function<bool(const IInspectable& tag)> tagCompareProc) const;
 				bool			selectIntTag(int tag);
 
+				void			setSelectedItemChangedProc(std::function<void(const IInspectable& item)> proc) const;
 				void			setSelectedTagChangedProc(std::function<void(const IInspectable& tag)> proc) const;
 				void			setSelectedIntTagChangedProc(std::function<void(int tag)> proc) const;
 
