@@ -35,7 +35,7 @@ StackPanelHelper::StackPanelHelper(StackPanel stackPanel)
 // MARK: Instance methods
 
 //----------------------------------------------------------------------------------------------------------------------
-void StackPanelHelper::setEnabled(bool enabled)
+void StackPanelHelper::IsEnabled(bool enabled)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Iterate all children
@@ -57,7 +57,7 @@ void StackPanelHelper::setEnabled(bool enabled)
 		if (stackPanel) {
 			// Have StackPanel
 			StackPanelHelper	stackPanelHelper(stackPanel);
-			stackPanelHelper.setEnabled(enabled);
+			stackPanelHelper.IsEnabled(enabled);
 			continue;
 		}
 	}

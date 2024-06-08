@@ -22,7 +22,7 @@ class StackPanelHelper {
 				StackPanelHelper(StackPanel stackPanel);
 
 				// Instance methods
-		void	setEnabled(bool enabled);
+		void	IsEnabled(bool enabled);
 
 	// Properties
 	private:

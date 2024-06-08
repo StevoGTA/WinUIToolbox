@@ -60,7 +60,7 @@ void GridHelper::setEnabled(bool enabled)
 		if (stackPanel) {
 			// Have StackPanel
 			StackPanelHelper	stackPanelHelper(stackPanel);
-			stackPanelHelper.setEnabled(enabled);
+			stackPanelHelper.IsEnabled(enabled);
 			continue;
 		}
 	}

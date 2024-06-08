@@ -94,6 +94,19 @@ void ComboBoxHelper::addItem(const IPropertyValue& comboBoxItem, bool isSelected
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+void ComboBoxHelper::addSectionTitle(const hstring& title) const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup
+	ComboBoxItem	comboBoxItem;
+	comboBoxItem.Content(box_value(title));
+	comboBoxItem.IsEnabled(false);
+
+	// Add
+	mInternals->mComboBox.Items().Append(comboBoxItem);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 void ComboBoxHelper::addSeparatorItem() const
 //----------------------------------------------------------------------------------------------------------------------
 {
@@ -125,6 +138,27 @@ int ComboBoxHelper::getSelectedIntTag() const
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+bool ComboBoxHelper::select(std::function<bool(const IInspectable& item)> itemCompareProc) const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Iterate items
+	auto	items = mInternals->mComboBox.Items();
+	for (uint32_t i = 0; i < items.Size(); i++) {
+		// Check ComboBoxItem
+		if (itemCompareProc(items.GetAt(i))) {
+			// Found item
+			sComboBoxInUpdate = mInternals->mComboBox;
+			mInternals->mComboBox.SelectedIndex(i);
+			sComboBoxInUpdate = nullptr;
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 bool ComboBoxHelper::selectTag(std::function<bool(const IInspectable& tag)> tagCompareProc) const
 //----------------------------------------------------------------------------------------------------------------------
 {
@@ -153,7 +187,11 @@ bool ComboBoxHelper::selectIntTag(int tag)
 	auto	items = mInternals->mComboBox.Items();
 	for (uint32_t i = 0; i < items.Size(); i++) {
 		// Check tag
-		auto	tag_ = items.GetAt(i).as<ComboBoxItem>().Tag();
+		auto	item = items.GetAt(i).try_as<ComboBoxItem>();
+		if (!item)
+			continue;
+
+		auto	tag_ = item.Tag();
 		auto	intValue = tag_.try_as<int>();
 		auto	value = intValue ? *intValue : std::stoi(std::basic_string<TCHAR>(tag_.as<winrt::hstring>()));
 		if (value == tag) {

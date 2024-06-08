@@ -48,11 +48,11 @@ void SliderHelper::setValueChangedProc(std::function<void(double value)> valueCh
 {
 	// Set handler
 	mInternals->mSlider.ValueChanged(
-		[valueChangedProc](const IInspectable& sender,
-				const RangeBaseValueChangedEventArgs& rangeBaseValueChangedEventArgs) {
-			// Call proc
-			valueChangedProc(rangeBaseValueChangedEventArgs.NewValue());
-		});
+			[valueChangedProc](const IInspectable& sender,
+					const RangeBaseValueChangedEventArgs& rangeBaseValueChangedEventArgs) {
+				// Call proc
+				valueChangedProc(rangeBaseValueChangedEventArgs.NewValue());
+			});
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -64,9 +64,9 @@ void SliderHelper::setNormalizedValueChangedProc(std::function<void(double value
 
 	// Set handler
 	mInternals->mSlider.ValueChanged(
-		[valueChangedProc, maximum](const IInspectable& sender,
-				const RangeBaseValueChangedEventArgs& rangeBaseValueChangedEventArgs) {
-			// Call proc
-			valueChangedProc(rangeBaseValueChangedEventArgs.NewValue() / maximum);
-		});
+			[valueChangedProc, maximum](const IInspectable& sender,
+					const RangeBaseValueChangedEventArgs& rangeBaseValueChangedEventArgs) {
+				// Call proc
+				valueChangedProc(rangeBaseValueChangedEventArgs.NewValue() / maximum);
+			});
 }

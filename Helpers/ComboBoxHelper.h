@@ -147,11 +147,13 @@ class ComboBoxHelper {
 				void			addItem(const IStringable& tag, bool isSelected = false) const
 									{ addItem(tag.ToString(), tag, isSelected); }
 				void			addItem(const IPropertyValue& comboBoxItem, bool isSelected = false) const;
+				void			addSectionTitle(const hstring& title) const;
 				void			addSeparatorItem() const;
 
 				IInspectable	getSelectedTag() const;
 				int				getSelectedIntTag() const;
 
+				bool			select(std::function<bool(const IInspectable& item)> itemCompareProc) const;
 				bool			selectTag(std::function<bool(const IInspectable& tag)> tagCompareProc) const;
 				bool			selectIntTag(int tag);
 
