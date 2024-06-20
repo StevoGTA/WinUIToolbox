@@ -180,7 +180,7 @@ bool ComboBoxHelper::selectTag(std::function<bool(const IInspectable& tag)> tagC
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-bool ComboBoxHelper::selectIntTag(int tag)
+bool ComboBoxHelper::selectIntTag(int tag) const
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Iterate items
