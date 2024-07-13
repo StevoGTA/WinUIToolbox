@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	SliderHelper.h			©2024 Stevo Brock		All rights reserved.
+//	RadioButtonHelper.h			©2024 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #pragma once
@@ -8,27 +8,24 @@
 
 #include <functional>
 
-using Slider = winrt::Microsoft::UI::Xaml::Controls::Slider;
+using RadioButton = winrt::Microsoft::UI::Xaml::Controls::RadioButton;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: SliderHelper
+// MARK: RadioButtonHelper
 
-class SliderHelper {
+class RadioButtonHelper {
 	// Classes
 	private:
 		class Internals;
 
 	// Methods
 	public:
-						// Lifecycle methods
-						SliderHelper(Slider slider);
+							// Lifecycle methods
+							RadioButtonHelper(RadioButton radioButton);
 
-						// Instance methods
-		SliderHelper&	setValue(double value);
-		SliderHelper&	setNormalizedValue(double value);
-
-		SliderHelper&	setValueChangedProc(std::function<void(double value)> valueChangedProc);
-		SliderHelper&	setNormalizedValueChangedProcs(std::function<void(double value)> valueChangedProc);
+							// Instance methods
+		RadioButtonHelper&	setChecked(bool isChecked);
+		RadioButtonHelper&	setClickProc(std::function<void()> clickProc);
 
 	// Properties
 	private:

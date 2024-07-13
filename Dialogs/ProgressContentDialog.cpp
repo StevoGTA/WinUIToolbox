@@ -51,8 +51,7 @@ class ProgressContentDialog::Internals : public TReferenceCountableAutoDelete<In
 // MARK: Lifecycle methods
 
 //----------------------------------------------------------------------------------------------------------------------
-ProgressContentDialog::ProgressContentDialog(const Xaml::XamlRoot& xamlRoot,
-		const Dispatching::DispatcherQueue& dispatcherQueue) : ContentDialog()
+ProgressContentDialog::ProgressContentDialog(const Dispatching::DispatcherQueue& dispatcherQueue) : ContentDialog()
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup UI
@@ -73,7 +72,6 @@ ProgressContentDialog::ProgressContentDialog(const Xaml::XamlRoot& xamlRoot,
 	stackPanel.Children().Append(progressBar);
 
 	Content(stackPanel);
-	XamlRoot(xamlRoot);
 
 	// Setup internals
 	mInternals = new Internals(*this, messageTextBlock, progressBar, dispatcherQueue);
@@ -148,7 +146,4 @@ void ProgressContentDialog::perform(const I<CProgress>& progress, Proc proc, Can
 			internals->removeReference();
 		});
 	});
-
-	// Show
-	ShowAsync();
 }

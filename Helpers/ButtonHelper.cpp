@@ -1,66 +1,48 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	StackPanelHelper.cpp			©2024 Stevo Brock		All rights reserved.
+//	ButtonHelper.cpp			©2024 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
-#include "StackPanelHelper.h"
+#include "ButtonHelper.h"
 
-#include "winrt\Windows.Foundation.Collections.h"
+#include "winrt\Microsoft.UI.Xaml.Controls.Primitives.h"
+#include "winrt\Windows.Foundation.h"
 
-using Control = winrt::Microsoft::UI::Xaml::Controls::Control;
+using IInspectable = winrt::Windows::Foundation::IInspectable;
+using RoutedEventArgs = winrt::Microsoft::UI::Xaml::RoutedEventArgs;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: StackPanelHelper::Internals
+// MARK: ButtonHelper::Internals
 
-class StackPanelHelper::Internals {
+class ButtonHelper::Internals {
 	public:
-		Internals(StackPanel stackPanel) : mStackPanel(stackPanel) {}
+		Internals(Button button) : mButton(button) {}
 
-		StackPanel	mStackPanel;
+		Button	mButton;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: StackPanelHelper
+// MARK: ButtonHelper
 
 // MARK: Lifecycle methods
 
 //----------------------------------------------------------------------------------------------------------------------
-StackPanelHelper::StackPanelHelper(StackPanel stackPanel)
+ButtonHelper::ButtonHelper(Button button)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals = new Internals(stackPanel);
+	mInternals = new Internals(button);
 }
 
 // MARK: Instance methods
 
 //----------------------------------------------------------------------------------------------------------------------
-StackPanelHelper& StackPanelHelper::setEnabled(bool enabled)
+ButtonHelper& ButtonHelper::setClickedProc(std::function<void()> clickedProc)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Iterate all children
-	auto	children = mInternals->mStackPanel.Children();
-	for (uint32_t i = 0; i < children.Size(); i++) {
-		// Get child
-		auto	child = children.GetAt(i);
-
-		// Check for Control
-		auto	control = child.try_as<Control>();
-		if (control) {
-			// Have control
-			control.IsEnabled(enabled);
-			continue;
-		}
-
-		// Check for StackPanel
-		auto	stackPanel = child.try_as<StackPanel>();
-		if (stackPanel) {
-			// Have StackPanel
-			StackPanelHelper	stackPanelHelper(stackPanel);
-			stackPanelHelper.setEnabled(enabled);
-			continue;
-		}
-	}
+	// Setup
+	mInternals->mButton.Click(
+			[clickedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) { clickedProc(); });
 
 	return *this;
 }

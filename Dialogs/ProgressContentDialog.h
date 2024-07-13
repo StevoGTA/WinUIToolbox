@@ -6,7 +6,7 @@
 
 #include "CProgress.h"
 
-#include <functional>	// May only be needed in VS2019
+#include <functional>
 
 #undef Delete
 
@@ -37,8 +37,7 @@ class ProgressContentDialog : public ContentDialog {
 	// Methods
 	public:
 								// Lifecycle methods
-								ProgressContentDialog(const Xaml::XamlRoot& xamlRoot,
-										const Dispatching::DispatcherQueue& dispatcherQueue);
+								ProgressContentDialog(const Dispatching::DispatcherQueue& dispatcherQueue);
 								~ProgressContentDialog();
 
 								// Instance methods

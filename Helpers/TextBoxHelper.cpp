@@ -1,69 +1,70 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	CheckBoxHelper.cpp			©2024 Stevo Brock		All rights reserved.
+//	TextBoxHelper.cpp			©2024 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
-#include "CheckBoxHelper.h"
+#include "TextBoxHelper.h"
 
 #include "winrt\Microsoft.UI.Xaml.Controls.Primitives.h"
 #include "winrt\Windows.Foundation.h"
 
 using IInspectable = winrt::Windows::Foundation::IInspectable;
-using RoutedEventArgs = winrt::Microsoft::UI::Xaml::RoutedEventArgs;
+using TextChangedEventArgs = winrt::Microsoft::UI::Xaml::Controls::TextChangedEventArgs;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: CheckBoxHelper::Internals
+// MARK: TextBoxHelper::Internals
 
-class CheckBoxHelper::Internals {
+class TextBoxHelper::Internals {
 	public:
-		Internals(CheckBox checkbox) : mCheckBox(checkbox) {}
+		Internals(TextBox textbox) : mTextBox(textbox) {}
 
-		CheckBox	mCheckBox;
+		TextBox	mTextBox;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: CheckBoxHelper
+// MARK: TextBoxHelper
 
 // MARK: Lifecycle methods
 
 //----------------------------------------------------------------------------------------------------------------------
-CheckBoxHelper::CheckBoxHelper(CheckBox checkbox)
+TextBoxHelper::TextBoxHelper(TextBox textbox)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals = new Internals(checkbox);
+	mInternals = new Internals(textbox);
 }
 
 // MARK: Instance methods
 
 //----------------------------------------------------------------------------------------------------------------------
-CheckBoxHelper& CheckBoxHelper::setChecked(bool isChecked)
+TextBoxHelper& TextBoxHelper::setText(const CString& string)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	mInternals->mCheckBox.IsChecked(isChecked);
+	// Update
+	mInternals->mTextBox.Text(string.getOSString());
 
 	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-CheckBoxHelper& CheckBoxHelper::setCheckedChangedProc(std::function<void(bool isChecked)> checkedChangedProc)
+TextBoxHelper& TextBoxHelper::setFocusState(FocusState focusState)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Update
+	mInternals->mTextBox.Focus(focusState);
+
+	return *this;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+TextBoxHelper& TextBoxHelper::setTextChangedProc(std::function<void()> textChangedProc)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals->mCheckBox.Checked(
-			[checkedChangedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
+	mInternals->mTextBox.TextChanged(
+			[textChangedProc](const IInspectable& sender, const TextChangedEventArgs& textChangedEventArgs) {
 				// Call proc
-				checkedChangedProc(sender.as<CheckBox>().IsChecked().GetBoolean());
-			});
-	mInternals->mCheckBox.Unchecked(
-			[checkedChangedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
-				// Call proc
-				checkedChangedProc(sender.as<CheckBox>().IsChecked().GetBoolean());
-			});
-	mInternals->mCheckBox.Indeterminate(
-			[checkedChangedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
-				// Call proc
-				checkedChangedProc(sender.as<CheckBox>().IsChecked().GetBoolean());
+				textChangedProc();
 			});
 
 	return *this;

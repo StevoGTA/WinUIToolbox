@@ -1,8 +1,8 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	CheckBoxHelper.cpp			©2024 Stevo Brock		All rights reserved.
+//	RadioButtonHelper.cpp			©2024 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
-#include "CheckBoxHelper.h"
+#include "RadioButtonHelper.h"
 
 #include "winrt\Microsoft.UI.Xaml.Controls.Primitives.h"
 #include "winrt\Windows.Foundation.h"
@@ -11,60 +11,49 @@ using IInspectable = winrt::Windows::Foundation::IInspectable;
 using RoutedEventArgs = winrt::Microsoft::UI::Xaml::RoutedEventArgs;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: CheckBoxHelper::Internals
+// MARK: RadioButtonHelper::Internals
 
-class CheckBoxHelper::Internals {
+class RadioButtonHelper::Internals {
 	public:
-		Internals(CheckBox checkbox) : mCheckBox(checkbox) {}
+		Internals(RadioButton radiobutton) : mRadioButton(radiobutton) {}
 
-		CheckBox	mCheckBox;
+		RadioButton	mRadioButton;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: CheckBoxHelper
+// MARK: RadioButtonHelper
 
 // MARK: Lifecycle methods
 
 //----------------------------------------------------------------------------------------------------------------------
-CheckBoxHelper::CheckBoxHelper(CheckBox checkbox)
+RadioButtonHelper::RadioButtonHelper(RadioButton radiobutton)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals = new Internals(checkbox);
+	mInternals = new Internals(radiobutton);
 }
 
 // MARK: Instance methods
 
 //----------------------------------------------------------------------------------------------------------------------
-CheckBoxHelper& CheckBoxHelper::setChecked(bool isChecked)
+RadioButtonHelper& RadioButtonHelper::setChecked(bool isChecked)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	mInternals->mCheckBox.IsChecked(isChecked);
+	mInternals->mRadioButton.IsChecked(isChecked);
 
 	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-CheckBoxHelper& CheckBoxHelper::setCheckedChangedProc(std::function<void(bool isChecked)> checkedChangedProc)
+RadioButtonHelper& RadioButtonHelper::setClickProc(std::function<void()> clickProc)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals->mCheckBox.Checked(
-			[checkedChangedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
-				// Call proc
-				checkedChangedProc(sender.as<CheckBox>().IsChecked().GetBoolean());
-			});
-	mInternals->mCheckBox.Unchecked(
-			[checkedChangedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
-				// Call proc
-				checkedChangedProc(sender.as<CheckBox>().IsChecked().GetBoolean());
-			});
-	mInternals->mCheckBox.Indeterminate(
-			[checkedChangedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
-				// Call proc
-				checkedChangedProc(sender.as<CheckBox>().IsChecked().GetBoolean());
-			});
+	mInternals->mRadioButton.Click([clickProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
+		// Call proc
+		clickProc();
+	});
 
 	return *this;
 }

@@ -9,8 +9,6 @@
 #include <functional>
 
 using CheckBox = winrt::Microsoft::UI::Xaml::Controls::CheckBox;
-using IInspectable = winrt::Windows::Foundation::IInspectable;
-using RoutedEventArgs = winrt::Microsoft::UI::Xaml::RoutedEventArgs;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: CheckBoxHelper
@@ -22,11 +20,12 @@ class CheckBoxHelper {
 
 	// Methods
 	public:
-				// Lifecycle methods
-				CheckBoxHelper(CheckBox checkbox);
+						// Lifecycle methods
+						CheckBoxHelper(CheckBox checkbox);
 
-				// Instance methods
-		void	setStateChangedProc(std::function<void(bool isChecked)> stateChangedProc);
+						// Instance methods
+		CheckBoxHelper&	setChecked(bool isChecked);
+		CheckBoxHelper&	setCheckedChangedProc(std::function<void(bool isChecked)> checkedChangedProc);
 
 	// Properties
 	private:

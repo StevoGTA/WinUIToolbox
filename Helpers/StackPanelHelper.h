@@ -18,11 +18,11 @@ class StackPanelHelper {
 
 	// Methods
 	public:
-				// Lifecycle methods
-				StackPanelHelper(StackPanel stackPanel);
+							// Lifecycle methods
+							StackPanelHelper(StackPanel stackPanel);
 
-				// Instance methods
-		void	IsEnabled(bool enabled);
+							// Instance methods
+		StackPanelHelper&	setEnabled(bool enabled);
 
 	// Properties
 	private:

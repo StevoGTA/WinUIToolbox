@@ -1,19 +1,26 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	SliderHelper.h			©2024 Stevo Brock		All rights reserved.
+//	TextBoxHelper.h			©2024 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #pragma once
 
+#include "CString.h"
+
+#undef Delete
+
 #include "winrt\Microsoft.UI.Xaml.Controls.h"
+
+#define Delete(x)	{ delete x; x = nil; }
 
 #include <functional>
 
-using Slider = winrt::Microsoft::UI::Xaml::Controls::Slider;
+using FocusState = winrt::Microsoft::UI::Xaml::FocusState;
+using TextBox = winrt::Microsoft::UI::Xaml::Controls::TextBox;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: SliderHelper
+// MARK: TextBoxHelper
 
-class SliderHelper {
+class TextBoxHelper {
 	// Classes
 	private:
 		class Internals;
@@ -21,14 +28,12 @@ class SliderHelper {
 	// Methods
 	public:
 						// Lifecycle methods
-						SliderHelper(Slider slider);
+						TextBoxHelper(TextBox textBox);
 
 						// Instance methods
-		SliderHelper&	setValue(double value);
-		SliderHelper&	setNormalizedValue(double value);
-
-		SliderHelper&	setValueChangedProc(std::function<void(double value)> valueChangedProc);
-		SliderHelper&	setNormalizedValueChangedProcs(std::function<void(double value)> valueChangedProc);
+		TextBoxHelper&	setText(const CString& string);
+		TextBoxHelper&	setFocusState(FocusState focusState);
+		TextBoxHelper&	setTextChangedProc(std::function<void()> textChangedProc);
 
 	// Properties
 	private:

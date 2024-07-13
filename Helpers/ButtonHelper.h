@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	SliderHelper.h			©2024 Stevo Brock		All rights reserved.
+//	ButtonHelper.h			©2024 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #pragma once
@@ -8,12 +8,12 @@
 
 #include <functional>
 
-using Slider = winrt::Microsoft::UI::Xaml::Controls::Slider;
+using Button = winrt::Microsoft::UI::Xaml::Controls::Button;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: SliderHelper
+// MARK: ButtonHelper
 
-class SliderHelper {
+class ButtonHelper {
 	// Classes
 	private:
 		class Internals;
@@ -21,14 +21,10 @@ class SliderHelper {
 	// Methods
 	public:
 						// Lifecycle methods
-						SliderHelper(Slider slider);
+						ButtonHelper(Button button);
 
 						// Instance methods
-		SliderHelper&	setValue(double value);
-		SliderHelper&	setNormalizedValue(double value);
-
-		SliderHelper&	setValueChangedProc(std::function<void(double value)> valueChangedProc);
-		SliderHelper&	setNormalizedValueChangedProcs(std::function<void(double value)> valueChangedProc);
+		ButtonHelper&	setClickedProc(std::function<void()> clickedProc);
 
 	// Properties
 	private:

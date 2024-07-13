@@ -36,14 +36,25 @@ SliderHelper::SliderHelper(Slider slider)
 // MARK: Instance methods
 
 //----------------------------------------------------------------------------------------------------------------------
-void SliderHelper::setNormalizedValue(double value)
+SliderHelper& SliderHelper::setValue(double value)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	mInternals->mSlider.Value(value * mInternals->mSlider.Maximum());
+	mInternals->mSlider.Value(value);
+
+	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void SliderHelper::setValueChangedProc(std::function<void(double value)> valueChangedProc)
+SliderHelper& SliderHelper::setNormalizedValue(double value)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	mInternals->mSlider.Value(value * mInternals->mSlider.Maximum());
+
+	return *this;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+SliderHelper& SliderHelper::setValueChangedProc(std::function<void(double value)> valueChangedProc)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Set handler
@@ -53,10 +64,12 @@ void SliderHelper::setValueChangedProc(std::function<void(double value)> valueCh
 				// Call proc
 				valueChangedProc(rangeBaseValueChangedEventArgs.NewValue());
 			});
+
+	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void SliderHelper::setNormalizedValueChangedProc(std::function<void(double value)> valueChangedProc)
+SliderHelper& SliderHelper::setNormalizedValueChangedProcs(std::function<void(double value)> valueChangedProc)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
@@ -69,4 +82,6 @@ void SliderHelper::setNormalizedValueChangedProc(std::function<void(double value
 				// Call proc
 				valueChangedProc(rangeBaseValueChangedEventArgs.NewValue() / maximum);
 			});
+
+	return *this;
 }

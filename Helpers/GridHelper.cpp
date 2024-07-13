@@ -38,7 +38,7 @@ GridHelper::GridHelper(Grid grid)
 // MARK: Instance methods
 
 //----------------------------------------------------------------------------------------------------------------------
-void GridHelper::setEnabled(bool enabled)
+GridHelper& GridHelper::setEnabled(bool enabled)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Iterate all children
@@ -60,8 +60,10 @@ void GridHelper::setEnabled(bool enabled)
 		if (stackPanel) {
 			// Have StackPanel
 			StackPanelHelper	stackPanelHelper(stackPanel);
-			stackPanelHelper.IsEnabled(enabled);
+			stackPanelHelper.setEnabled(enabled);
 			continue;
 		}
 	}
+
+	return *this;
 }

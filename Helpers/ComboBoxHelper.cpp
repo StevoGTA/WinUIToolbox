@@ -57,7 +57,16 @@ ComboBoxHelper::~ComboBoxHelper()
 // MARK: Instance methods
 
 //----------------------------------------------------------------------------------------------------------------------
-void ComboBoxHelper::addItem(const hstring& content, const IInspectable& tag, bool isSelected) const
+ComboBoxHelper& ComboBoxHelper::setEnabled(bool enabled)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	mInternals->mComboBox.IsEnabled(enabled);
+
+	return *this;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+ComboBoxHelper& ComboBoxHelper::addItem(const hstring& content, const IInspectable& tag, bool isSelected)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
@@ -75,10 +84,12 @@ void ComboBoxHelper::addItem(const hstring& content, const IInspectable& tag, bo
 		mInternals->mComboBox.SelectedIndex(mInternals->mComboBox.Items().Size() - 1);
 		sComboBoxInUpdate = nullptr;
 	}
+
+	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void ComboBoxHelper::addItem(const IPropertyValue& comboBoxItem, bool isSelected) const
+ComboBoxHelper& ComboBoxHelper::addItem(const IPropertyValue& comboBoxItem, bool isSelected)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Add
@@ -91,10 +102,12 @@ void ComboBoxHelper::addItem(const IPropertyValue& comboBoxItem, bool isSelected
 		mInternals->mComboBox.SelectedIndex(mInternals->mComboBox.Items().Size() - 1);
 		sComboBoxInUpdate = nullptr;
 	}
+
+	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void ComboBoxHelper::addSectionTitle(const hstring& title) const
+ComboBoxHelper& ComboBoxHelper::addSectionTitle(const hstring& title)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
@@ -104,10 +117,12 @@ void ComboBoxHelper::addSectionTitle(const hstring& title) const
 
 	// Add
 	mInternals->mComboBox.Items().Append(comboBoxItem);
+
+	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void ComboBoxHelper::addSeparatorItem() const
+ComboBoxHelper& ComboBoxHelper::addSeparatorItem()
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
@@ -117,6 +132,8 @@ void ComboBoxHelper::addSeparatorItem() const
 
 	// Add
 	mInternals->mComboBox.Items().Append(comboBoxItem);
+
+	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -208,7 +225,7 @@ bool ComboBoxHelper::selectIntTag(int tag) const
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void ComboBoxHelper::setSelectedItemChangedProc(std::function<void(const IInspectable& item)> proc) const
+ComboBoxHelper& ComboBoxHelper::setSelectedItemChangedProc(std::function<void(const IInspectable& item)> proc)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup SelectionChanged
@@ -224,18 +241,22 @@ void ComboBoxHelper::setSelectedItemChangedProc(std::function<void(const IInspec
 				// Call proc
 				proc(addedItems.GetAt(0));
 			});
+
+	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void ComboBoxHelper::setSelectedTagChangedProc(std::function<void(const IInspectable& tag)> proc) const
+ComboBoxHelper& ComboBoxHelper::setSelectedTagChangedProc(std::function<void(const IInspectable& tag)> proc)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
 	setSelectedItemChangedProc([proc](const IInspectable& item){ proc(item.as<ComboBoxItem>().Tag()); });
+
+	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void ComboBoxHelper::setSelectedIntTagChangedProc(std::function<void(int tag)> proc) const
+ComboBoxHelper& ComboBoxHelper::setSelectedIntTagChangedProc(std::function<void(int tag)> proc)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
@@ -247,6 +268,8 @@ void ComboBoxHelper::setSelectedIntTagChangedProc(std::function<void(int tag)> p
 		// Call proc
 		proc(value);
 	});
+
+	return *this;
 }
 
 // MARK: Subclass methods

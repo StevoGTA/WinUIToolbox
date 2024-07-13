@@ -18,11 +18,11 @@ class GridHelper {
 
 	// Methods
 	public:
-				// Lifecycle methods
-				GridHelper(Grid grid);
+					// Lifecycle methods
+					GridHelper(Grid grid);
 
-				// Instance methods
-		void	setEnabled(bool enabled);
+					// Instance methods
+		GridHelper&	setEnabled(bool enabled);
 
 	// Properties
 	private:

@@ -139,16 +139,18 @@ class ComboBoxHelper {
 		virtual					~ComboBoxHelper();
 	
 								// Instance methods
-				void			addItem(const hstring& content, const IInspectable& tag, bool isSelected = false) const;
-				void			addItem(const hstring& content, int tag, bool isSelected = false) const
-									{ addItem(content, box_value<int>(tag), isSelected); }
-				void			addItem(const hstring& content, bool isSelected = false) const
-									{ addItem(content, box_value<int>(0), isSelected); }
-				void			addItem(const IStringable& tag, bool isSelected = false) const
-									{ addItem(tag.ToString(), tag, isSelected); }
-				void			addItem(const IPropertyValue& comboBoxItem, bool isSelected = false) const;
-				void			addSectionTitle(const hstring& title) const;
-				void			addSeparatorItem() const;
+				ComboBoxHelper&	setEnabled(bool enabled);
+
+				ComboBoxHelper&	addItem(const hstring& content, const IInspectable& tag, bool isSelected = false);
+				ComboBoxHelper& addItem(const hstring& content, int tag, bool isSelected = false)
+									{ return addItem(content, box_value<int>(tag), isSelected); }
+				ComboBoxHelper& addItem(const hstring& content, bool isSelected = false)
+									{ return addItem(content, box_value<int>(0), isSelected); }
+				ComboBoxHelper& addItem(const IStringable& tag, bool isSelected = false)
+									{ return addItem(tag.ToString(), tag, isSelected); }
+				ComboBoxHelper& addItem(const IPropertyValue& comboBoxItem, bool isSelected = false);
+				ComboBoxHelper& addSectionTitle(const hstring& title);
+				ComboBoxHelper& addSeparatorItem();
 
 				IInspectable	getSelectedTag() const;
 				int				getSelectedIntTag() const;
@@ -157,9 +159,9 @@ class ComboBoxHelper {
 				bool			selectTag(std::function<bool(const IInspectable& tag)> tagCompareProc) const;
 				bool			selectIntTag(int tag) const;
 
-				void			setSelectedItemChangedProc(std::function<void(const IInspectable& item)> proc) const;
-				void			setSelectedTagChangedProc(std::function<void(const IInspectable& tag)> proc) const;
-				void			setSelectedIntTagChangedProc(std::function<void(int tag)> proc) const;
+				ComboBoxHelper& setSelectedItemChangedProc(std::function<void(const IInspectable& item)> proc);
+				ComboBoxHelper& setSelectedTagChangedProc(std::function<void(const IInspectable& tag)> proc);
+				ComboBoxHelper& setSelectedIntTagChangedProc(std::function<void(int tag)> proc);
 
 	protected:
 								// Subclass methods
