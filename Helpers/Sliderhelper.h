@@ -28,7 +28,7 @@ class SliderHelper {
 		SliderHelper&	setNormalizedValue(double value);
 
 		SliderHelper&	setValueChangedProc(std::function<void(double value)> valueChangedProc);
-		SliderHelper&	setNormalizedValueChangedProcs(std::function<void(double value)> valueChangedProc);
+		SliderHelper&	setNormalizedValueChangedProc(std::function<void(double value)> valueChangedProc);
 
 	// Properties
 	private:

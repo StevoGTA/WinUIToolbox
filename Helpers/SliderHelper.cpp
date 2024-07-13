@@ -69,7 +69,7 @@ SliderHelper& SliderHelper::setValueChangedProc(std::function<void(double value)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-SliderHelper& SliderHelper::setNormalizedValueChangedProcs(std::function<void(double value)> valueChangedProc)
+SliderHelper& SliderHelper::setNormalizedValueChangedProc(std::function<void(double value)> valueChangedProc)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
