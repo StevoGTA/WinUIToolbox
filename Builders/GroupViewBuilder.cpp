@@ -17,18 +17,10 @@ using namespace winrt::Microsoft::UI;
 
 class GroupViewBuilder::Internals {
 	public:
-		Internals(const hstring& title, double itemLeadingInset, OV<double> itemTrailingInset) :
+		Internals(double itemLeadingInset, OV<double> itemTrailingInset) :
 			mMarginLeading(itemLeadingInset), mMarginTrailing(itemTrailingInset)
-			{
-				// Setup UI
-				mExpander.Header(box_value(title));
-				mExpander.Content(mStackPanel);
-				mExpander.HorizontalAlignment(HorizontalAlignment::Stretch);
-				mExpander.HorizontalContentAlignment(HorizontalAlignment::Stretch);
-				mExpander.Padding(ThicknessHelper::FromLengths(0.0, 8.0, 0.0, 0.0));
-			}
+			{}
 
-		Expander	mExpander;
 		StackPanel	mStackPanel;
 
 		double		mMarginLeading;
@@ -42,33 +34,40 @@ class GroupViewBuilder::Internals {
 // MARK: Lifecycle methods
 
 //----------------------------------------------------------------------------------------------------------------------
-GroupViewBuilder::GroupViewBuilder(const hstring& title, double itemLeadingInset, double itemTrailingInset)
+GroupViewBuilder::GroupViewBuilder(double itemLeadingInset, double itemTrailingInset)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals = new Internals(title, itemLeadingInset, OV<double>(itemTrailingInset));
+	mInternals = new Internals(itemLeadingInset, OV<double>(itemTrailingInset));
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-GroupViewBuilder::GroupViewBuilder(const hstring& title, double itemLeadingInset)
+GroupViewBuilder::GroupViewBuilder(double itemLeadingInset)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals = new Internals(title, itemLeadingInset, OV<double>());
+	mInternals = new Internals(itemLeadingInset, OV<double>());
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-GroupViewBuilder::GroupViewBuilder(const hstring& title)
+GroupViewBuilder::GroupViewBuilder()
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals = new Internals(title, 0.0, OV<double>());
+	mInternals = new Internals(0.0, OV<double>());
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+GroupViewBuilder::~GroupViewBuilder()
+//----------------------------------------------------------------------------------------------------------------------
+{
+	Delete(mInternals);
 }
 
 // MARK: Instance methods
 
 //----------------------------------------------------------------------------------------------------------------------
-GroupViewBuilder& GroupViewBuilder::Add(FrameworkElement frameworkElement)
+GroupViewBuilder& GroupViewBuilder::add(FrameworkElement frameworkElement)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Add View
@@ -79,7 +78,7 @@ GroupViewBuilder& GroupViewBuilder::Add(FrameworkElement frameworkElement)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-GroupViewBuilder& GroupViewBuilder::Add(FrameworkElement frameworkElement, double leadingInset, double trailingInset)
+GroupViewBuilder& GroupViewBuilder::add(FrameworkElement frameworkElement, double leadingInset, double trailingInset)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Add View
@@ -90,7 +89,7 @@ GroupViewBuilder& GroupViewBuilder::Add(FrameworkElement frameworkElement, doubl
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-GroupViewBuilder&GroupViewBuilder:: Add(const hstring& title, FrameworkElement frameworkElement, double leadingInset,
+GroupViewBuilder&GroupViewBuilder::add(const hstring& title, FrameworkElement frameworkElement, double leadingInset,
 		double trailingInset)
 //----------------------------------------------------------------------------------------------------------------------
 {
@@ -111,18 +110,73 @@ GroupViewBuilder&GroupViewBuilder:: Add(const hstring& title, FrameworkElement f
 UIElement GroupViewBuilder::getUIElement() const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	return mInternals->mExpander;
+	return mInternals->mStackPanel;
 }
 
-// MARK: Class methods
+//----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: ExpanderGroupViewBuilder::Internals
+
+class ExpanderGroupViewBuilder::Internals {
+	public:
+		Internals(const hstring& title)
+			{
+				// Setup UI
+				mExpander.Header(box_value(title));
+				mExpander.HorizontalAlignment(HorizontalAlignment::Stretch);
+				mExpander.HorizontalContentAlignment(HorizontalAlignment::Stretch);
+				mExpander.Padding(ThicknessHelper::FromLengths(0.0, 8.0, 0.0, 0.0));
+			}
+
+		Expander	mExpander;
+};
 
 //----------------------------------------------------------------------------------------------------------------------
-UIElement GroupViewBuilder::composeUIElement(const hstring& title, double itemLeadingInset,
-		FrameworkElement frameworkElement)
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: ExpanderGroupViewBuilder
+
+// MARK: Lifecycle methods
+//----------------------------------------------------------------------------------------------------------------------
+ExpanderGroupViewBuilder::ExpanderGroupViewBuilder(const hstring& title, double itemLeadingInset,
+		double itemTrailingInset) : GroupViewBuilder(itemLeadingInset, itemTrailingInset)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	GroupViewBuilder	groupViewBuilder(title, itemLeadingInset);
+	mInternals = new Internals(title);
+	mInternals->mExpander.Content(GroupViewBuilder::getUIElement());
+}
 
-	return groupViewBuilder.Add(frameworkElement).getUIElement();
+//----------------------------------------------------------------------------------------------------------------------
+ExpanderGroupViewBuilder::ExpanderGroupViewBuilder(const hstring& title, double itemLeadingInset) :
+		GroupViewBuilder(itemLeadingInset)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup
+	mInternals = new Internals(title);
+	mInternals->mExpander.Content(GroupViewBuilder::getUIElement());
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+ExpanderGroupViewBuilder::ExpanderGroupViewBuilder(const hstring& title) : GroupViewBuilder()
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup
+	mInternals = new Internals(title);
+	mInternals->mExpander.Content(GroupViewBuilder::getUIElement());
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+ExpanderGroupViewBuilder::~ExpanderGroupViewBuilder()
+//----------------------------------------------------------------------------------------------------------------------
+{
+	Delete(mInternals);
+}
+
+// MARK: GroupViewBuilder methods
+
+//----------------------------------------------------------------------------------------------------------------------
+UIElement ExpanderGroupViewBuilder::getUIElement() const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	return mInternals->mExpander;
 }

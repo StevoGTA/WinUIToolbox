@@ -22,51 +22,84 @@ class GroupViewBuilder {
 	// Methods
 	public:
 									// Lifecycle methods
-									GroupViewBuilder(const hstring& title, double itemLeadingInset,
-											double itemTrailingInset);
-									GroupViewBuilder(const hstring& title, double itemLeadingInset);
-									GroupViewBuilder(const hstring& title);
+									GroupViewBuilder(double itemLeadingInset, double itemTrailingInset);
+									GroupViewBuilder(double itemLeadingInset);
+									GroupViewBuilder();
+		virtual						~GroupViewBuilder();
 
 									// Instance methods
-				GroupViewBuilder&	Add(FrameworkElement frameworkElement);
-				GroupViewBuilder&	Add(Button& button)
-										{ return Add(button.as<FrameworkElement>()); }
-				GroupViewBuilder&	Add(Page& page)
-										{ return Add(page.as<FrameworkElement>()); }
-				GroupViewBuilder&	Add(TextBlock& textBlock)
-										{ return Add(textBlock.as<FrameworkElement>()); }
-				GroupViewBuilder&	Add(UIElement& uiElement)
-										{ return Add(uiElement.as<FrameworkElement>()); }
+				GroupViewBuilder&	add(FrameworkElement frameworkElement);
+				GroupViewBuilder&	add(Button& button)
+										{ return add(button.as<FrameworkElement>()); }
+				GroupViewBuilder&	add(Page& page)
+										{ return add(page.as<FrameworkElement>()); }
+				GroupViewBuilder&	add(TextBlock& textBlock)
+										{ return add(textBlock.as<FrameworkElement>()); }
+				GroupViewBuilder&	add(UIElement& uiElement)
+										{ return add(uiElement.as<FrameworkElement>()); }
 
-				GroupViewBuilder&	Add(FrameworkElement frameworkElement, double leadingInset, double trailingInset);
-				GroupViewBuilder&	Add(Page& page, double leadingInset, double trailingInset)
-										{ return Add(page.as<FrameworkElement>(), leadingInset, trailingInset); }
-				GroupViewBuilder&	Add(TextBlock& textBlock, double leadingInset, double trailingInset)
-										{ return Add(textBlock.as<FrameworkElement>(), leadingInset, trailingInset); }
-				GroupViewBuilder&	Add(UIElement& uiElement, double leadingInset, double trailingInset)
-										{ return Add(uiElement.as<FrameworkElement>(), leadingInset, trailingInset); }
+				GroupViewBuilder&	add(FrameworkElement frameworkElement, double leadingInset, double trailingInset);
+				GroupViewBuilder&	add(Page& page, double leadingInset, double trailingInset)
+										{ return add(page.as<FrameworkElement>(), leadingInset, trailingInset); }
+				GroupViewBuilder&	add(TextBlock& textBlock, double leadingInset, double trailingInset)
+										{ return add(textBlock.as<FrameworkElement>(), leadingInset, trailingInset); }
+				GroupViewBuilder&	add(UIElement& uiElement, double leadingInset, double trailingInset)
+										{ return add(uiElement.as<FrameworkElement>(), leadingInset, trailingInset); }
 
-				GroupViewBuilder&	Add(const hstring& title, FrameworkElement frameworkElement, double leadingInset,
+				GroupViewBuilder&	add(const hstring& title, FrameworkElement frameworkElement, double leadingInset,
 											double trailingInset);
-				GroupViewBuilder&	Add(const hstring& title, Page& page, double leadingInset, double trailingInset)
-										{ return Add(title, page.as<FrameworkElement>(), leadingInset, trailingInset); }
-				GroupViewBuilder&	Add(const hstring& title, TextBlock& textBlock, double leadingInset,
+				GroupViewBuilder&	add(const hstring& title, Page& page, double leadingInset, double trailingInset)
+										{ return add(title, page.as<FrameworkElement>(), leadingInset, trailingInset); }
+				GroupViewBuilder&	add(const hstring& title, TextBlock& textBlock, double leadingInset,
 											double trailingInset)
-										{ return Add(title, textBlock.as<FrameworkElement>(), leadingInset,
+										{ return add(title, textBlock.as<FrameworkElement>(), leadingInset,
 												trailingInset); }
-				GroupViewBuilder&	Add(const hstring& title, UIElement& uiElement, double leadingInset,
+				GroupViewBuilder&	add(const hstring& title, UIElement& uiElement, double leadingInset,
 											double trailingInset)
-										{ return Add(title, uiElement.as<FrameworkElement>(), leadingInset,
+										{ return add(title, uiElement.as<FrameworkElement>(), leadingInset,
 												trailingInset); }
 
-				UIElement			getUIElement() const;
+		virtual	UIElement			getUIElement() const;
 
 									// Class methods
-		static	UIElement			composeUIElement(const hstring& title, double itemLeadingInset,
-											FrameworkElement frameworkElement);
-		static	UIElement			composeUIElement(const hstring& title, double itemLeadingInset, Page& page)
-										{ return composeUIElement(title, itemLeadingInset,
-												page.as<FrameworkElement>()); }
+		static	UIElement			composeUIElement(double itemLeadingInset, FrameworkElement frameworkElement)
+										{ return GroupViewBuilder(itemLeadingInset).add(frameworkElement)
+												.getUIElement(); }
+		static	UIElement			composeUIElement(double itemLeadingInset, Page& page)
+										{ return composeUIElement(itemLeadingInset, page.as<FrameworkElement>()); }
+
+	// Properties
+	private:
+		Internals*	mInternals;
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: ExpanderGroupViewBuilder
+
+class ExpanderGroupViewBuilder : public GroupViewBuilder {
+	// Classes
+	private:
+		class Internals;
+
+	// Methods
+	public:
+							// Lifecycle methods
+							ExpanderGroupViewBuilder(const hstring& title, double itemLeadingInset,
+									double itemTrailingInset);
+							ExpanderGroupViewBuilder(const hstring& title, double itemLeadingInset);
+							ExpanderGroupViewBuilder(const hstring& title);
+							~ExpanderGroupViewBuilder();
+
+							// GroupViewBuilder methods
+				UIElement	getUIElement() const;
+
+							// Class methods
+		static	UIElement	composeUIElement(const hstring& title, double itemLeadingInset,
+									FrameworkElement frameworkElement)
+								{ return ExpanderGroupViewBuilder(title, itemLeadingInset).add(frameworkElement)
+										.getUIElement(); }
+		static	UIElement	composeUIElement(const hstring& title, double itemLeadingInset, Page& page)
+								{ return composeUIElement(title, itemLeadingInset, page.as<FrameworkElement>()); }
 
 	// Properties
 	private:
