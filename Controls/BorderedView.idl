@@ -1,0 +1,20 @@
+//----------------------------------------------------------------------------------------------------------------------
+//	BorderedView.idl			©2024 Stevo Brock		All rights reserved.
+//----------------------------------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: WinUIToolbox namespace
+namespace WinUIToolbox{
+
+	//------------------------------------------------------------------------------------------------------------------
+	// MARK: BorderedView
+	[default_interface]
+	runtimeclass BorderedView : Microsoft.UI.Xaml.Controls.Control {
+				// Lifecycle Methods
+				BorderedView();
+
+				// Instance Methods
+		void	SetBorderThickness(Double left, Double top, Double right, Double bottom);
+		void	SetContent(Microsoft.UI.Xaml.UIElement uiElement);
+	}
+}

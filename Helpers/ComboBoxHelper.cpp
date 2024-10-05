@@ -16,54 +16,24 @@ static	ComboBox	sComboBoxInUpdate(nullptr);
 
 //----------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: - ComboBoxHelper::Internals
-
-class ComboBoxHelper::Internals {
-	public:
-		Internals(ComboBox comboBox) : mComboBox(comboBox) {}
-
-		ComboBox	mComboBox;
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------------
-// MARK: ComboBoxHelper
+// MARK: - ComboBoxHelper
 
 // MARK: Lifecycle methods
 
 //----------------------------------------------------------------------------------------------------------------------
-ComboBoxHelper::ComboBoxHelper(ComboBox comboBox, Options options)
+ComboBoxHelper::ComboBoxHelper(ComboBox comboBox, Options options) : ControlHelper(comboBox)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Setup
-	mInternals = new Internals(comboBox);
-
 	// Setup UI
 	if (options & kOptionsClearItems) {
 		// Clear items
-		sComboBoxInUpdate = mInternals->mComboBox;
-		mInternals->mComboBox.Items().Clear();
+		sComboBoxInUpdate = getComboBox();
+		getComboBox().Items().Clear();
 		sComboBoxInUpdate = nullptr;
 	}
 }
 
-//----------------------------------------------------------------------------------------------------------------------
-ComboBoxHelper::~ComboBoxHelper()
-//----------------------------------------------------------------------------------------------------------------------
-{
-	delete mInternals;
-}
-
 // MARK: Instance methods
-
-//----------------------------------------------------------------------------------------------------------------------
-ComboBoxHelper& ComboBoxHelper::setEnabled(bool enabled)
-//----------------------------------------------------------------------------------------------------------------------
-{
-	mInternals->mComboBox.IsEnabled(enabled);
-
-	return *this;
-}
 
 //----------------------------------------------------------------------------------------------------------------------
 ComboBoxHelper& ComboBoxHelper::addItem(const hstring& content, const IInspectable& tag, bool isSelected)
@@ -75,13 +45,13 @@ ComboBoxHelper& ComboBoxHelper::addItem(const hstring& content, const IInspectab
 	comboBoxItem.Tag(tag);
 
 	// Add
-	mInternals->mComboBox.Items().Append(comboBoxItem);
+	getComboBox().Items().Append(comboBoxItem);
 
 	// Check selected
 	if (isSelected) {
 		// Select
-		sComboBoxInUpdate = mInternals->mComboBox;
-		mInternals->mComboBox.SelectedIndex(mInternals->mComboBox.Items().Size() - 1);
+		sComboBoxInUpdate = getComboBox();
+		getComboBox().SelectedIndex(getComboBox().Items().Size() - 1);
 		sComboBoxInUpdate = nullptr;
 	}
 
@@ -93,13 +63,13 @@ ComboBoxHelper& ComboBoxHelper::addItem(const IPropertyValue& comboBoxItem, bool
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Add
-	mInternals->mComboBox.Items().Append(comboBoxItem);
+	getComboBox().Items().Append(comboBoxItem);
 
 	// Check selected
 	if (isSelected) {
 		// Select
-		sComboBoxInUpdate = mInternals->mComboBox;
-		mInternals->mComboBox.SelectedIndex(mInternals->mComboBox.Items().Size() - 1);
+		sComboBoxInUpdate = getComboBox();
+		getComboBox().SelectedIndex(getComboBox().Items().Size() - 1);
 		sComboBoxInUpdate = nullptr;
 	}
 
@@ -116,7 +86,7 @@ ComboBoxHelper& ComboBoxHelper::addSectionTitle(const hstring& title)
 	comboBoxItem.IsEnabled(false);
 
 	// Add
-	mInternals->mComboBox.Items().Append(comboBoxItem);
+	getComboBox().Items().Append(comboBoxItem);
 
 	return *this;
 }
@@ -131,7 +101,7 @@ ComboBoxHelper& ComboBoxHelper::addSeparatorItem()
 	comboBoxItem.IsEnabled(false);
 
 	// Add
-	mInternals->mComboBox.Items().Append(comboBoxItem);
+	getComboBox().Items().Append(comboBoxItem);
 
 	return *this;
 }
@@ -140,7 +110,7 @@ ComboBoxHelper& ComboBoxHelper::addSeparatorItem()
 IInspectable ComboBoxHelper::getSelectedTag() const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	return mInternals->mComboBox.Items().GetAt(mInternals->mComboBox.SelectedIndex()).as<ComboBoxItem>().Tag();
+	return getComboBox().Items().GetAt(getComboBox().SelectedIndex()).as<ComboBoxItem>().Tag();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -159,13 +129,13 @@ bool ComboBoxHelper::select(std::function<bool(const IInspectable& item)> itemCo
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Iterate items
-	auto	items = mInternals->mComboBox.Items();
+	auto	items = getComboBox().Items();
 	for (uint32_t i = 0; i < items.Size(); i++) {
 		// Check ComboBoxItem
 		if (itemCompareProc(items.GetAt(i))) {
 			// Found item
-			sComboBoxInUpdate = mInternals->mComboBox;
-			mInternals->mComboBox.SelectedIndex(i);
+			sComboBoxInUpdate = getComboBox();
+			getComboBox().SelectedIndex(i);
 			sComboBoxInUpdate = nullptr;
 
 			return true;
@@ -180,13 +150,13 @@ bool ComboBoxHelper::selectTag(std::function<bool(const IInspectable& tag)> tagC
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Iterate items
-	auto	items = mInternals->mComboBox.Items();
+	auto	items = getComboBox().Items();
 	for (uint32_t i = 0; i < items.Size(); i++) {
 		// Check tag
 		if (tagCompareProc(items.GetAt(i).as<ComboBoxItem>().Tag().as<IInspectable>())) {
 			// Found item
-			sComboBoxInUpdate = mInternals->mComboBox;
-			mInternals->mComboBox.SelectedIndex(i);
+			sComboBoxInUpdate = getComboBox();
+			getComboBox().SelectedIndex(i);
 			sComboBoxInUpdate = nullptr;
 
 			return true;
@@ -201,7 +171,7 @@ bool ComboBoxHelper::selectIntTag(int tag) const
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Iterate items
-	auto	items = mInternals->mComboBox.Items();
+	auto	items = getComboBox().Items();
 	for (uint32_t i = 0; i < items.Size(); i++) {
 		// Check tag
 		auto	item = items.GetAt(i).try_as<ComboBoxItem>();
@@ -213,8 +183,8 @@ bool ComboBoxHelper::selectIntTag(int tag) const
 		auto	value = intValue ? *intValue : std::stoi(std::basic_string<TCHAR>(tag_.as<winrt::hstring>()));
 		if (value == tag) {
 			// Found item
-			sComboBoxInUpdate = mInternals->mComboBox;
-			mInternals->mComboBox.SelectedIndex(i);
+			sComboBoxInUpdate = getComboBox();
+			getComboBox().SelectedIndex(i);
 			sComboBoxInUpdate = nullptr;
 
 			return true;
@@ -229,7 +199,7 @@ ComboBoxHelper& ComboBoxHelper::setSelectedItemChangedProc(std::function<void(co
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup SelectionChanged
-	mInternals->mComboBox.SelectionChanged(
+	getComboBox().SelectionChanged(
 			[this, proc](const IInspectable& sender, const SelectionChangedEventArgs& selectionChangedEventArgs) {
 				// Check if handling events
 				if (sender == sComboBoxInUpdate)
@@ -270,13 +240,4 @@ ComboBoxHelper& ComboBoxHelper::setSelectedIntTagChangedProc(std::function<void(
 	});
 
 	return *this;
-}
-
-// MARK: Subclass methods
-
-//----------------------------------------------------------------------------------------------------------------------
-ComboBox ComboBoxHelper::getComboBox() const
-//----------------------------------------------------------------------------------------------------------------------
-{
-	return mInternals->mComboBox;
 }

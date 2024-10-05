@@ -11,28 +11,7 @@ using IInspectable = winrt::Windows::Foundation::IInspectable;
 using RoutedEventArgs = winrt::Microsoft::UI::Xaml::RoutedEventArgs;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: CheckBoxHelper::Internals
-
-class CheckBoxHelper::Internals {
-	public:
-		Internals(CheckBox checkbox) : mCheckBox(checkbox) {}
-
-		CheckBox	mCheckBox;
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------------
 // MARK: CheckBoxHelper
-
-// MARK: Lifecycle methods
-
-//----------------------------------------------------------------------------------------------------------------------
-CheckBoxHelper::CheckBoxHelper(CheckBox checkbox)
-//----------------------------------------------------------------------------------------------------------------------
-{
-	// Setup
-	mInternals = new Internals(checkbox);
-}
 
 // MARK: Instance methods
 
@@ -40,7 +19,8 @@ CheckBoxHelper::CheckBoxHelper(CheckBox checkbox)
 CheckBoxHelper& CheckBoxHelper::setChecked(bool isChecked)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	mInternals->mCheckBox.IsChecked(isChecked);
+	// Set value
+	getCheckBox().IsChecked(isChecked);
 
 	return *this;
 }
@@ -50,17 +30,17 @@ CheckBoxHelper& CheckBoxHelper::setCheckedChangedProc(std::function<void(bool is
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals->mCheckBox.Checked(
+	getCheckBox().Checked(
 			[checkedChangedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
 				// Call proc
 				checkedChangedProc(sender.as<CheckBox>().IsChecked().GetBoolean());
 			});
-	mInternals->mCheckBox.Unchecked(
+	getCheckBox().Unchecked(
 			[checkedChangedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
 				// Call proc
 				checkedChangedProc(sender.as<CheckBox>().IsChecked().GetBoolean());
 			});
-	mInternals->mCheckBox.Indeterminate(
+	getCheckBox().Indeterminate(
 			[checkedChangedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
 				// Call proc
 				checkedChangedProc(sender.as<CheckBox>().IsChecked().GetBoolean());

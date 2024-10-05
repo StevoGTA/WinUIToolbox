@@ -12,37 +12,30 @@ using Control = winrt::Microsoft::UI::Xaml::Controls::Control;
 using StackPanel = winrt::Microsoft::UI::Xaml::Controls::StackPanel;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: GridHelper::Internals
-
-class GridHelper::Internals {
-	public:
-		Internals(Grid grid) : mGrid(grid) {}
-
-		Grid	mGrid;
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------------
 // MARK: GridHelper
 
-// MARK: Lifecycle methods
+// MARK: Instance methods
 
 //----------------------------------------------------------------------------------------------------------------------
-GridHelper::GridHelper(Grid grid)
+GridHelper& GridHelper::add(UIElement uiElement, int columnIndex, int rowIndex)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Setup
-	mInternals = new Internals(grid);
-}
+	// Add
+	getGrid().Children().Append(uiElement);
 
-// MARK: Instance methods
+	// Setup
+	uiElement.SetValue(Grid::ColumnProperty(), winrt::box_value(columnIndex));
+	uiElement.SetValue(Grid::RowProperty(), winrt::box_value(rowIndex));
+
+	return *this;
+}
 
 //----------------------------------------------------------------------------------------------------------------------
 GridHelper& GridHelper::setEnabled(bool enabled)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Iterate all children
-	auto	children = mInternals->mGrid.Children();
+	auto	children = getGrid().Children();
 	for (uint32_t i = 0; i < children.Size(); i++) {
 		// Get child
 		auto	child = children.GetAt(i);

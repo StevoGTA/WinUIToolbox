@@ -9,28 +9,7 @@
 using Control = winrt::Microsoft::UI::Xaml::Controls::Control;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: StackPanelHelper::Internals
-
-class StackPanelHelper::Internals {
-	public:
-		Internals(StackPanel stackPanel) : mStackPanel(stackPanel) {}
-
-		StackPanel	mStackPanel;
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------------
 // MARK: StackPanelHelper
-
-// MARK: Lifecycle methods
-
-//----------------------------------------------------------------------------------------------------------------------
-StackPanelHelper::StackPanelHelper(StackPanel stackPanel)
-//----------------------------------------------------------------------------------------------------------------------
-{
-	// Setup
-	mInternals = new Internals(stackPanel);
-}
 
 // MARK: Instance methods
 
@@ -39,7 +18,7 @@ StackPanelHelper& StackPanelHelper::setEnabled(bool enabled)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Iterate all children
-	auto	children = mInternals->mStackPanel.Children();
+	auto	children = getStackPanel().Children();
 	for (uint32_t i = 0; i < children.Size(); i++) {
 		// Get child
 		auto	child = children.GetAt(i);

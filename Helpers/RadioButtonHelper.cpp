@@ -11,28 +11,7 @@ using IInspectable = winrt::Windows::Foundation::IInspectable;
 using RoutedEventArgs = winrt::Microsoft::UI::Xaml::RoutedEventArgs;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: RadioButtonHelper::Internals
-
-class RadioButtonHelper::Internals {
-	public:
-		Internals(RadioButton radiobutton) : mRadioButton(radiobutton) {}
-
-		RadioButton	mRadioButton;
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------------
 // MARK: RadioButtonHelper
-
-// MARK: Lifecycle methods
-
-//----------------------------------------------------------------------------------------------------------------------
-RadioButtonHelper::RadioButtonHelper(RadioButton radiobutton)
-//----------------------------------------------------------------------------------------------------------------------
-{
-	// Setup
-	mInternals = new Internals(radiobutton);
-}
 
 // MARK: Instance methods
 
@@ -40,7 +19,7 @@ RadioButtonHelper::RadioButtonHelper(RadioButton radiobutton)
 RadioButtonHelper& RadioButtonHelper::setChecked(bool isChecked)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	mInternals->mRadioButton.IsChecked(isChecked);
+	getRadioButton().IsChecked(isChecked);
 
 	return *this;
 }
@@ -50,7 +29,7 @@ RadioButtonHelper& RadioButtonHelper::setClickProc(std::function<void()> clickPr
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals->mRadioButton.Click([clickProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
+	getRadioButton().Click([clickProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
 		// Call proc
 		clickProc();
 	});

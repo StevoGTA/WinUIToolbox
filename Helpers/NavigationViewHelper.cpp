@@ -17,28 +17,7 @@ using RoutedEventArgs = winrt::Microsoft::UI::Xaml::RoutedEventArgs;
 using namespace winrt;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: NavigationViewHelper::Internals
-
-class NavigationViewHelper::Internals {
-	public:
-		Internals(NavigationView navigationView) : mNavigationView(navigationView) {}
-
-		NavigationView	mNavigationView;
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------------
 // MARK: NavigationViewHelper
-
-// MARK: Lifecycle methods
-
-//----------------------------------------------------------------------------------------------------------------------
-NavigationViewHelper::NavigationViewHelper(NavigationView navigationView)
-//----------------------------------------------------------------------------------------------------------------------
-{
-	// Setup
-	mInternals = new Internals(navigationView);
-}
 
 // MARK: Instance methods
 
@@ -47,8 +26,7 @@ NavigationViewHelper& NavigationViewHelper::setNavigationViewItemIsEnabled(int i
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	NavigationViewItem	navigationViewItem =
-								mInternals->mNavigationView.MenuItems().GetAt(index).as<NavigationViewItem>();
+	NavigationViewItem	navigationViewItem = getNavigationView().MenuItems().GetAt(index).as<NavigationViewItem>();
 	navigationViewItem.IsEnabled(isEnabled);
 	navigationViewItem.Opacity(isEnabled ? 1.0 : 0.5);
 
@@ -61,7 +39,7 @@ NavigationViewHelper& NavigationViewHelper::setSelectedTagChangedProc(
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals->mNavigationView.SelectionChanged(
+	getNavigationView().SelectionChanged(
 			[selectedTagChangedProc](const NavigationView& sender,
 					const NavigationViewSelectionChangedEventArgs& navigationViewSelectionChangedArgs) {
 				// Call proc
@@ -77,11 +55,10 @@ NavigationViewHelper& NavigationViewHelper::setLoadedProc(std::function<void()> 
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals->mNavigationView.Loaded(
-			[loadedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
-				// Call proc
-				loadedProc();
-			});
+	getNavigationView().Loaded([loadedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
+		// Call proc
+		loadedProc();
+	});
 
 	return *this;
 }

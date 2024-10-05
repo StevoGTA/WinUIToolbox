@@ -30,6 +30,13 @@ DispatcherQueueHelper::DispatcherQueueHelper(DispatcherQueue dispatcherQueue)
 	mInternals = new Internals(dispatcherQueue);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
+DispatcherQueueHelper::~DispatcherQueueHelper()
+//----------------------------------------------------------------------------------------------------------------------
+{
+	delete mInternals;
+}
+
 // MARK: Instance methods
 
 //----------------------------------------------------------------------------------------------------------------------

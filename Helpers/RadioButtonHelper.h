@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "winrt\Microsoft.UI.Xaml.Controls.h"
+#include "ControlHelper.h"
 
 #include <functional>
 
@@ -13,21 +13,17 @@ using RadioButton = winrt::Microsoft::UI::Xaml::Controls::RadioButton;
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: RadioButtonHelper
 
-class RadioButtonHelper {
-	// Classes
-	private:
-		class Internals;
-
+class RadioButtonHelper : public ControlHelper<RadioButton, RadioButtonHelper> {
 	// Methods
 	public:
 							// Lifecycle methods
-							RadioButtonHelper(RadioButton radioButton);
+							RadioButtonHelper(RadioButton radioButton) : ControlHelper(radioButton) {}
+							RadioButtonHelper() : ControlHelper(RadioButton()) {}
 
 							// Instance methods
 		RadioButtonHelper&	setChecked(bool isChecked);
 		RadioButtonHelper&	setClickProc(std::function<void()> clickProc);
 
-	// Properties
-	private:
-		Internals*	mInternals;
+		RadioButton			getRadioButton() const
+								{ return getControl(); }
 };

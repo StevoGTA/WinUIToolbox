@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "ControlHelper.h"
+
 #include "winrt\Microsoft.UI.Xaml.Controls.h"
 
 #include <functional>
@@ -13,21 +15,17 @@ using CheckBox = winrt::Microsoft::UI::Xaml::Controls::CheckBox;
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: CheckBoxHelper
 
-class CheckBoxHelper {
-	// Classes
-	private:
-		class Internals;
-
+class CheckBoxHelper : public ControlHelper<CheckBox, CheckBoxHelper> {
 	// Methods
 	public:
 						// Lifecycle methods
-						CheckBoxHelper(CheckBox checkbox);
+						CheckBoxHelper(CheckBox checkbox) : ControlHelper(checkbox) {}
+						CheckBoxHelper() : ControlHelper(CheckBox()) {}
 
 						// Instance methods
 		CheckBoxHelper&	setChecked(bool isChecked);
 		CheckBoxHelper&	setCheckedChangedProc(std::function<void(bool isChecked)> checkedChangedProc);
 
-	// Properties
-	private:
-		Internals*	mInternals;
+		CheckBox		getCheckBox() const
+							{ return getControl(); }
 };

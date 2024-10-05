@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "ControlHelper.h"
+
 #include "winrt\Microsoft.UI.Xaml.Controls.h"
 
 #include <functional>
@@ -14,15 +16,11 @@ using NavigationView = winrt::Microsoft::UI::Xaml::Controls::NavigationView;
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: NavigationViewHelper
 
-class NavigationViewHelper {
-	// Classes
-	private:
-		class Internals;
-
+class NavigationViewHelper : public ControlHelper<NavigationView, NavigationViewHelper> {
 	// Methods
 	public:
 								// Lifecycle methods
-								NavigationViewHelper(NavigationView navigationView);
+								NavigationViewHelper(NavigationView navigationView) : ControlHelper(navigationView) {}
 
 								// Instance methods
 		NavigationViewHelper&	setNavigationViewItemIsEnabled(int index, bool isEnabled);
@@ -31,7 +29,6 @@ class NavigationViewHelper {
 		NavigationViewHelper&	setSelectedTagChangedProc(
 										std::function<void(const hstring& tag)> selectedTagChangedProc);
 
-	// Properties
-	private:
-		Internals*	mInternals;
+		NavigationView			getNavigationView() const
+									{ return getControl(); }
 };

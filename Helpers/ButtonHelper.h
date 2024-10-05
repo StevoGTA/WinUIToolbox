@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "winrt\Microsoft.UI.Xaml.Controls.h"
+#include "ControlHelper.h"
 
 #include <functional>
 
@@ -13,20 +13,15 @@ using Button = winrt::Microsoft::UI::Xaml::Controls::Button;
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: ButtonHelper
 
-class ButtonHelper {
-	// Classes
-	private:
-		class Internals;
-
+class ButtonHelper : public ControlHelper<Button, ButtonHelper> {
 	// Methods
 	public:
 						// Lifecycle methods
-						ButtonHelper(Button button);
+						ButtonHelper(Button button) : ControlHelper(button) {}
 
 						// Instance methods
 		ButtonHelper&	setClickedProc(std::function<void()> clickedProc);
 
-	// Properties
-	private:
-		Internals*	mInternals;
+		Button			getButton() const
+							{ return getControl(); }
 };

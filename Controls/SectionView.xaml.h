@@ -8,6 +8,8 @@
 
 #include "winrt\Microsoft.UI.Xaml.h"
 
+using UIElement = winrt::Microsoft::UI::Xaml::UIElement;
+
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: winrt::WinUIToolbox::implementation
 
@@ -21,7 +23,7 @@ namespace winrt::WinUIToolbox::implementation {
 					SectionView() : SectionViewT<SectionView>() {}
 
 					// Instance methods
-			void	SetContent(const array_view<const winrt::Microsoft::UI::Xaml::UIElement>& uiElements);
+			void	SetContent(const array_view<const UIElement>& uiElements);
 			void	SetContent(const hstring& string);
 	};
 }

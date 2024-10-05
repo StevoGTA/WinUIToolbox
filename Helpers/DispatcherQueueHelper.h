@@ -23,6 +23,7 @@ class DispatcherQueueHelper {
 								// Lifecycle methods
 								DispatcherQueueHelper(
 										DispatcherQueue dispatcherQueue = DispatcherQueue::GetForCurrentThread());
+								~DispatcherQueueHelper();
 
 								// Instance methods
 		DispatcherQueueHelper&	tryEnqueueAfterMilliseconds(std::function<void()> proc, long long milliseconds);

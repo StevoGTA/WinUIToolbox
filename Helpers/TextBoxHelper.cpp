@@ -11,28 +11,7 @@ using IInspectable = winrt::Windows::Foundation::IInspectable;
 using TextChangedEventArgs = winrt::Microsoft::UI::Xaml::Controls::TextChangedEventArgs;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: TextBoxHelper::Internals
-
-class TextBoxHelper::Internals {
-	public:
-		Internals(TextBox textbox) : mTextBox(textbox) {}
-
-		TextBox	mTextBox;
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------------
 // MARK: TextBoxHelper
-
-// MARK: Lifecycle methods
-
-//----------------------------------------------------------------------------------------------------------------------
-TextBoxHelper::TextBoxHelper(TextBox textbox)
-//----------------------------------------------------------------------------------------------------------------------
-{
-	// Setup
-	mInternals = new Internals(textbox);
-}
 
 // MARK: Instance methods
 
@@ -41,7 +20,7 @@ TextBoxHelper& TextBoxHelper::setText(const CString& string)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Update
-	mInternals->mTextBox.Text(string.getOSString());
+	getTextBox().Text(string.getOSString());
 
 	return *this;
 }
@@ -51,7 +30,7 @@ TextBoxHelper& TextBoxHelper::setFocusState(FocusState focusState)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Update
-	mInternals->mTextBox.Focus(focusState);
+	getTextBox().Focus(focusState);
 
 	return *this;
 }
@@ -61,7 +40,7 @@ TextBoxHelper& TextBoxHelper::setTextChangedProc(std::function<void()> textChang
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals->mTextBox.TextChanged(
+	getTextBox().TextChanged(
 			[textChangedProc](const IInspectable& sender, const TextChangedEventArgs& textChangedEventArgs) {
 				// Call proc
 				textChangedProc();

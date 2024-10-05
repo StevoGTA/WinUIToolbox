@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "ControlHelper.h"
+
 #include <WinError.h>
 
 #include "winrt\Microsoft.UI.Xaml.h"
@@ -28,17 +30,13 @@ using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: ComboBoxHelper
 
-class ComboBoxHelper {
+class ComboBoxHelper : public ControlHelper<ComboBox, ComboBoxHelper> {
 	// Options
 	public:
 		enum Options {
 			kOptionsNone		= 0,
 			kOptionsClearItems	= 1 << 0,
 		};
-
-	// Classes
-	private:
-		class Internals;
 
 	// TComboBoxItem
 	public:
@@ -134,40 +132,32 @@ class ComboBoxHelper {
 
 	// Methods
 	public:
-								// Lifecycle methods
-								ComboBoxHelper(ComboBox comboBox, Options options = kOptionsNone);
-		virtual					~ComboBoxHelper();
+						// Lifecycle methods
+						ComboBoxHelper(ComboBox comboBox, Options options = kOptionsNone);
 	
-								// Instance methods
-				ComboBoxHelper&	setEnabled(bool enabled);
+						// Instance methods
+		ComboBoxHelper&	addItem(const hstring& content, const IInspectable& tag, bool isSelected = false);
+		ComboBoxHelper& addItem(const hstring& content, int tag, bool isSelected = false)
+							{ return addItem(content, box_value<int>(tag), isSelected); }
+		ComboBoxHelper& addItem(const hstring& content, bool isSelected = false)
+							{ return addItem(content, box_value<int>(0), isSelected); }
+		ComboBoxHelper& addItem(const IStringable& tag, bool isSelected = false)
+							{ return addItem(tag.ToString(), tag, isSelected); }
+		ComboBoxHelper& addItem(const IPropertyValue& comboBoxItem, bool isSelected = false);
+		ComboBoxHelper& addSectionTitle(const hstring& title);
+		ComboBoxHelper& addSeparatorItem();
 
-				ComboBoxHelper&	addItem(const hstring& content, const IInspectable& tag, bool isSelected = false);
-				ComboBoxHelper& addItem(const hstring& content, int tag, bool isSelected = false)
-									{ return addItem(content, box_value<int>(tag), isSelected); }
-				ComboBoxHelper& addItem(const hstring& content, bool isSelected = false)
-									{ return addItem(content, box_value<int>(0), isSelected); }
-				ComboBoxHelper& addItem(const IStringable& tag, bool isSelected = false)
-									{ return addItem(tag.ToString(), tag, isSelected); }
-				ComboBoxHelper& addItem(const IPropertyValue& comboBoxItem, bool isSelected = false);
-				ComboBoxHelper& addSectionTitle(const hstring& title);
-				ComboBoxHelper& addSeparatorItem();
+		IInspectable	getSelectedTag() const;
+		int				getSelectedIntTag() const;
 
-				IInspectable	getSelectedTag() const;
-				int				getSelectedIntTag() const;
+		bool			select(std::function<bool(const IInspectable& item)> itemCompareProc) const;
+		bool			selectTag(std::function<bool(const IInspectable& tag)> tagCompareProc) const;
+		bool			selectIntTag(int tag) const;
 
-				bool			select(std::function<bool(const IInspectable& item)> itemCompareProc) const;
-				bool			selectTag(std::function<bool(const IInspectable& tag)> tagCompareProc) const;
-				bool			selectIntTag(int tag) const;
+		ComboBoxHelper& setSelectedItemChangedProc(std::function<void(const IInspectable& item)> proc);
+		ComboBoxHelper& setSelectedTagChangedProc(std::function<void(const IInspectable& tag)> proc);
+		ComboBoxHelper& setSelectedIntTagChangedProc(std::function<void(int tag)> proc);
 
-				ComboBoxHelper& setSelectedItemChangedProc(std::function<void(const IInspectable& item)> proc);
-				ComboBoxHelper& setSelectedTagChangedProc(std::function<void(const IInspectable& tag)> proc);
-				ComboBoxHelper& setSelectedIntTagChangedProc(std::function<void(int tag)> proc);
-
-	protected:
-								// Subclass methods
-				ComboBox		getComboBox() const;
-
-	// Properties
-	private:
-		Internals*	mInternals;
+		ComboBox		getComboBox() const
+							{ return getControl(); }
 };

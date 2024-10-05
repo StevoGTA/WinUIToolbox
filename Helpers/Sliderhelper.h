@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "winrt\Microsoft.UI.Xaml.Controls.h"
+#include "ControlHelper.h"
 
 #include <functional>
 
@@ -13,15 +13,11 @@ using Slider = winrt::Microsoft::UI::Xaml::Controls::Slider;
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: SliderHelper
 
-class SliderHelper {
-	// Classes
-	private:
-		class Internals;
-
+class SliderHelper : public ControlHelper<Slider, SliderHelper> {
 	// Methods
 	public:
 						// Lifecycle methods
-						SliderHelper(Slider slider);
+						SliderHelper(Slider slider) : ControlHelper(slider) {}
 
 						// Instance methods
 		SliderHelper&	setValue(double value);
@@ -30,7 +26,6 @@ class SliderHelper {
 		SliderHelper&	setValueChangedProc(std::function<void(double value)> valueChangedProc);
 		SliderHelper&	setNormalizedValueChangedProc(std::function<void(double value)> valueChangedProc);
 
-	// Properties
-	private:
-		Internals*	mInternals;
+		Slider			getSlider() const
+							{ return getControl(); }
 };

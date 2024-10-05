@@ -1,87 +1,93 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	DropTargetView.xaml.cpp			©2023 Stevo Brock		All rights reserved.
+//	BorderedView.xaml.cpp			©2024 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
-#include "DropTargetView.xaml.h"
+#include "BorderedView.xaml.h"
 
-#include "WinUIToolbox.DropTargetView.g.cpp"
+#include "winrt\Microsoft.UI.Xaml.Controls.h"
+#include "winrt\Windows.Foundation.h"
 
-#include "winrt\Windows.ApplicationModel.DataTransfer.h"
+#include "WinUIToolbox.BorderedView.g.cpp"
 
 using namespace winrt::WinUIToolbox::implementation;
 
-using DataPackageOperation = winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation;
-using StandardDataFormats = winrt::Windows::ApplicationModel::DataTransfer::StandardDataFormats;
+using Border = winrt::Microsoft::UI::Xaml::Controls::Border;
+using Thickness = winrt::Microsoft::UI::Xaml::Thickness;
+using ThicknessHelper = winrt::Microsoft::UI::Xaml::ThicknessHelper;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: DropTargetView::Internals
+// MARK: BorderedView::Internals
 
-class DropTargetView::Internals {
+class BorderedView::Internals {
 	public:
-		Internals() {}
+		Internals() : mBorderThickness(ThicknessHelper::FromUniformLength(1.0)), mContent(nullptr) {}
 
-		event<IStorageItemVectorViewEventHandler>	mStorageItemsEvent;
+		Thickness	mBorderThickness;
+		UIElement	mContent;
+
+		Border		mBorder;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: - DropTargetView
+// MARK: - BorderedView
 
 // MARK: Lifecycle methods
 
 //----------------------------------------------------------------------------------------------------------------------
-DropTargetView::DropTargetView() : DropTargetViewT<DropTargetView>()
+BorderedView::BorderedView() : BorderedViewT<BorderedView>()
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Setup Default Style
+	DefaultStyleKey(winrt::box_value(L"WinUIToolbox.BorderedView"));
+
 	// Setup
 	mInternals = new Internals();
-
-	// Setup for receiving drops
-	AllowDrop(true);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-DropTargetView::~DropTargetView()
+BorderedView::~BorderedView()
 //----------------------------------------------------------------------------------------------------------------------
 {
 	delete mInternals;
 }
 
-// MARK: Control methods
+// MARK: FrameworkElement methods
 
 //----------------------------------------------------------------------------------------------------------------------
-void DropTargetView::OnDragOver(const DragEventArgs& dragEventArgs) const
+void BorderedView::OnApplyTemplate() const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Set accepted operation
-	dragEventArgs.AcceptedOperation(
-			dragEventArgs.DataView().Contains(StandardDataFormats::StorageItems()) ?
-					DataPackageOperation::Link : DataPackageOperation::None);
+	// Do super
+	__super::OnApplyTemplate();
+
+	// Finish setup
+	mInternals->mBorder = GetTemplateChild(L"mBorder").as<Border>();
+	mInternals->mBorder.BorderThickness(mInternals->mBorderThickness);
+	if (mInternals->mContent)
+		mInternals->mBorder.Child(mInternals->mContent);
+}
+
+// MARK: Instance methods
+
+//----------------------------------------------------------------------------------------------------------------------
+void BorderedView::SetBorderThickness(double left, double top, double right, double bottom)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Store
+	mInternals->mBorderThickness = ThicknessHelper::FromLengths(left, top, right, bottom);
+
+	// Update UI (only effective after OnApplyTemplate() has been called
+	mInternals->mBorder.BorderThickness(mInternals->mBorderThickness);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-IAsyncAction DropTargetView::OnDrop(const DragEventArgs& dragEventArgs) const
+void BorderedView::SetContent(UIElement uiElement)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Get Storage Items
-	IStorageItemVectorView	storageItems = co_await dragEventArgs.DataView().GetStorageItemsAsync();
+	// Store
+	mInternals->mContent = uiElement;
 
-	// Trigger event
-	mInternals->mStorageItemsEvent(*this, storageItems);
-}
-
-// MARK: Event methods
-
-//----------------------------------------------------------------------------------------------------------------------
-event_token DropTargetView::StorageItemsEvent(const IStorageItemVectorViewEventHandler& handler)
-//----------------------------------------------------------------------------------------------------------------------
-{
-	return mInternals->mStorageItemsEvent.add(handler);
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-void DropTargetView::StorageItemsEvent(const event_token& token) noexcept
-//----------------------------------------------------------------------------------------------------------------------
-{
-	mInternals->mStorageItemsEvent.remove(token);
+	// Update UI (only effective after OnApplyTemplate() has been called
+	mInternals->mBorder.Child(mInternals->mContent);
 }

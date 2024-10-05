@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "FrameworkElementHelper.h"
+
 #include "winrt\Microsoft.UI.Xaml.Controls.h"
 
 using Grid = winrt::Microsoft::UI::Xaml::Controls::Grid;
@@ -11,20 +13,18 @@ using Grid = winrt::Microsoft::UI::Xaml::Controls::Grid;
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: GridHelper
 
-class GridHelper {
-	// Classes
-	private:
-		class Internals;
-
+class GridHelper : public FrameworkElementHelper<Grid, GridHelper> {
 	// Methods
 	public:
 					// Lifecycle methods
-					GridHelper(Grid grid);
+					GridHelper(Grid grid) : FrameworkElementHelper(grid) {}
+					GridHelper() : FrameworkElementHelper(Grid()) {}
 
 					// Instance methods
+		GridHelper&	add(UIElement uiElement, int columnIndex, int rowIndex);
+
 		GridHelper&	setEnabled(bool enabled);
 
-	// Properties
-	private:
-		Internals*	mInternals;
+		Grid		getGrid() const
+						{ return getFrameworkElement(); }
 };

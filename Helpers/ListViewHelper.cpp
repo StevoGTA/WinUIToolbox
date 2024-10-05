@@ -13,28 +13,7 @@ using SelectionChangedEventArgs = winrt::Microsoft::UI::Xaml::Controls::Selectio
 using namespace winrt;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: ListViewHelper::Internals
-
-class ListViewHelper::Internals {
-	public:
-		Internals(ListView listView) : mListView(listView) {}
-
-		ListView	mListView;
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------------
 // MARK: ListViewHelper
-
-// MARK: Lifecycle methods
-
-//----------------------------------------------------------------------------------------------------------------------
-ListViewHelper::ListViewHelper(ListView listView)
-//----------------------------------------------------------------------------------------------------------------------
-{
-	// Setup
-	mInternals = new Internals(listView);
-}
 
 // MARK: Instance methods
 
@@ -43,7 +22,7 @@ ListViewHelper& ListViewHelper::setSelectionChangedProc(std::function<void()> se
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals->mListView.SelectionChanged(
+	getListView().SelectionChanged(
 			[selectionChangedProc](const IInspectable& sender, const SelectionChangedEventArgs& selectionChangedArgs) {
 				// Call proc
 				selectionChangedProc();

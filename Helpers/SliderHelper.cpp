@@ -10,28 +10,7 @@ using IInspectable = winrt::Windows::Foundation::IInspectable;
 using RangeBaseValueChangedEventArgs = winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: SliderHelper::Internals
-
-class SliderHelper::Internals {
-	public:
-		Internals(Slider slider) : mSlider(slider) {}
-
-		Slider	mSlider;
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------------
 // MARK: StackPanelHelper
-
-// MARK: Lifecycle methods
-
-//----------------------------------------------------------------------------------------------------------------------
-SliderHelper::SliderHelper(Slider slider)
-//----------------------------------------------------------------------------------------------------------------------
-{
-	// Setup
-	mInternals = new Internals(slider);
-}
 
 // MARK: Instance methods
 
@@ -39,7 +18,7 @@ SliderHelper::SliderHelper(Slider slider)
 SliderHelper& SliderHelper::setValue(double value)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	mInternals->mSlider.Value(value);
+	getSlider().Value(value);
 
 	return *this;
 }
@@ -48,7 +27,7 @@ SliderHelper& SliderHelper::setValue(double value)
 SliderHelper& SliderHelper::setNormalizedValue(double value)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	mInternals->mSlider.Value(value * mInternals->mSlider.Maximum());
+	getSlider().Value(value * getSlider().Maximum());
 
 	return *this;
 }
@@ -58,7 +37,7 @@ SliderHelper& SliderHelper::setValueChangedProc(std::function<void(double value)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Set handler
-	mInternals->mSlider.ValueChanged(
+	getSlider().ValueChanged(
 			[valueChangedProc](const IInspectable& sender,
 					const RangeBaseValueChangedEventArgs& rangeBaseValueChangedEventArgs) {
 				// Call proc
@@ -73,10 +52,10 @@ SliderHelper& SliderHelper::setNormalizedValueChangedProc(std::function<void(dou
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	auto	maximum = mInternals->mSlider.Maximum();
+	auto	maximum = getSlider().Maximum();
 
 	// Set handler
-	mInternals->mSlider.ValueChanged(
+	getSlider().ValueChanged(
 			[valueChangedProc, maximum](const IInspectable& sender,
 					const RangeBaseValueChangedEventArgs& rangeBaseValueChangedEventArgs) {
 				// Call proc
