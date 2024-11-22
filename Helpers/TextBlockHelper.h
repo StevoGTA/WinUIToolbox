@@ -6,9 +6,12 @@
 
 #include "FrameworkElementHelper.h"
 
+#include "winrt\Microsoft.UI.Xaml.h"
 #include "winrt\Microsoft.UI.Xaml.Controls.h"
 
+using hstring = winrt::hstring;
 using TextBlock = winrt::Microsoft::UI::Xaml::Controls::TextBlock;
+using TextWrapping = winrt::Microsoft::UI::Xaml::TextWrapping;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: TextBlockHelper
@@ -23,7 +26,8 @@ class TextBlockHelper : public FrameworkElementHelper<TextBlock, TextBlockHelper
 							// Instance methods
 		TextBlockHelper&	setText(const hstring& text)
 								{ getTextBlock().Text(text); return *this; }
-
+		TextBlockHelper&	setTextWrapping(TextWrapping textWrapping)
+								{ getTextBlock().TextWrapping(textWrapping); return *this; }
 
 		TextBlock			getTextBlock() const
 								{ return getFrameworkElement(); }
