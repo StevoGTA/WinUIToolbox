@@ -21,7 +21,7 @@ ButtonHelper& ButtonHelper::setClickedProc(std::function<void()> clickedProc)
 {
 	// Setup
 	getButton().Click(
-			[clickedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) { clickedProc(); });
+			[clickedProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs){ clickedProc(); });
 
 	return *this;
 }
