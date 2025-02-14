@@ -4,15 +4,9 @@
 
 #pragma once
 
-#include "CString.h"
-
 #include <functional>
 
-#undef Delete
-
 #include "winrt\Microsoft.UI.Xaml.Controls.h"
-
-#define Delete(x)	{ delete x; x = nil; }
 
 using ContentDialog = winrt::Microsoft::UI::Xaml::Controls::ContentDialog;
 using XamlRoot = winrt::Microsoft::UI::Xaml::XamlRoot;
@@ -28,48 +22,27 @@ class ContentDialogHelper {
 	// Methods
 	public:
 								// Class methods
-		static	ContentDialog	makeClosable(const CString& title, const CString& content,
-										const CString& closeButtonText, const ButtonProc& closeButtonProc = [](){})
-									{ return make(title, content, OV<CString>(), [](){}, OV<CString>(), [](){},
-											OV<CString>(closeButtonText), closeButtonProc); }
-		static	ContentDialog	make(const CString& title, const CString& content,
-										const CString& buttonText, const ButtonProc& buttonProc = [](){},
-										const OV<CString>& closeButtonText = OV<CString>(),
+		static	ContentDialog	makeClosable(const std::basic_string<TCHAR>& title,
+										const std::basic_string<TCHAR>& content,
+										const std::basic_string<TCHAR>& closeButtonText,
 										const ButtonProc& closeButtonProc = [](){})
-									{ return make(title, content, buttonText, buttonProc, OV<CString>(), [](){},
+									{ return make(title, content, std::nullopt, [](){}, std::nullopt, [](){},
+										std::optional<std::basic_string<TCHAR> >(closeButtonText), closeButtonProc); }
+		static	ContentDialog	make(const std::basic_string<TCHAR>& title, const std::basic_string<TCHAR>& content,
+										const std::basic_string<TCHAR>& buttonText,
+										const ButtonProc& buttonProc = [](){},
+										const std::optional<std::basic_string<TCHAR> >& closeButtonText = std::nullopt,
+										const ButtonProc& closeButtonProc = [](){})
+									{ return make(title, content, buttonText, buttonProc, std::nullopt, [](){},
 											closeButtonText, closeButtonProc); }
-		static	ContentDialog	make(const CString& title, const CString& content,
-										const OV<CString>& primaryButtonText = OV<CString>(),
+		static	ContentDialog	make(const std::basic_string<TCHAR>& title, const std::basic_string<TCHAR>& content,
+										const std::optional<std::basic_string<TCHAR> >& primaryButtonText =
+												std::nullopt,
 										const ButtonProc& primaryButtonProc = [](){},
-										const OV<CString>& secondaryButtonText = OV<CString>(),
+										const std::optional<std::basic_string<TCHAR> >& secondaryButtonText =
+												std::nullopt,
 										const ButtonProc& secondaryButtonProc = [](){},
-										const OV<CString>& closeButtonText = OV<CString>(),
+										const std::optional<std::basic_string<TCHAR> >& closeButtonText =
+												std::nullopt,
 										const ButtonProc& closeButtonProc = [](){});
-
-	// Properties
-	public:
-		static	const	CString	mApplicationName;
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-// MARK: - ContentDialogStack
-
-class ContentDialogStack {
-	// Classes
-	private:
-		class	Internals;
-
-	// Methods
-	public:
-				// Lifecycle methods
-				ContentDialogStack(const XamlRoot& xamlRoot);
-				~ContentDialogStack();
-
-				// Instance methods
-		void	showAsync(const ContentDialog& contentDialog);
-		void	clear();
-
-	// Properties
-	private:
-		Internals*	mInternals;
 };

@@ -11,7 +11,13 @@ using IInspectable = winrt::Windows::Foundation::IInspectable;
 using RoutedEventArgs = winrt::Microsoft::UI::Xaml::RoutedEventArgs;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: RadioButtonHelper
+// MARK: Local data
+
+static	RadioButton	sRadioButtonInUpdate(nullptr);
+
+//----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: - RadioButtonHelper
 
 // MARK: Instance methods
 
@@ -19,7 +25,10 @@ using RoutedEventArgs = winrt::Microsoft::UI::Xaml::RoutedEventArgs;
 RadioButtonHelper& RadioButtonHelper::setChecked(bool isChecked)
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Set value
+	sRadioButtonInUpdate = getRadioButton();
 	getRadioButton().IsChecked(isChecked);
+	sRadioButtonInUpdate = nullptr;
 
 	return *this;
 }
@@ -30,6 +39,10 @@ RadioButtonHelper& RadioButtonHelper::setClickProc(std::function<void()> clickPr
 {
 	// Setup
 	getRadioButton().Click([clickProc](const IInspectable& sender, const RoutedEventArgs& routedEventArgs) {
+		// Check if handling events
+		if (sender == sRadioButtonInUpdate)
+			return;
+
 		// Call proc
 		clickProc();
 	});

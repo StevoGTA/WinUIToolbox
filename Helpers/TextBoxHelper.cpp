@@ -11,16 +11,24 @@ using IInspectable = winrt::Windows::Foundation::IInspectable;
 using TextChangedEventArgs = winrt::Microsoft::UI::Xaml::Controls::TextChangedEventArgs;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: TextBoxHelper
+// MARK: Local data
+
+static	TextBox	sTextBoxInUpdate(nullptr);
+
+//----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: - TextBoxHelper
 
 // MARK: Instance methods
 
 //----------------------------------------------------------------------------------------------------------------------
-TextBoxHelper& TextBoxHelper::setText(const CString& string)
+TextBoxHelper& TextBoxHelper::setText(const winrt::hstring& string)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Update
-	getTextBox().Text(string.getOSString());
+	sTextBoxInUpdate = getTextBox();
+	getTextBox().Text(string);
+	sTextBoxInUpdate = nullptr;
 
 	return *this;
 }
@@ -36,14 +44,18 @@ TextBoxHelper& TextBoxHelper::setFocusState(FocusState focusState)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-TextBoxHelper& TextBoxHelper::setTextChangedProc(std::function<void()> textChangedProc)
+TextBoxHelper& TextBoxHelper::setTextChangedProc(std::function<void(const winrt::hstring& string)> textChangedProc)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
 	getTextBox().TextChanged(
 			[textChangedProc](const IInspectable& sender, const TextChangedEventArgs& textChangedEventArgs) {
+				// Check if handling events
+				if (sender == sTextBoxInUpdate)
+					return;
+
 				// Call proc
-				textChangedProc();
+				textChangedProc(sender.as<TextBox>().Text());
 			});
 
 	return *this;

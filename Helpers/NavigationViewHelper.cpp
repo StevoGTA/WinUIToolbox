@@ -35,7 +35,7 @@ NavigationViewHelper& NavigationViewHelper::setNavigationViewItemIsEnabled(int i
 
 //----------------------------------------------------------------------------------------------------------------------
 NavigationViewHelper& NavigationViewHelper::setSelectedTagChangedProc(
-		std::function<void(const hstring& tag)> selectedTagChangedProc)
+		std::function<void(const winrt::hstring& tag)> selectedTagChangedProc)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
@@ -44,7 +44,7 @@ NavigationViewHelper& NavigationViewHelper::setSelectedTagChangedProc(
 					const NavigationViewSelectionChangedEventArgs& navigationViewSelectionChangedArgs) {
 				// Call proc
 				selectedTagChangedProc(
-						unbox_value<hstring>(navigationViewSelectionChangedArgs.SelectedItemContainer().Tag()));
+						unbox_value<winrt::hstring>(navigationViewSelectionChangedArgs.SelectedItemContainer().Tag()));
 			});
 
 	return *this;

@@ -14,9 +14,7 @@
 
 #include <functional>
 
-using namespace winrt;
-using namespace winrt::Microsoft::UI::Xaml::Controls;
-
+using ComboBox = winrt::Microsoft::UI::Xaml::Controls::ComboBox;
 using DateTime = winrt::Windows::Foundation::DateTime;
 using IInspectable = winrt::Windows::Foundation::IInspectable;
 using IPropertyValue = winrt::Windows::Foundation::IPropertyValue;
@@ -44,11 +42,11 @@ class ComboBoxHelper : public ControlHelper<ComboBox, ComboBoxHelper> {
 						ComboBoxHelper(ComboBox comboBox, Options options = kOptionsNone);
 	
 						// Instance methods
-		ComboBoxHelper&	addItem(const hstring& displayName, const IInspectable& value, bool isSelected = false);
-		ComboBoxHelper& addItem(const hstring& displayName, int value, bool isSelected = false)
-							{ return addItem(displayName, box_value<int>(value), isSelected); }
-		ComboBoxHelper& addItem(const hstring& displayName, std::function<void()> proc);
-		ComboBoxHelper& addSectionTitle(const hstring& title);
+		ComboBoxHelper&	addItem(const winrt::hstring& displayName, const IInspectable& value, bool isSelected = false);
+		ComboBoxHelper& addItem(const winrt::hstring& displayName, int value, bool isSelected = false)
+							{ return addItem(displayName, winrt::box_value<int>(value), isSelected); }
+		ComboBoxHelper& addItem(const winrt::hstring& displayName, std::function<void()> proc);
+		ComboBoxHelper& addSectionTitle(const winrt::hstring& title);
 		ComboBoxHelper& addSeparatorItem();
 
 		IInspectable	getSelectedValue() const;

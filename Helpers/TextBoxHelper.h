@@ -4,13 +4,7 @@
 
 #pragma once
 
-#include "CString.h"
-
-#undef Delete
-
 #include "ControlHelper.h"
-
-#define Delete(x)	{ delete x; x = nil; }
 
 #include <functional>
 
@@ -27,9 +21,9 @@ class TextBoxHelper : public ControlHelper<TextBox, TextBoxHelper> {
 						TextBoxHelper(TextBox textBox) : ControlHelper(textBox) {}
 
 						// Instance methods
-		TextBoxHelper&	setText(const CString& string);
+		TextBoxHelper&	setText(const winrt::hstring& string);
 		TextBoxHelper&	setFocusState(FocusState focusState);
-		TextBoxHelper&	setTextChangedProc(std::function<void()> textChangedProc);
+		TextBoxHelper&	setTextChangedProc(std::function<void(const winrt::hstring& string)> textChangedProc);
 
 		TextBox			getTextBox() const
 							{ return getControl(); }

@@ -7,7 +7,12 @@
 #include "winrt\Windows.Foundation.Collections.h"
 #include "winrt\Microsoft.UI.Xaml.Controls.Primitives.h"
 
+using namespace winrt;
 using namespace winrt::Microsoft::UI::Xaml;
+
+using ComboBoxItem = winrt::Microsoft::UI::Xaml::Controls::ComboBoxItem;
+using NavigationViewItemSeparator = winrt::Microsoft::UI::Xaml::Controls::NavigationViewItemSeparator;
+using SelectionChangedEventArgs = winrt::Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: Local data
@@ -37,6 +42,41 @@ struct SComboBoxItemTag : public implements<SComboBoxItemTag, IInspectable> {
 		IInspectable			mValue;
 		std::function<void()>	mProc;
 };
+
+//----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: - Local proc definitions
+
+//----------------------------------------------------------------------------------------------------------------------
+static bool sIntFromInspectable(const IInspectable& inspectable, int& outInt)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Try as int
+	auto	tagAsInt = inspectable.try_as<int>();
+	if (tagAsInt) {
+		// Int
+		outInt = *tagAsInt;
+
+		return true;
+	}
+
+	// Try as hstring
+	auto	tagAsString = inspectable.try_as<winrt::hstring>();
+	if (tagAsString) {
+		// String
+		outInt = std::stoi(std::basic_string<TCHAR>(*tagAsString));
+
+		return true;
+	}
+
+	// Try as SComboBoxItemTag
+	auto	comboBoxItemTag = inspectable.try_as<SComboBoxItemTag>();
+	if (comboBoxItemTag && comboBoxItemTag->hasValue())
+		// ComboBoxItemTag
+		return sIntFromInspectable(comboBoxItemTag->getValue(), outInt);
+
+	return false;
+}
 
 //----------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
@@ -196,20 +236,19 @@ bool ComboBoxHelper::selectIntValue(int value) const
 			continue;
 
 		// Get tag
-		auto	tag = item.Tag().try_as<SComboBoxItemTag>();
+		auto	tag = item.Tag();
 		if (!tag)
 			// No tag
 			continue;
 
-		// Get value
-		if (!tag->hasValue())
-			// No value
+		// Try to get int
+		int	tagValue;
+		if (!sIntFromInspectable(tag, tagValue))
+			// Count not get value
 			continue;
 
 		// Check value
-		auto	intValue = tag->getValue().try_as<int>();
-		auto	value_ = intValue ? *intValue : std::stoi(std::basic_string<TCHAR>(tag.as<winrt::hstring>()));
-		if (value_ == value) {
+		if (tagValue == value) {
 			// Found item
 			sComboBoxInUpdate = getComboBox();
 			getComboBox().SelectedIndex(i);
@@ -254,15 +293,22 @@ ComboBoxHelper& ComboBoxHelper::setSelectedValueChangedProc(std::function<void(c
 ComboBoxHelper& ComboBoxHelper::setSelectedIntValueChangedProc(std::function<void(int value)> proc)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Setup
-	setSelectedValueChangedProc([proc](const IInspectable& value) {
-		// Get info
-		auto	intValue = value.try_as<int>();
-		auto	value_ = intValue ? *intValue : std::stoi(std::basic_string<TCHAR>(value.as<winrt::hstring>()));
+	// Setup SelectionChanged
+	getComboBox().SelectionChanged(
+			[this, proc](const IInspectable& sender, const SelectionChangedEventArgs& selectionChangedEventArgs) {
+				// Check if handling events
+				if (sender == sComboBoxInUpdate)
+					return;
 
-		// Call proc
-		proc(value_);
-	});
+				// Get tag
+				auto	tag = selectionChangedEventArgs.AddedItems().GetAt(0).as<ComboBoxItem>().Tag();
+
+				// Try to get int
+				int	tagValue;
+				if (sIntFromInspectable(tag, tagValue))
+					// Call proc
+					proc(tagValue);
+			});
 
 	return *this;
 }

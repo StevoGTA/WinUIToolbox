@@ -10,7 +10,6 @@
 
 #include <functional>
 
-using hstring = winrt::hstring;
 using NavigationView = winrt::Microsoft::UI::Xaml::Controls::NavigationView;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -27,7 +26,7 @@ class NavigationViewHelper : public ControlHelper<NavigationView, NavigationView
 
 		NavigationViewHelper&	setLoadedProc(std::function<void()> loadedProc);
 		NavigationViewHelper&	setSelectedTagChangedProc(
-										std::function<void(const hstring& tag)> selectedTagChangedProc);
+										std::function<void(const winrt::hstring& tag)> selectedTagChangedProc);
 
 		NavigationView			getNavigationView() const
 									{ return getControl(); }

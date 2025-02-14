@@ -10,7 +10,13 @@ using IInspectable = winrt::Windows::Foundation::IInspectable;
 using RangeBaseValueChangedEventArgs = winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs;
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: StackPanelHelper
+// MARK: Local data
+
+static	Slider	sSliderInUpdate(nullptr);
+
+//----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: - SliderHelper
 
 // MARK: Instance methods
 
@@ -18,7 +24,10 @@ using RangeBaseValueChangedEventArgs = winrt::Microsoft::UI::Xaml::Controls::Pri
 SliderHelper& SliderHelper::setValue(double value)
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Set value
+	sSliderInUpdate = getSlider();
 	getSlider().Value(value);
+	sSliderInUpdate = nullptr;
 
 	return *this;
 }
@@ -27,7 +36,10 @@ SliderHelper& SliderHelper::setValue(double value)
 SliderHelper& SliderHelper::setNormalizedValue(double value)
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Set value
+	sSliderInUpdate = getSlider();
 	getSlider().Value(value * getSlider().Maximum());
+	sSliderInUpdate = nullptr;
 
 	return *this;
 }
@@ -40,6 +52,10 @@ SliderHelper& SliderHelper::setValueChangedProc(std::function<void(double value)
 	getSlider().ValueChanged(
 			[valueChangedProc](const IInspectable& sender,
 					const RangeBaseValueChangedEventArgs& rangeBaseValueChangedEventArgs) {
+				// Check if handling events
+				if (sender == sSliderInUpdate)
+					return;
+
 				// Call proc
 				valueChangedProc(rangeBaseValueChangedEventArgs.NewValue());
 			});
@@ -58,6 +74,10 @@ SliderHelper& SliderHelper::setNormalizedValueChangedProc(std::function<void(dou
 	getSlider().ValueChanged(
 			[valueChangedProc, maximum](const IInspectable& sender,
 					const RangeBaseValueChangedEventArgs& rangeBaseValueChangedEventArgs) {
+				// Check if handling events
+				if (sender == sSliderInUpdate)
+					return;
+
 				// Call proc
 				valueChangedProc(rangeBaseValueChangedEventArgs.NewValue() / maximum);
 			});

@@ -21,9 +21,6 @@ template <typename C, typename H> class ShapeHelper : public FrameworkElementHel
 			ShapeHelper(C c) : FrameworkElementHelper(c) {}
 
 			// Instance methods
-		//H&	setStroke(const hstring& brushResourceName)
-		//		{ getShape().Stroke(winrt::Application::Current().Resources().Lookup(winrt::box_value(brushResourceName).as<Brush>()));
-		//				return (H&) *this; }
 		H&	setStrokeThickness(double value)
 				{ getShape().StrokeThickness(value); return (H&) *this; }
 
