@@ -45,41 +45,6 @@ struct SComboBoxItemTag : public implements<SComboBoxItemTag, IInspectable> {
 
 //----------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: - Local proc definitions
-
-//----------------------------------------------------------------------------------------------------------------------
-static bool sIntFromInspectable(const IInspectable& inspectable, int& outInt)
-//----------------------------------------------------------------------------------------------------------------------
-{
-	// Try as int
-	auto	tagAsInt = inspectable.try_as<int>();
-	if (tagAsInt) {
-		// Int
-		outInt = *tagAsInt;
-
-		return true;
-	}
-
-	// Try as hstring
-	auto	tagAsString = inspectable.try_as<winrt::hstring>();
-	if (tagAsString) {
-		// String
-		outInt = std::stoi(std::basic_string<TCHAR>(*tagAsString));
-
-		return true;
-	}
-
-	// Try as SComboBoxItemTag
-	auto	comboBoxItemTag = inspectable.try_as<SComboBoxItemTag>();
-	if (comboBoxItemTag && comboBoxItemTag->hasValue())
-		// ComboBoxItemTag
-		return sIntFromInspectable(comboBoxItemTag->getValue(), outInt);
-
-	return false;
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------------------
 // MARK: - ComboBoxHelper
 
 // MARK: Lifecycle methods
@@ -123,7 +88,7 @@ ComboBoxHelper& ComboBoxHelper::addItem(const hstring& displayName, const IInspe
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-ComboBoxHelper& ComboBoxHelper::addItem(const hstring& displayName, std::function<void()> proc)
+ComboBoxHelper& ComboBoxHelper::addItem(const hstring& displayName, std::function<void()> proc, bool isSelected)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
@@ -133,6 +98,14 @@ ComboBoxHelper& ComboBoxHelper::addItem(const hstring& displayName, std::functio
 
 	// Add
 	getComboBox().Items().Append(comboBoxItem);
+
+	// Check selected
+	if (isSelected) {
+		// Select
+		sComboBoxInUpdate = getComboBox();
+		getComboBox().SelectedIndex(getComboBox().Items().Size() - 1);
+		sComboBoxInUpdate = nullptr;
+	}
 
 	return *this;
 }
@@ -171,19 +144,32 @@ ComboBoxHelper& ComboBoxHelper::addSeparatorItem()
 IInspectable ComboBoxHelper::getSelectedValue() const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	return getComboBox().Items().GetAt(getComboBox().SelectedIndex()).as<ComboBoxItem>().Tag().as<SComboBoxItemTag>()->
-			getValue();
+	// Get item
+	auto	item = getComboBox().Items().GetAt(getComboBox().SelectedIndex()).try_as<ComboBoxItem>();
+	if (!item)
+		return nullptr;
+
+	// Get tag
+	auto	tag = item.Tag();
+	auto	comboBoxItemTag = tag.try_as<SComboBoxItemTag>();
+
+	return comboBoxItemTag ? comboBoxItemTag->getValue() : tag;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 int ComboBoxHelper::getSelectedIntValue() const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Setup
-	auto	value = getSelectedValue();
-	auto	intValue = value.try_as<int>();
+	// Get item
+	auto	item = getComboBox().Items().GetAt(getComboBox().SelectedIndex()).try_as<ComboBoxItem>();
+	if (!item)
+		return 0;
 
-	return intValue ? *intValue : std::stoi(std::basic_string<TCHAR>(value.as<winrt::hstring>()));
+	// Get tag
+	int	intValue = 0;
+	getIntFromTag(item.Tag(), intValue);
+
+	return intValue;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -243,7 +229,7 @@ bool ComboBoxHelper::selectIntValue(int value) const
 
 		// Try to get int
 		int	tagValue;
-		if (!sIntFromInspectable(tag, tagValue))
+		if (!getIntFromTag(tag, tagValue))
 			// Count not get value
 			continue;
 
@@ -305,10 +291,53 @@ ComboBoxHelper& ComboBoxHelper::setSelectedIntValueChangedProc(std::function<voi
 
 				// Try to get int
 				int	tagValue;
-				if (sIntFromInspectable(tag, tagValue))
+				if (getIntFromTag(tag, tagValue))
 					// Call proc
 					proc(tagValue);
 			});
 
 	return *this;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+ComboBoxHelper& ComboBoxHelper::setDropDownOpenedProc(std::function<void()> proc)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup DropDownOpened
+	getComboBox().DropDownOpened([this, proc](const IInspectable& sender, const IInspectable&){ proc(); });
+
+	return *this;
+}
+
+// MARK: Class methods
+
+//----------------------------------------------------------------------------------------------------------------------
+bool ComboBoxHelper::getIntFromTag(const IInspectable& tag, int& outInt)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Try as int
+	auto	tagAsInt = tag.try_as<int>();
+	if (tagAsInt) {
+		// Int
+		outInt = *tagAsInt;
+
+		return true;
+	}
+
+	// Try as hstring
+	auto	tagAsString = tag.try_as<winrt::hstring>();
+	if (tagAsString) {
+		// String
+		outInt = std::stoi(std::basic_string<TCHAR>(*tagAsString));
+
+		return true;
+	}
+
+	// Try as SComboBoxItemTag
+	auto	comboBoxItemTag = tag.try_as<SComboBoxItemTag>();
+	if (comboBoxItemTag && comboBoxItemTag->hasValue())
+		// ComboBoxItemTag
+		return getIntFromTag(comboBoxItemTag->getValue(), outInt);
+
+	return false;
 }

@@ -28,6 +28,19 @@ class StackPanelHelper : public FrameworkElementHelper<StackPanel, StackPanelHel
 		StackPanelHelper&	setEnabled(bool enabled);
 		StackPanelHelper&	add(UIElement uiElement)
 								{ getStackPanel().Children().Append(uiElement); return *this; }
+		StackPanelHelper&	remove(UIElement uiElement)
+								{
+									// Setup
+									auto	children = getStackPanel().Children();
+
+									// Get index
+									uint32_t	index;
+									if (children.IndexOf(uiElement, index))
+										// Remove
+										children.RemoveAt(index);
+
+									return *this;
+								}
 
 		StackPanel			getStackPanel() const
 								{ return getFrameworkElement(); }

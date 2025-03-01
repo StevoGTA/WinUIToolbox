@@ -45,7 +45,7 @@ class ComboBoxHelper : public ControlHelper<ComboBox, ComboBoxHelper> {
 		ComboBoxHelper&	addItem(const winrt::hstring& displayName, const IInspectable& value, bool isSelected = false);
 		ComboBoxHelper& addItem(const winrt::hstring& displayName, int value, bool isSelected = false)
 							{ return addItem(displayName, winrt::box_value<int>(value), isSelected); }
-		ComboBoxHelper& addItem(const winrt::hstring& displayName, std::function<void()> proc);
+		ComboBoxHelper& addItem(const winrt::hstring& displayName, std::function<void()> proc, bool isSelected = false);
 		ComboBoxHelper& addSectionTitle(const winrt::hstring& title);
 		ComboBoxHelper& addSeparatorItem();
 
@@ -58,6 +58,11 @@ class ComboBoxHelper : public ControlHelper<ComboBox, ComboBoxHelper> {
 		ComboBoxHelper& setSelectedValueChangedProc(std::function<void(const IInspectable& value)> proc);
 		ComboBoxHelper& setSelectedIntValueChangedProc(std::function<void(int value)> proc);
 
+		ComboBoxHelper& setDropDownOpenedProc(std::function<void()> proc);
+
 		ComboBox		getComboBox() const
 							{ return getControl(); }
+
+						// Class methods
+static	bool			getIntFromTag(const IInspectable& tag, int& outInt);
 };
