@@ -10,10 +10,13 @@
 
 #include "WinUIToolbox.SectionView.g.cpp"
 
-using namespace winrt;
 using namespace winrt::WinUIToolbox::implementation;
-using namespace winrt::Microsoft::UI::Xaml;
-using namespace winrt::Microsoft::UI::Xaml::Controls;
+
+using HorizontalAlignment = winrt::Microsoft::UI::Xaml::HorizontalAlignment;
+using ScrollView = winrt::Microsoft::UI::Xaml::Controls::ScrollView;
+using StackPanel = winrt::Microsoft::UI::Xaml::Controls::StackPanel;
+using TextBlock = winrt::Microsoft::UI::Xaml::Controls::TextBlock;
+using VerticalAlignment = winrt::Microsoft::UI::Xaml::VerticalAlignment;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: SectionView

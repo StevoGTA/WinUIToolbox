@@ -1,0 +1,24 @@
+//----------------------------------------------------------------------------------------------------------------------
+//	Pill.idl			©2025 Stevo Brock		All rights reserved.
+//----------------------------------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: WinUIToolbox namespace
+namespace WinUIToolbox {
+
+	//------------------------------------------------------------------------------------------------------------------
+	// MARK: Pill
+	[default_interface]
+	runtimeclass Pill : Microsoft.UI.Xaml.Controls.Canvas {
+														// Lifecycle Methods
+														Pill();
+
+														// Class methods
+		static	Microsoft.UI.Xaml.DependencyProperty	StrokeProperty { get; };
+		static	Microsoft.UI.Xaml.DependencyProperty	StrokeThicknessProperty { get; };
+
+		// Properties
+		Microsoft.UI.Xaml.Media.Brush	Stroke;			
+		Double							StrokeThickness;
+	}
+}
