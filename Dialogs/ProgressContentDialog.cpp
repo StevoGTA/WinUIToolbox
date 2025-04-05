@@ -119,7 +119,7 @@ void ProgressContentDialog::perform(const I<CProgress>& progress, Proc proc, Can
 	// Setup UI
 	CloseButtonText(L"Cancel");
 	CloseButtonClick([=](const ContentDialog& contentDialog,
-			const ContentDialogButtonClickEventArgs& eventArgs) {
+			const ContentDialogButtonClickEventArgs& eventArgs){
 		// Cancelled
 		internals->mIsCancelled = true;
 
@@ -128,12 +128,12 @@ void ProgressContentDialog::perform(const I<CProgress>& progress, Proc proc, Can
 	});
 
 	// Run
-	ThreadPool::RunAsync([=](IAsyncAction const& workItem) {
+	ThreadPool::RunAsync([=](const IAsyncAction& asyncAction){
 		// Call proc
 		void*	result = proc(progress);
 
 		// Switch to UI
-		internals->mDispatcherQueue.TryEnqueue([=]() {
+		internals->mDispatcherQueue.TryEnqueue([=](){
 			// Hide
 			internals->mContentDialog.Hide();
 
