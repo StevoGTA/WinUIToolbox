@@ -6,8 +6,6 @@
 
 #include "ControlHelper.h"
 
-#include <functional>
-
 using Button = winrt::Microsoft::UI::Xaml::Controls::Button;
 
 //----------------------------------------------------------------------------------------------------------------------
