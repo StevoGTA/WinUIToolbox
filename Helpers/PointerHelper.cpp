@@ -19,7 +19,8 @@ using time_point = std::chrono::steady_clock::time_point;
 class PointerHelper::Internals {
 	public:
 		Internals(const UIElement& uiElement) :
-			mPressedPoint(0.0f, 0.0f), mPressedVirtualKeyModifiers(VirtualKeyModifiers::None), mPressedCount(0),
+			mPressedButtons(static_cast<Buttons>(0)), mPressedPoint(0.0f, 0.0f),
+					mPressedVirtualKeyModifiers(VirtualKeyModifiers::None), mPressedCount(0),
 					mSentOnDragged(false),
 					mEnteredProc([](const Point& point, const VirtualKeyModifiers& virtualKeyModifiers){}),
 					mMovedProc([](const Point& point, const VirtualKeyModifiers& virtualKeyModifiers){}),
@@ -171,7 +172,6 @@ class PointerHelper::Internals {
 							// Check if pressed
 							if (mPressedCount > 0) {
 								// Setup buttons
-								auto	uiElement = sender.as<UIElement>();
 								auto	properties = pointerRoutedEventArgs.GetCurrentPoint(uiElement).Properties();
 
 								Buttons	buttons = static_cast<Buttons>(0);
