@@ -53,6 +53,7 @@ Pill::Pill() : PillT<Pill>()
 				rectangle.StrokeThickness(StrokeThickness());
 
 				// Update children
+				Children().Clear();
 				Children().Append(rectangle);
 			});
 }
