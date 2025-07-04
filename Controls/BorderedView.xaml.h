@@ -25,9 +25,6 @@ namespace winrt::WinUIToolbox::implementation {
 					BorderedView();
 					~BorderedView();
 
-					// FrameworkElement methods
-			void	OnApplyTemplate() const;
-
 					// Instance Methods
 			void	SetBorderThickness(double left, double top, double right, double bottom);
 			void	SetContent(UIElement uiElement);

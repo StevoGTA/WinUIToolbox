@@ -2,20 +2,13 @@
 	BorderedView.xaml			©2024 Stevo Brock		All rights reserved.
 -->
 
-<ResourceDictionary
+<UserControl
+		x:Class="WinUIToolbox.BorderedView"
 		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:winUIToolbox="using:WinUIToolbox">
 
-	<Style TargetType="winUIToolbox:BorderedView" >
-		<Setter Property="Template">
-			<Setter.Value>
-				<ControlTemplate TargetType="winUIToolbox:BorderedView">
-					<Border x:Name="mBorder" BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
-							BorderThickness="1,1,1,1" HorizontalAlignment="Stretch">
-					</Border>
-				</ControlTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
-</ResourceDictionary>
+	<Border x:Name="mBorder" BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+			BorderThickness="1,1,1,1" HorizontalAlignment="Stretch">
+	</Border>
+</UserControl>

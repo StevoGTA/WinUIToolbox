@@ -21,6 +21,8 @@ class RadioButtonHelper : public ControlHelper<RadioButton, RadioButtonHelper> {
 							RadioButtonHelper() : ControlHelper(RadioButton()) {}
 
 							// Instance methods
+		RadioButtonHelper&	setGroupName(const winrt::hstring& groupName)
+								{ getRadioButton().GroupName(groupName); return *this; }
 		RadioButtonHelper&	setChecked(bool isChecked);
 		RadioButtonHelper&	setClickProc(std::function<void()> clickProc);
 

@@ -12,6 +12,7 @@
 using namespace winrt::WinUIToolbox::implementation;
 
 using Border = winrt::Microsoft::UI::Xaml::Controls::Border;
+using RoutedEventArgs = winrt::Microsoft::UI::Xaml::RoutedEventArgs;
 using Thickness = winrt::Microsoft::UI::Xaml::Thickness;
 using ThicknessHelper = winrt::Microsoft::UI::Xaml::ThicknessHelper;
 
@@ -20,12 +21,12 @@ using ThicknessHelper = winrt::Microsoft::UI::Xaml::ThicknessHelper;
 
 class BorderedView::Internals {
 	public:
-		Internals() : mBorderThickness(ThicknessHelper::FromUniformLength(1.0)), mContent(nullptr) {}
+		Internals() :
+			mBorderThickness(ThicknessHelper::FromUniformLength(1.0)), mContent(nullptr)
+				{}
 
 		Thickness	mBorderThickness;
 		UIElement	mContent;
-
-		Border		mBorder;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -38,11 +39,16 @@ class BorderedView::Internals {
 BorderedView::BorderedView() : BorderedViewT<BorderedView>()
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Setup Default Style
-	DefaultStyleKey(winrt::box_value(L"WinUIToolbox.BorderedView"));
-
 	// Setup
 	mInternals = new Internals();
+
+	// Wait for loaded
+	Loaded([this](const IInspectable& sender, const RoutedEventArgs& routedEventArgs){
+		// Setup UI
+		mBorder().BorderThickness(mInternals->mBorderThickness);
+		if (mInternals->mContent)
+			mBorder().Child(mInternals->mContent);
+	});
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -50,22 +56,6 @@ BorderedView::~BorderedView()
 //----------------------------------------------------------------------------------------------------------------------
 {
 	delete mInternals;
-}
-
-// MARK: FrameworkElement methods
-
-//----------------------------------------------------------------------------------------------------------------------
-void BorderedView::OnApplyTemplate() const
-//----------------------------------------------------------------------------------------------------------------------
-{
-	// Do super
-	__super::OnApplyTemplate();
-
-	// Finish setup
-	mInternals->mBorder = GetTemplateChild(L"mBorder").as<Border>();
-	mInternals->mBorder.BorderThickness(mInternals->mBorderThickness);
-	if (mInternals->mContent)
-		mInternals->mBorder.Child(mInternals->mContent);
 }
 
 // MARK: Instance methods
@@ -77,8 +67,10 @@ void BorderedView::SetBorderThickness(double left, double top, double right, dou
 	// Store
 	mInternals->mBorderThickness = ThicknessHelper::FromLengths(left, top, right, bottom);
 
-	// Update UI (only effective after OnApplyTemplate() has been called
-	mInternals->mBorder.BorderThickness(mInternals->mBorderThickness);
+	// Update UI
+	if (mBorder())
+		// Update BorderThickness
+		mBorder().BorderThickness(ThicknessHelper::FromLengths(left, top, right, bottom));
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -88,6 +80,8 @@ void BorderedView::SetContent(UIElement uiElement)
 	// Store
 	mInternals->mContent = uiElement;
 
-	// Update UI (only effective after OnApplyTemplate() has been called
-	mInternals->mBorder.Child(mInternals->mContent);
+	// Update UI
+	if (mBorder())
+		// Update Child
+		mBorder().Child(uiElement);
 }
