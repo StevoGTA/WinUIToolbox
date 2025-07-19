@@ -7,6 +7,7 @@
 #include "winrt\Microsoft.UI.Xaml.h"
 
 using DependencyObject = winrt::Microsoft::UI::Xaml::DependencyObject;
+using Grid = winrt::Microsoft::UI::Xaml::Controls::Grid;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: DependencyObjectHelper
@@ -22,8 +23,8 @@ template <typename C, typename H> class DependencyObjectHelper {
 				H&	setGridPosition(int columnIndex, int rowIndex) const
 						{
 							// Set
-							mC.SetValue(winrt::Windows::UI::Xaml::Controls::Grid::ColumnProperty(), columnIndex);
-							mC.SetValue(winrt::Windows::UI::Xaml::Controls::Grid::RowProperty(), rowIndex);
+							mC.SetValue(Grid::ColumnProperty(), columnIndex);
+							mC.SetValue(Grid::RowProperty(), rowIndex);
 
 							return (H&) *this;
 						}

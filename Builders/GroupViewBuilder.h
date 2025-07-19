@@ -59,6 +59,7 @@ class GroupViewBuilder {
 										{ return add(title, uiElement.as<FrameworkElement>(), leadingInset,
 												trailingInset); }
 
+				uint32_t			getCount() const;
 		virtual	UIElement			getUIElement() const;
 
 									// Class methods
@@ -83,23 +84,28 @@ class ExpanderGroupViewBuilder : public GroupViewBuilder {
 
 	// Methods
 	public:
-							// Lifecycle methods
-							ExpanderGroupViewBuilder(const hstring& title, double itemLeadingInset,
-									double itemTrailingInset);
-							ExpanderGroupViewBuilder(const hstring& title, double itemLeadingInset);
-							ExpanderGroupViewBuilder(const hstring& title);
-							~ExpanderGroupViewBuilder();
+											// Lifecycle methods
+											ExpanderGroupViewBuilder(const hstring& title, double itemLeadingInset,
+													double itemTrailingInset);
+											ExpanderGroupViewBuilder(const hstring& title, double itemLeadingInset);
+											ExpanderGroupViewBuilder(const hstring& title);
+											~ExpanderGroupViewBuilder();
 
-							// GroupViewBuilder methods
-				UIElement	getUIElement() const;
+											// GroupViewBuilder methods
+				UIElement					getUIElement() const;
 
-							// Class methods
-		static	UIElement	composeUIElement(const hstring& title, double itemLeadingInset,
-									FrameworkElement frameworkElement)
-								{ return ExpanderGroupViewBuilder(title, itemLeadingInset).add(frameworkElement)
-										.getUIElement(); }
-		static	UIElement	composeUIElement(const hstring& title, double itemLeadingInset, Page& page)
-								{ return composeUIElement(title, itemLeadingInset, page.as<FrameworkElement>()); }
+											// Instance methods
+				ExpanderGroupViewBuilder&	setExpanded(bool isExpanded);
+
+											// Class methods
+		static	UIElement					composeUIElement(const hstring& title, double itemLeadingInset,
+													FrameworkElement frameworkElement)
+												{ return ExpanderGroupViewBuilder(title, itemLeadingInset)
+														.add(frameworkElement)
+														.getUIElement(); }
+		static	UIElement					composeUIElement(const hstring& title, double itemLeadingInset, Page& page)
+												{ return composeUIElement(title, itemLeadingInset,
+														page.as<FrameworkElement>()); }
 
 	// Properties
 	private:

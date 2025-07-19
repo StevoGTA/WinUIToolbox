@@ -9,6 +9,7 @@
 #include <functional>
 
 using FocusState = winrt::Microsoft::UI::Xaml::FocusState;
+using hstring = winrt::hstring;
 using TextBox = winrt::Microsoft::UI::Xaml::Controls::TextBox;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21,7 +22,7 @@ class TextBoxHelper : public ControlHelper<TextBox, TextBoxHelper> {
 						TextBoxHelper(TextBox textBox) : ControlHelper(textBox) {}
 
 						// Instance methods
-		TextBoxHelper&	setText(const winrt::hstring& string);
+		TextBoxHelper&	setText(const hstring& string);
 		TextBoxHelper&	setFocusState(FocusState focusState);
 		TextBoxHelper&	setTextChangedProc(std::function<void(const winrt::hstring& string)> textChangedProc);
 

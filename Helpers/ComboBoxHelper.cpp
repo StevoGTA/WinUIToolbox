@@ -4,8 +4,8 @@
 
 #include "ComboBoxHelper.h"
 
-#include "winrt\Windows.Foundation.Collections.h"
 #include "winrt\Microsoft.UI.Xaml.Controls.Primitives.h"
+#include "winrt\Windows.Foundation.Collections.h"
 
 using namespace winrt;
 using namespace winrt::Microsoft::UI::Xaml;

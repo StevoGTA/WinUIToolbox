@@ -89,7 +89,7 @@ GroupViewBuilder& GroupViewBuilder::add(FrameworkElement frameworkElement, doubl
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-GroupViewBuilder&GroupViewBuilder::add(const hstring& title, FrameworkElement frameworkElement, double leadingInset,
+GroupViewBuilder& GroupViewBuilder::add(const hstring& title, FrameworkElement frameworkElement, double leadingInset,
 		double trailingInset)
 //----------------------------------------------------------------------------------------------------------------------
 {
@@ -104,6 +104,13 @@ GroupViewBuilder&GroupViewBuilder::add(const hstring& title, FrameworkElement fr
 	mInternals->mStackPanel.Children().Append(frameworkElement);
 
 	return *this;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+uint32_t GroupViewBuilder::getCount() const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	return mInternals->mStackPanel.Children().Size();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -179,4 +186,16 @@ UIElement ExpanderGroupViewBuilder::getUIElement() const
 //----------------------------------------------------------------------------------------------------------------------
 {
 	return mInternals->mExpander;
+}
+
+// MARK: Instance methods
+
+//----------------------------------------------------------------------------------------------------------------------
+ExpanderGroupViewBuilder& ExpanderGroupViewBuilder::setExpanded(bool isExpanded)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Set expanded
+	mInternals->mExpander.IsExpanded(isExpanded);
+
+	return *this;
 }
