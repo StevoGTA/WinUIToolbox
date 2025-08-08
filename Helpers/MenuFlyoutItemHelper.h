@@ -59,5 +59,5 @@ class MenuFlyoutItemHelper : public ControlHelper<MenuFlyoutItem, MenuFlyoutItem
 
 									//	return menuFlyoutItem;
 									//}
-		static	void			validate(MenuFlyoutItem& menuFlyoutItem);
+		static	void			validate(MenuFlyoutItem menuFlyoutItem);
 };

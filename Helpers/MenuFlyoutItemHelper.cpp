@@ -33,7 +33,7 @@ MenuFlyoutItem MenuFlyoutItemHelper::forTitle(const hstring& title, std::functio
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void MenuFlyoutItemHelper::validate(MenuFlyoutItem& menuFlyoutItem)
+void MenuFlyoutItemHelper::validate(MenuFlyoutItem menuFlyoutItem)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Try to get validationProc

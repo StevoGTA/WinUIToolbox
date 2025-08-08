@@ -46,18 +46,23 @@ class GroupViewBuilder {
 				GroupViewBuilder&	add(UIElement& uiElement, double leadingInset, double trailingInset)
 										{ return add(uiElement.as<FrameworkElement>(), leadingInset, trailingInset); }
 
-				GroupViewBuilder&	add(const hstring& title, FrameworkElement frameworkElement, double leadingInset,
+				UIElement			add(const hstring& title, FrameworkElement frameworkElement, double leadingInset,
 											double trailingInset);
-				GroupViewBuilder&	add(const hstring& title, Page& page, double leadingInset, double trailingInset)
+				UIElement			add(const hstring& title, Page& page, double leadingInset, double trailingInset)
 										{ return add(title, page.as<FrameworkElement>(), leadingInset, trailingInset); }
-				GroupViewBuilder&	add(const hstring& title, TextBlock& textBlock, double leadingInset,
+				UIElement			add(const hstring& title, TextBlock& textBlock, double leadingInset,
 											double trailingInset)
 										{ return add(title, textBlock.as<FrameworkElement>(), leadingInset,
 												trailingInset); }
-				GroupViewBuilder&	add(const hstring& title, UIElement& uiElement, double leadingInset,
+				UIElement			add(const hstring& title, UIElement& uiElement, double leadingInset,
 											double trailingInset)
 										{ return add(title, uiElement.as<FrameworkElement>(), leadingInset,
 												trailingInset); }
+
+				UIElement			insert(const hstring& title, FrameworkElement frameworkElement, int index,
+											double leadingInset, double trailingInset);
+
+				GroupViewBuilder&	remove(UIElement uiElement);
 
 				uint32_t			getCount() const;
 		virtual	UIElement			getUIElement() const;

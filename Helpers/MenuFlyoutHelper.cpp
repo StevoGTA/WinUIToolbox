@@ -28,9 +28,9 @@ MenuFlyoutHelper::MenuFlyoutHelper(MenuFlyout menuFlyout) : DependencyObjectHelp
 						MenuFlyoutItemHelper::validate(menuFlyoutItem.as<MenuFlyoutItem>());
 					else if (menuFlyoutItem.try_as<MenuFlyoutSubItem>()) {
 						// Validate sub items
-						for (auto menuFlyoutItem : menuFlyoutItem.as<MenuFlyoutSubItem>().Items())
+						for (auto menuFlyoutSubItem : menuFlyoutItem.as<MenuFlyoutSubItem>().Items())
 							// Validate
-							MenuFlyoutItemHelper::validate(menuFlyoutItem.as<MenuFlyoutItem>());
+							MenuFlyoutItemHelper::validate(menuFlyoutSubItem.as<MenuFlyoutItem>());
 					}
 				}
 			});

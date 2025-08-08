@@ -71,7 +71,9 @@ GroupViewBuilder& GroupViewBuilder::add(FrameworkElement frameworkElement)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Add View
-	frameworkElement.Margin(ThicknessHelper::FromLengths(mInternals->mMarginLeading, 0.0, 0.0, 8.0));
+	frameworkElement.Margin(
+			ThicknessHelper::FromLengths(mInternals->mMarginLeading, 0.0, mInternals->mMarginTrailing.getValue(0.0),
+					8.0));
 	mInternals->mStackPanel.Children().Append(frameworkElement);
 
 	return *this;
@@ -82,26 +84,80 @@ GroupViewBuilder& GroupViewBuilder::add(FrameworkElement frameworkElement, doubl
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Add View
-	frameworkElement.Margin(ThicknessHelper::FromLengths(mInternals->mMarginLeading + leadingInset, 0.0, 0.0, 8.0));
+	frameworkElement.Margin(
+			ThicknessHelper::FromLengths(mInternals->mMarginLeading + leadingInset, 0.0,
+					mInternals->mMarginTrailing.getValue(0.0), 8.0));
 	mInternals->mStackPanel.Children().Append(frameworkElement);
 
 	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-GroupViewBuilder& GroupViewBuilder::add(const hstring& title, FrameworkElement frameworkElement, double leadingInset,
+UIElement GroupViewBuilder::add(const hstring& title, FrameworkElement frameworkElement, double leadingInset,
 		double trailingInset)
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Setup
+	StackPanel	stackPanel;
+	stackPanel.Orientation(Orientation::Vertical);
+	mInternals->mStackPanel.Children().Append(stackPanel);
+
 	// Add title
 	TextBlock	titleTextBlock;
 	titleTextBlock.Text(title);
-	titleTextBlock.Margin(ThicknessHelper::FromLengths(mInternals->mMarginLeading, 0.0, 0.0, 0.0));
-	mInternals->mStackPanel.Children().Append(titleTextBlock);
+	titleTextBlock.Margin(
+			ThicknessHelper::FromLengths(mInternals->mMarginLeading, 0.0, mInternals->mMarginTrailing.getValue(0.0),
+					0.0));
+	stackPanel.Children().Append(titleTextBlock);
 
 	// Add View
-	frameworkElement.Margin(ThicknessHelper::FromLengths(mInternals->mMarginLeading + leadingInset, 0.0, 0.0, 8.0));
-	mInternals->mStackPanel.Children().Append(frameworkElement);
+	frameworkElement.Margin(
+			ThicknessHelper::FromLengths(mInternals->mMarginLeading + leadingInset, 0.0,
+					mInternals->mMarginTrailing.getValue(0.0) + trailingInset, 8.0));
+	stackPanel.Children().Append(frameworkElement);
+
+	return stackPanel;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+UIElement GroupViewBuilder::insert(const hstring& title, FrameworkElement frameworkElement, int index,
+		double leadingInset, double trailingInset)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup
+	StackPanel	stackPanel;
+	stackPanel.Orientation(Orientation::Vertical);
+	mInternals->mStackPanel.Children().InsertAt(index, stackPanel);
+
+	// Add title
+	TextBlock	titleTextBlock;
+	titleTextBlock.Text(title);
+	titleTextBlock.Margin(
+			ThicknessHelper::FromLengths(mInternals->mMarginLeading, 0.0, mInternals->mMarginTrailing.getValue(0.0),
+					0.0));
+	stackPanel.Children().Append(titleTextBlock);
+
+	// Add View
+	frameworkElement.Margin(
+			ThicknessHelper::FromLengths(mInternals->mMarginLeading + leadingInset, 0.0,
+					mInternals->mMarginTrailing.getValue(0.0) + trailingInset, 8.0));
+	stackPanel.Children().Append(frameworkElement);
+
+	return stackPanel;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+GroupViewBuilder& GroupViewBuilder::remove(UIElement uiElement)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup
+	auto	children = mInternals->mStackPanel.Children();
+
+	// Get index
+	uint32_t	index;
+	if (children.IndexOf(uiElement, index))
+		// Remove
+		children.RemoveAt(index);
 
 	return *this;
 }
