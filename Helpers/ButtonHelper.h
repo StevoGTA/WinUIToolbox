@@ -16,6 +16,7 @@ class ButtonHelper : public ControlHelper<Button, ButtonHelper> {
 	public:
 						// Lifecycle methods
 						ButtonHelper(Button button) : ControlHelper(button) {}
+						ButtonHelper() : ControlHelper(Button()) {}
 
 						// Instance methods
 		ButtonHelper&	setClickedProc(std::function<void()> clickedProc);

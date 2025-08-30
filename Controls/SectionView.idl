@@ -17,6 +17,7 @@ namespace WinUIToolbox {
 		[default_overload]
 		void	SetContent(Microsoft.UI.Xaml.UIElement[] uiElements);
 		void	Insert(Microsoft.UI.Xaml.UIElement uiElement, Int32 index);
+		void	Remove(Microsoft.UI.Xaml.UIElement uiElement);
 
 		void	SetContent(String string);
 	}

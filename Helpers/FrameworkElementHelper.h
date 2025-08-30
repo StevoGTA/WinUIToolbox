@@ -8,7 +8,6 @@
 
 using FrameworkElement = winrt::Microsoft::UI::Xaml::FrameworkElement;
 using HorizontalAlignment = winrt::Microsoft::UI::Xaml::HorizontalAlignment;
-using IInspectable = winrt::Windows::Foundation::IInspectable;
 using VerticalAlignment = winrt::Microsoft::UI::Xaml::VerticalAlignment;
 using ThicknessHelper = winrt::Microsoft::UI::Xaml::ThicknessHelper;
 
@@ -28,20 +27,33 @@ template <typename C, typename H> class FrameworkElementHelper : public UIElemen
 				H&		setMargin(double left, double top, double right, double bottom)
 							{ getFrameworkElement().Margin(ThicknessHelper::FromLengths(left, top, right, bottom));
 									return (H&) *this; }
+
 				H&		setPadding(double left, double top, double right, double bottom)
 							{ getFrameworkElement().Padding(ThicknessHelper::FromLengths(left, top, right, bottom));
 									return (H&) *this; }
+				H&		setPadding(double uniformLength)
+							{ getFrameworkElement().Padding(ThicknessHelper::FromUniformLength(uniformLength));
+									return (H&) *this; }
+
 				H&		setMinWidth(double minWidth)
 							{ getFrameworkElement().MinWidth(minWidth); return (H&) *this; }
-				H&		setVerticalAlignment(VerticalAlignment verticalAlignment)
-							{ getFrameworkElement().VerticalAlignment(verticalAlignment); return (H&) *this; }
 				H&		setWidth(double width)
 							{ getFrameworkElement().Width(width); return (H&) *this; }
+
+				H&		setHeight(double height)
+							{ getFrameworkElement().Height(height); return (H&) *this; }
+
+				H&		setSize(double width, double height)
+							{ getFrameworkElement().Width(width); getFrameworkElement().Height(height);
+									return (H&) *this; }
 
 				bool	getTagAsInt(int& outValue)
 							{ return getTagAsInt(getFrameworkElement().Tag(), outValue); }
 				H&		setTag(int value)
 							{ getFrameworkElement().Tag(box_value(value)); return (H&) *this; }
+
+				H&		setVerticalAlignment(VerticalAlignment verticalAlignment)
+							{ getFrameworkElement().VerticalAlignment(verticalAlignment); return (H&) *this; }
 
 				C		getFrameworkElement() const
 							{ return getUIElement(); }

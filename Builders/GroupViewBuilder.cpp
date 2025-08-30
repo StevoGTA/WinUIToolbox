@@ -4,13 +4,12 @@
 
 #include "GroupViewBuilder.h"
 
+#include <winrt\Microsoft.UI.Xaml.Controls.h>
 #include "winrt\Windows.Foundation.Collections.h"
 
 #include "TWrappers.h"
 
 using namespace winrt::Microsoft::UI;
-
-#include "winrt\Microsoft.UI.Xaml.Media.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: GroupViewBuilder::Internals

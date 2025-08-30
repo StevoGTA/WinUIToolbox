@@ -48,6 +48,20 @@ void SectionView::Insert(UIElement uiElement, int index)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+void SectionView::Remove(UIElement uiElement)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup
+	auto	children = Content().as<ScrollView>().Content().as<StackPanel>().Children();
+
+	// Get index
+	uint32_t	index;
+	if (children.IndexOf(uiElement, index))
+		// Remove
+		children.RemoveAt(index);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 void SectionView::SetContent(const hstring& string)
 //----------------------------------------------------------------------------------------------------------------------
 {

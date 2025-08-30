@@ -25,6 +25,7 @@ namespace winrt::WinUIToolbox::implementation {
 					// Instance methods
 			void	SetContent(const array_view<const UIElement>& uiElements);
 			void	Insert(UIElement uiElement, int index);
+			void	Remove(UIElement uiElement);
 
 			void	SetContent(const hstring& string);
 	};

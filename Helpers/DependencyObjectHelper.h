@@ -7,7 +7,9 @@
 #include "winrt\Microsoft.UI.Xaml.h"
 
 using DependencyObject = winrt::Microsoft::UI::Xaml::DependencyObject;
+using DependencyProperty = winrt::Microsoft::UI::Xaml::DependencyProperty;
 using Grid = winrt::Microsoft::UI::Xaml::Controls::Grid;
+using IInspectable = winrt::Windows::Foundation::IInspectable;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: DependencyObjectHelper
@@ -28,6 +30,9 @@ template <typename C, typename H> class DependencyObjectHelper {
 
 							return (H&) *this;
 						}
+
+				H&	setValue(const DependencyProperty& dependencyProperty, const IInspectable& value) const
+						{ mC.SetValue(dependencyProperty, value); return (H&) *this; }
 
 				C	getDependencyObject() const
 						{ return mC; }
