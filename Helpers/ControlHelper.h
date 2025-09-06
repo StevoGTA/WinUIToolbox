@@ -6,13 +6,9 @@
 
 #include "FrameworkElementHelper.h"
 
-#undef Delete
-
 #include "winrt\Microsoft.UI.Xaml.Controls.h"
 #include "winrt\Microsoft.UI.Xaml.Media.h"
 #include "winrt\Windows.UI.h"
-
-#define Delete(x)	{ delete x; x = nil; }
 
 #include <functional>
 
