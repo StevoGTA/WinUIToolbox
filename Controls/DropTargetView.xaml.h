@@ -37,11 +37,16 @@ namespace winrt::WinUIToolbox::implementation {
 
 							// Control methods
 			void			OnDragOver(const DragEventArgs& dragEventArgs) const;
+			void			OnDragLeave(const DragEventArgs& dragEventArgs) const;
 			IAsyncAction	OnDrop(const DragEventArgs& dragEventArgs) const;
 
 							// Event methods
 			event_token		StorageItemsEvent(const IStorageItemVectorViewEventHandler& handler);
 			void			StorageItemsEvent(const event_token& token) noexcept;
+
+							// Property methods
+			int32_t			DragAndDropPriority();
+			void			DragAndDropPriority(int32_t value);
 
 		// Properties
 		private:

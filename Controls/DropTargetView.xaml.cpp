@@ -4,6 +4,8 @@
 
 #include "DropTargetView.xaml.h"
 
+#include "DragAndDropCoordinator.h"
+
 #include "WinUIToolbox.DropTargetView.g.cpp"
 
 #include "winrt\Windows.ApplicationModel.DataTransfer.h"
@@ -18,9 +20,11 @@ using StandardDataFormats = winrt::Windows::ApplicationModel::DataTransfer::Stan
 
 class DropTargetView::Internals {
 	public:
-		Internals() {}
+		Internals() : mDragAndDropPriority(0) {}
 
 		event<IStorageItemVectorViewEventHandler>	mStorageItemsEvent;
+
+		int32_t										mDragAndDropPriority;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -53,6 +57,14 @@ DropTargetView::~DropTargetView()
 void DropTargetView::OnDragOver(const DragEventArgs& dragEventArgs) const
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Notify DragAndDropCoordinator
+	DragAndDropCoordinator::shared().addHandler(*this, mInternals->mDragAndDropPriority);
+
+	// Check if handling Drop
+	if (!DragAndDropCoordinator::shared().shouldHandleDrag(*this))
+		// Not handling drop
+		return;
+
 	// Set accepted operation
 	dragEventArgs.AcceptedOperation(
 			dragEventArgs.DataView().Contains(StandardDataFormats::StorageItems()) ?
@@ -60,9 +72,22 @@ void DropTargetView::OnDragOver(const DragEventArgs& dragEventArgs) const
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+void DropTargetView::OnDragLeave(const DragEventArgs& dragEventArgs) const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Notify DragAndDropCoordinator
+	DragAndDropCoordinator::shared().removeHandler(*this);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 IAsyncAction DropTargetView::OnDrop(const DragEventArgs& dragEventArgs) const
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Check if handling Drop
+	if (!DragAndDropCoordinator::shared().shouldHandleDrop(*this, dragEventArgs))
+		// Not handling drop
+		co_return;
+
 	// Get Storage Items
 	IStorageItemVectorView	storageItems = co_await dragEventArgs.DataView().GetStorageItemsAsync();
 
@@ -84,4 +109,20 @@ void DropTargetView::StorageItemsEvent(const event_token& token) noexcept
 //----------------------------------------------------------------------------------------------------------------------
 {
 	mInternals->mStorageItemsEvent.remove(token);
+}
+
+// MARK: Property methods
+
+//----------------------------------------------------------------------------------------------------------------------
+int32_t DropTargetView::DragAndDropPriority()
+//----------------------------------------------------------------------------------------------------------------------
+{
+    return mInternals->mDragAndDropPriority;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void DropTargetView::DragAndDropPriority(int32_t value)
+//----------------------------------------------------------------------------------------------------------------------
+{
+    mInternals->mDragAndDropPriority = value;
 }

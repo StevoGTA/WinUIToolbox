@@ -15,5 +15,8 @@ namespace WinUIToolbox {
 
 																							// Events
 		event	Windows.Foundation.EventHandler<IVectorView<Windows.Storage.IStorageItem> >	StorageItemsEvent;
+
+																							// Properties
+				Int32																		DragAndDropPriority;
 	}
 }

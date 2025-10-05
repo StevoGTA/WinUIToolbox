@@ -34,6 +34,11 @@ template <typename C, typename H> class ControlHelper : public FrameworkElementH
 		H&	setBackground(const Color& color)
 				{ getControl().Background(SolidColorBrush(color)); return (H&) *this; }
 
+		H&	setBorderBrush(const Brush& brush)
+				{ getControl().BorderBrush(brush); return (H&) *this; }
+		H&	setBorderBrush(const Color& color)
+				{ getControl().BorderBrush(SolidColorBrush(color)); return (H&) *this; }
+
 		H&	setBorderThickness(double uniformLength)
 				{ getControl().BorderThickness(ThicknessHelper::FromUniformLength(uniformLength)); return (H&) *this; }
 		H&	setBorderThickness(double left, double top, double right, double bottom)
