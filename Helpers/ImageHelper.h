@@ -58,7 +58,7 @@ class ImageHelper : public FrameworkElementHelper<Image, ImageHelper> {
 									dataWriter.FlushAsync();
 									dataWriter.DetachStream();
 
-									// Switch to UI
+									// Switch to UI thread
 									image.DispatcherQueue().TryEnqueue([memoryStream, image](){
 										// Set image
 										ImageHelper(image).setImageData(memoryStream);

@@ -57,7 +57,9 @@ class TextBoxHelper : public ControlHelper<TextBox, TextBoxHelper> {
 							{ getTextBox().Focus(focusState); return *this; }
 		TextBoxHelper&	setKeyDownProc(std::function<void(const KeyRoutedEventArgs& keyRoutedEventArgs)> keyDownProc);
 		TextBoxHelper&	setText(const hstring& string);
-		TextBoxHelper&	setTextChangedProc(std::function<void(const winrt::hstring& string)> textChangedProc);
+		TextBoxHelper&	setTextValidationProcs(std::function<bool(const hstring& string)> isAllowedProc,
+								std::function<hstring(const hstring& string)> filterProc);
+		TextBoxHelper&	setTextChangedProc(std::function<void(const hstring& string)> textChangedProc);
 
 		TextBox			getTextBox() const
 							{ return getControl(); }
