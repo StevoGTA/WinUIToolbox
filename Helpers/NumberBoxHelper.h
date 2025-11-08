@@ -24,6 +24,15 @@ class NumberBoxHelper : public ControlHelper<NumberBox, NumberBoxHelper> {
 		NumberBoxHelper&	setNumberFormatter(INumberFormatter2 numberFormatter)
 								{ getNumberBox().NumberFormatter(numberFormatter); return *this; }
 
+		NumberBoxHelper&	setMaximum(double value)
+								{ getNumberBox().Maximum(value); return *this; }
+		NumberBoxHelper&	setMaximum(int value)
+								{ getNumberBox().Maximum(value); return *this; }
+		NumberBoxHelper&	setMinimum(double value)
+								{ getNumberBox().Minimum(value); return *this; }
+		NumberBoxHelper&	setMinimum(int value)
+								{ getNumberBox().Minimum(value); return *this; }
+
 		NumberBoxHelper&	setValue(double value);
 		NumberBoxHelper&	setValue(int value);
 
