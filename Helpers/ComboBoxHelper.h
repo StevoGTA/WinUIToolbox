@@ -53,6 +53,7 @@ class ComboBoxHelper : public ControlHelper<ComboBox, ComboBoxHelper> {
 		int				getSelectedIntValue() const;
 
 		bool			selectValue(std::function<bool(const IInspectable& value)> valueCompareProc) const;
+		void			selectIndex(uint32_t index) const;
 		bool			selectIntValue(int value) const;
 
 		ComboBoxHelper& setSelectedValueChangedProc(std::function<void(const IInspectable& value)> proc);

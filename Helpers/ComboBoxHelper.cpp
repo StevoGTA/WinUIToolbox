@@ -210,6 +210,16 @@ bool ComboBoxHelper::selectValue(std::function<bool(const IInspectable& value)> 
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+void ComboBoxHelper::selectIndex(uint32_t index) const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Select index
+	sComboBoxInUpdate = getComboBox();
+	getComboBox().SelectedIndex(index);
+	sComboBoxInUpdate = nullptr;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 bool ComboBoxHelper::selectIntValue(int value) const
 //----------------------------------------------------------------------------------------------------------------------
 {
