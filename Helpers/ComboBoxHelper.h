@@ -58,6 +58,7 @@ class ComboBoxHelper : public ControlHelper<ComboBox, ComboBoxHelper> {
 
 		ComboBoxHelper& setSelectedValueChangedProc(std::function<void(const IInspectable& value)> proc);
 		ComboBoxHelper& setSelectedIntValueChangedProc(std::function<void(int value)> proc);
+		ComboBoxHelper& setSelectionChangedProc(std::function<void()> proc);
 
 		ComboBoxHelper& setDropDownOpenedProc(std::function<void()> proc);
 

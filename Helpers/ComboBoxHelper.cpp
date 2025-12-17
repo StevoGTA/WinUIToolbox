@@ -310,6 +310,24 @@ ComboBoxHelper& ComboBoxHelper::setSelectedIntValueChangedProc(std::function<voi
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+ComboBoxHelper& ComboBoxHelper::setSelectionChangedProc(std::function<void()> proc)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup SelectionChanged
+	getComboBox().SelectionChanged(
+			[this, proc](const IInspectable& sender, const SelectionChangedEventArgs& selectionChangedEventArgs) {
+				// Check if handling events
+				if (sender == sComboBoxInUpdate)
+					return;
+
+				// Call proc
+				proc();
+			});
+
+	return *this;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 ComboBoxHelper& ComboBoxHelper::setDropDownOpenedProc(std::function<void()> proc)
 //----------------------------------------------------------------------------------------------------------------------
 {
