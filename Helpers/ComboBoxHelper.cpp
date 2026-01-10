@@ -274,12 +274,12 @@ ComboBoxHelper& ComboBoxHelper::setSelectedValueChangedProc(std::function<void(c
 										.as<SComboBoxItemTag>();
 
 				// Check tag
-				if (tag->hasValue())
-					// Value
-					proc(tag->getValue());
-				else
+				if (tag->hasProc())
 					// Proc
 					tag->callProc();
+				else
+					// Value
+					proc(tag->getValue());
 			});
 
 	return *this;
