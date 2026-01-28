@@ -81,9 +81,9 @@ bool DragAndDropCoordinator::shouldHandleDrag(const Control& handler) const
 	auto	objectPriority = entry->second;
 
 	// Check for higher priority
-	for (const auto& entry : mInternals->mPriorityByControl) {
+	for (const auto& entry_ : mInternals->mPriorityByControl) {
 		// Check this entry
-		if (entry.second > objectPriority)
+		if (entry_.second > objectPriority)
 			// Higher priority found
 			return false;
 	}
@@ -110,9 +110,9 @@ bool DragAndDropCoordinator::shouldHandleDrop(const Control& handler, const Drag
 		mInternals->mPriorityByControl.erase(entry);
 
 		// Check for higher priority
-		for (const auto& entry : mInternals->mPriorityByControl) {
+		for (const auto& entry_ : mInternals->mPriorityByControl) {
 			// Check this entry
-			if (entry.second > objectPriority)
+			if (entry_.second > objectPriority)
 				// Higher priority found
 				return false;
 		}
