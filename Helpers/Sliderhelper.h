@@ -6,8 +6,6 @@
 
 #include "ControlHelper.h"
 
-#include <functional>
-
 using Slider = winrt::Microsoft::UI::Xaml::Controls::Slider;
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -33,8 +33,8 @@ ContentDialog CppTBContentDialogHelper::make(const CString& title, const CString
 			primaryButtonProc,
 			secondaryButtonText.hasValue() ?
 					std::optional<std::basic_string<TCHAR> >(secondaryButtonText->getOSString()) : std::nullopt,
-			primaryButtonProc,
+			secondaryButtonProc,
 			closeButtonText.hasValue() ?
 					std::optional<std::basic_string<TCHAR> >(closeButtonText->getOSString()) : std::nullopt,
-			primaryButtonProc);
+			closeButtonProc);
 }

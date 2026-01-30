@@ -8,8 +8,6 @@
 
 #include "winrt\Microsoft.UI.Xaml.Controls.h"
 
-#include <functional>
-
 using CheckBox = winrt::Microsoft::UI::Xaml::Controls::CheckBox;
 
 //----------------------------------------------------------------------------------------------------------------------
