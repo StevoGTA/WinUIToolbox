@@ -10,6 +10,7 @@
 
 using MenuFlyout = winrt::Microsoft::UI::Xaml::Controls::MenuFlyout;
 using MenuFlyoutSeparator = winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSeparator;
+using MenuFlyoutSubItem = winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: MenuFlyoutHelper
@@ -21,6 +22,9 @@ class MenuFlyoutHelper : public DependencyObjectHelper<MenuFlyout, MenuFlyoutHel
 							MenuFlyoutHelper(MenuFlyout menuFlyout);
  
 							// Instance methods
+		MenuFlyoutHelper&	clear()
+								{ getMenuFlyout().Items().Clear(); return *this; }
+
 		MenuFlyoutHelper&	addSectionTitle(const hstring& title)
 								{ getMenuFlyout().Items().Append(MenuFlyoutItemHelper::forGroupTitle(title));
 										return *this; }
@@ -31,6 +35,9 @@ class MenuFlyoutHelper : public DependencyObjectHelper<MenuFlyout, MenuFlyoutHel
 								{ getMenuFlyout().Items().Append(
 											MenuFlyoutItemHelper::forTitle(title, validationProc, actionProc));
 										return *this; }
+		MenuFlyoutHelper&	addSubItem(const MenuFlyoutSubItem& menuFlyoutSubItem)
+								{ getMenuFlyout().Items().Append(menuFlyoutSubItem); return *this; }
+
 		MenuFlyout			getMenuFlyout() const
 								{ return getDependencyObject(); }
 };
