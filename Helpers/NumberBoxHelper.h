@@ -36,6 +36,9 @@ class NumberBoxHelper : public ControlHelper<NumberBox, NumberBoxHelper> {
 		NumberBoxHelper&	setValue(double value);
 		NumberBoxHelper&	setValue(int value);
 
+		bool				isValid() const
+								{ return getNumberBox().Text().size() > 0; }
+
 		NumberBoxHelper&	setDoubleValueChangedProc(std::function<void(double value)> valueChangedProc);
 		NumberBoxHelper&	setIntValueChangedProc(std::function<void(int value)> valueChangedProc);
 
