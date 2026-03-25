@@ -111,7 +111,7 @@ ComboBoxHelper& ComboBoxHelper::addItem(const hstring& displayName, std::functio
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-ComboBoxHelper& ComboBoxHelper::addSectionTitle(const hstring& title)
+ComboBoxHelper& ComboBoxHelper::addSectionTitleItem(const hstring& title)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
