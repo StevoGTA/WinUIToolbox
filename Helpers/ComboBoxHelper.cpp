@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	ComboBoxHelper.cpp			©2023 Stevo Brock		All rights reserved.
+//	ComboBoxHelper.cpp			ï¿½2023 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #include "ComboBoxHelper.h"
@@ -173,7 +173,107 @@ int ComboBoxHelper::getSelectedIntValue() const
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-bool ComboBoxHelper::selectValue(std::function<bool(const IInspectable& value)> valueCompareProc) const
+void ComboBoxHelper::selectIndex(uint32_t index) const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Select index
+	sComboBoxInUpdate = getComboBox();
+	getComboBox().SelectedIndex(index);
+	sComboBoxInUpdate = nullptr;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+bool ComboBoxHelper::selectItemWithTag(const winrt::hstring& string) const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Iterate items
+	auto	items = getComboBox().Items();
+	for (uint32_t i = 0; i < items.Size(); i++) {
+		// Get item
+		auto	item = items.GetAt(i).try_as<ComboBoxItem>();
+		if (!item)
+			// Not ComboBoxItem
+			continue;
+
+		// Get tag
+		auto	tag = item.Tag();
+		if (!tag)
+			// No tag
+			continue;
+
+		// Try as SComboBoxItemTag
+		auto	comboBoxItemTag = tag.try_as<SComboBoxItemTag>();
+		if (comboBoxItemTag) {
+			// SComboBoxItemTag
+			if (!comboBoxItemTag->hasValue())
+				// No value
+				continue;
+
+			// Try value as hstring
+			auto	valueAsString = comboBoxItemTag->getValue().try_as<winrt::hstring>();
+			if (!valueAsString || *valueAsString != string)
+				// No match
+				continue;
+		} else {
+			// Try tag directly as hstring
+			auto	tagAsString = tag.try_as<winrt::hstring>();
+			if (!tagAsString || (*tagAsString != string))
+				// No match
+				continue;
+		}
+
+		// Found item
+		sComboBoxInUpdate = getComboBox();
+		getComboBox().SelectedIndex(i);
+		sComboBoxInUpdate = nullptr;
+
+		return true;
+	}
+
+	return false;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+bool ComboBoxHelper::selectItemWithTag(int value) const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Iterate items
+	auto	items = getComboBox().Items();
+	for (uint32_t i = 0; i < items.Size(); i++) {
+		// Get item
+		auto	item = items.GetAt(i).try_as<ComboBoxItem>();
+		if (!item)
+			// Not ComboBoxItem
+			continue;
+
+		// Get tag
+		auto	tag = item.Tag();
+		if (!tag)
+			// No tag
+			continue;
+
+		// Try to get int
+		int	tagValue;
+		if (!getIntFromTag(tag, tagValue))
+			// Count not get value
+			continue;
+
+		// Check value
+		if (tagValue == value) {
+			// Found item
+			sComboBoxInUpdate = getComboBox();
+			getComboBox().SelectedIndex(i);
+			sComboBoxInUpdate = nullptr;
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+bool ComboBoxHelper::selectItemWithTag(std::function<bool(const IInspectable& value)> tagValueCompareProc) const
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Iterate items
@@ -196,55 +296,7 @@ bool ComboBoxHelper::selectValue(std::function<bool(const IInspectable& value)> 
 			continue;
 
 		// Check tag
-		if (valueCompareProc(tag->getValue())) {
-			// Found item
-			sComboBoxInUpdate = getComboBox();
-			getComboBox().SelectedIndex(i);
-			sComboBoxInUpdate = nullptr;
-
-			return true;
-		}
-	}
-
-	return false;
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-void ComboBoxHelper::selectIndex(uint32_t index) const
-//----------------------------------------------------------------------------------------------------------------------
-{
-	// Select index
-	sComboBoxInUpdate = getComboBox();
-	getComboBox().SelectedIndex(index);
-	sComboBoxInUpdate = nullptr;
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-bool ComboBoxHelper::selectIntValue(int value) const
-//----------------------------------------------------------------------------------------------------------------------
-{
-	// Iterate items
-	auto	items = getComboBox().Items();
-	for (uint32_t i = 0; i < items.Size(); i++) {
-		// Get item
-		auto	item = items.GetAt(i).try_as<ComboBoxItem>();
-		if (!item)
-			continue;
-
-		// Get tag
-		auto	tag = item.Tag();
-		if (!tag)
-			// No tag
-			continue;
-
-		// Try to get int
-		int	tagValue;
-		if (!getIntFromTag(tag, tagValue))
-			// Count not get value
-			continue;
-
-		// Check value
-		if (tagValue == value) {
+		if (tagValueCompareProc(tag->getValue())) {
 			// Found item
 			sComboBoxInUpdate = getComboBox();
 			getComboBox().SelectedIndex(i);
