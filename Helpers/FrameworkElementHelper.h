@@ -6,6 +6,8 @@
 
 #include "UIElementHelper.h"
 
+#include <tchar.h>
+
 using FrameworkElement = winrt::Microsoft::UI::Xaml::FrameworkElement;
 using HorizontalAlignment = winrt::Microsoft::UI::Xaml::HorizontalAlignment;
 using VerticalAlignment = winrt::Microsoft::UI::Xaml::VerticalAlignment;

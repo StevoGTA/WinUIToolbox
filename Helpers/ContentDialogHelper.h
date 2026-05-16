@@ -5,6 +5,7 @@
 #pragma once
 
 #include <functional>
+#include <tchar.h>
 
 #include "winrt\Microsoft.UI.Xaml.Controls.h"
 

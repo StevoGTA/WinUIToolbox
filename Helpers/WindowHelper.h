@@ -7,6 +7,7 @@
 #include "winrt\Microsoft.UI.Xaml.h"
 
 #include <functional>
+#include <windows.h>
 
 using UIElement = winrt::Microsoft::UI::Xaml::UIElement;
 using Window = winrt::Microsoft::UI::Xaml::Window;

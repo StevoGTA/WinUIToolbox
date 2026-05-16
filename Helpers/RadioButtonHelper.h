@@ -6,8 +6,6 @@
 
 #include "ControlHelper.h"
 
-#include <functional>
-
 using RadioButton = winrt::Microsoft::UI::Xaml::Controls::RadioButton;
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -61,43 +61,11 @@ class SelectorBarHelper : public ControlHelper<SelectorBar, SelectorBarHelper> {
 
 									return getTagAsInt(selectedItem.Tag(), value) ? value : defaultValue;
 								}
-		SelectorBarHelper&	setSelectedIntTag(int value)
-								{
-									// Iterate items
-									for (auto const& item : getSelectorBar().Items()) {
-										// Try to get tag
-										int	tag;
-										if (getTagAsInt(item.Tag(), tag) && (tag == value)) {
-											// Found it
-											getSelectorBar().SelectedItem(item);
-											break;
-										}
-									}
-
-									return *this;
-								}
+		SelectorBarHelper&	setSelectedIntTag(int value);
 
 		SelectorBarHelper&	setSelectedItemChangedProc(
 									std::function<void(int index, const SelectorBarItem& selectorBarItem)>
-											selectedItemChangedProc)
-								{
-									// Setup
-									getSelectorBar().SelectionChanged(
-											[selectedItemChangedProc](const SelectorBar& selectorBar,
-													const SelectorBarSelectionChangedEventArgs&
-															selectorBarSelectionChangedEventArgs){
-										// Get info
-										auto		selectorBarItem = selectorBar.SelectedItem();
-
-										uint32_t	index;
-										selectorBar.Items().IndexOf(selectorBarItem, index);
-
-										// Call proc
-										selectedItemChangedProc(index, selectorBar.SelectedItem());
-									});
-
-									return *this;
-								}
+											selectedItemChangedProc);
 
 		SelectorBar			getSelectorBar() const
 								{ return getControl(); }

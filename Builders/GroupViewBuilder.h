@@ -97,19 +97,26 @@ class ExpanderGroupViewBuilder : public GroupViewBuilder {
 											~ExpanderGroupViewBuilder();
 
 											// GroupViewBuilder methods
-				UIElement					getUIElement() const;
+				Expander					getExpander() const;
 
 											// Instance methods
 				ExpanderGroupViewBuilder&	setExpanded(bool isExpanded);
 
 											// Class methods
-		static	UIElement					composeUIElement(const hstring& title, double itemLeadingInset,
+		static	Expander					composeExpander(const hstring& title, double itemLeadingInset,
 													FrameworkElement frameworkElement)
-												{ return ExpanderGroupViewBuilder(title, itemLeadingInset)
-														.add(frameworkElement)
-														.getUIElement(); }
-		static	UIElement					composeUIElement(const hstring& title, double itemLeadingInset, Page& page)
-												{ return composeUIElement(title, itemLeadingInset,
+												{
+													// Setup
+													ExpanderGroupViewBuilder	expanderGroupViewBuilder(title,
+																						itemLeadingInset);
+
+													// Add view
+													expanderGroupViewBuilder.add(frameworkElement);
+
+													return expanderGroupViewBuilder.getExpander();
+												}
+		static	Expander					composeExpander(const hstring& title, double itemLeadingInset, Page& page)
+												{ return composeExpander(title, itemLeadingInset,
 														page.as<FrameworkElement>()); }
 
 	// Properties

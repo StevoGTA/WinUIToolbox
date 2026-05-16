@@ -237,7 +237,7 @@ ExpanderGroupViewBuilder::~ExpanderGroupViewBuilder()
 // MARK: GroupViewBuilder methods
 
 //----------------------------------------------------------------------------------------------------------------------
-UIElement ExpanderGroupViewBuilder::getUIElement() const
+Expander ExpanderGroupViewBuilder::getExpander() const
 //----------------------------------------------------------------------------------------------------------------------
 {
 	return mInternals->mExpander;

@@ -6,13 +6,7 @@
 
 #include "ControlHelper.h"
 
-#include <WinError.h>
-
-#include "winrt\Microsoft.UI.Xaml.h"
-#include "winrt\Microsoft.UI.Xaml.Controls.h"
 #include "winrt\Windows.Foundation.h"
-
-#include <functional>
 
 using ComboBox = winrt::Microsoft::UI::Xaml::Controls::ComboBox;
 using DateTime = winrt::Windows::Foundation::DateTime;
