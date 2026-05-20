@@ -23,16 +23,6 @@ class CppTBContentDialogHelper : public ContentDialogHelper {
 	// Methods
 	public:
 								// Class methods
-		static	ContentDialog	makeClosable(const CString& title, const CString& content,
-										const CString& closeButtonText, const ButtonProc& closeButtonProc = [](){})
-									{ return make(title, content, OV<CString>(), [](){}, OV<CString>(), [](){},
-											OV<CString>(closeButtonText), closeButtonProc); }
-		static	ContentDialog	make(const CString& title, const CString& content,
-										const CString& buttonText, const ButtonProc& buttonProc = [](){},
-										const OV<CString>& closeButtonText = OV<CString>(),
-										const ButtonProc& closeButtonProc = [](){})
-									{ return make(title, content, buttonText, buttonProc, OV<CString>(), [](){},
-											closeButtonText, closeButtonProc); }
 		static	ContentDialog	make(const CString& title, const CString& content,
 										const OV<CString>& primaryButtonText = OV<CString>(),
 										const ButtonProc& primaryButtonProc = [](){},
@@ -40,6 +30,25 @@ class CppTBContentDialogHelper : public ContentDialogHelper {
 										const ButtonProc& secondaryButtonProc = [](){},
 										const OV<CString>& closeButtonText = OV<CString>(),
 										const ButtonProc& closeButtonProc = [](){});
+		static	ContentDialog	make(const CString& title, const CString& content,
+										const CString& buttonText, const ButtonProc& buttonProc = [](){},
+										const OV<CString>& closeButtonText = OV<CString>(),
+										const ButtonProc& closeButtonProc = [](){})
+									{ return make(title, content, buttonText, buttonProc, OV<CString>(), [](){},
+											closeButtonText, closeButtonProc); }
+
+		static	ContentDialog	makeClosable(const CString& title, const CString& content,
+										const CString& closeButtonText, const ButtonProc& closeButtonProc = [](){})
+									{ return make(title, content, OV<CString>(), [](){}, OV<CString>(), [](){},
+											OV<CString>(closeButtonText), closeButtonProc); }
+		static	ContentDialog	makeClosable(const CString& titleKey, const CString& contentKey,
+										const CString& closeButtonTextKey, const CString& localizationGroup,
+										const ButtonProc& closeButtonProc = [](){})
+									{ return make(CString(localizationGroup, titleKey),
+											CString(localizationGroup, contentKey), OV<CString>(), [](){},
+											OV<CString>(), []() {},
+											OV<CString>(CString(localizationGroup, closeButtonTextKey)),
+											closeButtonProc); }
 
 	// Properties
 	public:
