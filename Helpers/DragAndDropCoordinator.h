@@ -22,6 +22,7 @@ class DragAndDropCoordinator {
 	public:
 										// Lifecycle methods
 										DragAndDropCoordinator();
+										~DragAndDropCoordinator();
 
 										// Instance methods
 				void					addHandler(const Control& handler, int priority) const;

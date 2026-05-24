@@ -320,10 +320,18 @@ ComboBoxHelper& ComboBoxHelper::setSelectedValueChangedProc(std::function<void(c
 				if (sender == sComboBoxInUpdate)
 					return;
 
-				// Get tag
-				auto	tag =
-								selectionChangedEventArgs.AddedItems().GetAt(0).as<ComboBoxItem>().Tag()
-										.as<SComboBoxItemTag>();
+				// Skip if no added item (e.g. selection cleared)
+				if (selectionChangedEventArgs.AddedItems().Size() == 0)
+					return;
+
+				// Try to resolve as a ComboBoxItem with an SComboBoxItemTag (skip separators / section titles)
+				auto	comboBoxItem = selectionChangedEventArgs.AddedItems().GetAt(0).try_as<ComboBoxItem>();
+				if (comboBoxItem == nullptr)
+					return;
+
+				auto	tag = comboBoxItem.Tag().try_as<SComboBoxItemTag>();
+				if (tag == nullptr)
+					return;
 
 				// Check tag
 				if (tag->hasProc())

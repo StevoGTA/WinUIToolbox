@@ -24,7 +24,7 @@ namespace winrt::WinUIToolbox::implementation {
 										Pill();
 
 										// Instance methods
-					Brush				Stroke() const;;
+					Brush				Stroke() const;
 					void				Stroke(const Brush& brush);
 
 					double				StrokeThickness() const;

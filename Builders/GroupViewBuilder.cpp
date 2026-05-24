@@ -7,7 +7,7 @@
 #include <winrt\Microsoft.UI.Xaml.Controls.h>
 #include "winrt\Windows.Foundation.Collections.h"
 
-#include "TWrappers.h"
+#include <optional>
 
 using namespace winrt::Microsoft::UI;
 
@@ -16,14 +16,14 @@ using namespace winrt::Microsoft::UI;
 
 class GroupViewBuilder::Internals {
 	public:
-		Internals(double itemLeadingInset, OV<double> itemTrailingInset) :
+		Internals(double itemLeadingInset, std::optional<double> itemTrailingInset) :
 			mMarginLeading(itemLeadingInset), mMarginTrailing(itemTrailingInset)
 			{}
 
-		StackPanel	mStackPanel;
+		StackPanel				mStackPanel;
 
-		double		mMarginLeading;
-		OV<double>	mMarginTrailing;
+		double					mMarginLeading;
+		std::optional<double>	mMarginTrailing;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ GroupViewBuilder::GroupViewBuilder(double itemLeadingInset, double itemTrailingI
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals = new Internals(itemLeadingInset, OV<double>(itemTrailingInset));
+	mInternals = new Internals(itemLeadingInset, std::optional<double>(itemTrailingInset));
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -45,7 +45,7 @@ GroupViewBuilder::GroupViewBuilder(double itemLeadingInset)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals = new Internals(itemLeadingInset, OV<double>());
+	mInternals = new Internals(itemLeadingInset, std::optional<double>());
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -53,14 +53,14 @@ GroupViewBuilder::GroupViewBuilder()
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	mInternals = new Internals(0.0, OV<double>());
+	mInternals = new Internals(0.0, std::optional<double>());
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 GroupViewBuilder::~GroupViewBuilder()
 //----------------------------------------------------------------------------------------------------------------------
 {
-	Delete(mInternals);
+	delete mInternals;
 }
 
 // MARK: Instance methods
@@ -71,7 +71,7 @@ GroupViewBuilder& GroupViewBuilder::add(FrameworkElement frameworkElement)
 {
 	// Add View
 	frameworkElement.Margin(
-			ThicknessHelper::FromLengths(mInternals->mMarginLeading, 0.0, mInternals->mMarginTrailing.getValue(0.0),
+			ThicknessHelper::FromLengths(mInternals->mMarginLeading, 0.0, mInternals->mMarginTrailing.value_or(0.0),
 					8.0));
 	mInternals->mStackPanel.Children().Append(frameworkElement);
 
@@ -85,7 +85,7 @@ GroupViewBuilder& GroupViewBuilder::add(FrameworkElement frameworkElement, doubl
 	// Add View
 	frameworkElement.Margin(
 			ThicknessHelper::FromLengths(mInternals->mMarginLeading + leadingInset, 0.0,
-					mInternals->mMarginTrailing.getValue(0.0), 8.0));
+					mInternals->mMarginTrailing.value_or(0.0) + trailingInset, 8.0));
 	mInternals->mStackPanel.Children().Append(frameworkElement);
 
 	return *this;
@@ -105,14 +105,14 @@ UIElement GroupViewBuilder::add(const hstring& title, FrameworkElement framework
 	TextBlock	titleTextBlock;
 	titleTextBlock.Text(title);
 	titleTextBlock.Margin(
-			ThicknessHelper::FromLengths(mInternals->mMarginLeading, 0.0, mInternals->mMarginTrailing.getValue(0.0),
+			ThicknessHelper::FromLengths(mInternals->mMarginLeading, 0.0, mInternals->mMarginTrailing.value_or(0.0),
 					0.0));
 	stackPanel.Children().Append(titleTextBlock);
 
 	// Add View
 	frameworkElement.Margin(
 			ThicknessHelper::FromLengths(mInternals->mMarginLeading + leadingInset, 0.0,
-					mInternals->mMarginTrailing.getValue(0.0) + trailingInset, 8.0));
+					mInternals->mMarginTrailing.value_or(0.0) + trailingInset, 8.0));
 	stackPanel.Children().Append(frameworkElement);
 
 	return stackPanel;
@@ -132,14 +132,14 @@ UIElement GroupViewBuilder::insert(const hstring& title, FrameworkElement framew
 	TextBlock	titleTextBlock;
 	titleTextBlock.Text(title);
 	titleTextBlock.Margin(
-			ThicknessHelper::FromLengths(mInternals->mMarginLeading, 0.0, mInternals->mMarginTrailing.getValue(0.0),
+			ThicknessHelper::FromLengths(mInternals->mMarginLeading, 0.0, mInternals->mMarginTrailing.value_or(0.0),
 					0.0));
 	stackPanel.Children().Append(titleTextBlock);
 
 	// Add View
 	frameworkElement.Margin(
 			ThicknessHelper::FromLengths(mInternals->mMarginLeading + leadingInset, 0.0,
-					mInternals->mMarginTrailing.getValue(0.0) + trailingInset, 8.0));
+					mInternals->mMarginTrailing.value_or(0.0) + trailingInset, 8.0));
 	stackPanel.Children().Append(frameworkElement);
 
 	return stackPanel;
@@ -231,7 +231,7 @@ ExpanderGroupViewBuilder::ExpanderGroupViewBuilder(const hstring& title) : Group
 ExpanderGroupViewBuilder::~ExpanderGroupViewBuilder()
 //----------------------------------------------------------------------------------------------------------------------
 {
-	Delete(mInternals);
+	delete mInternals;
 }
 
 // MARK: GroupViewBuilder methods

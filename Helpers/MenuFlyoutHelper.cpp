@@ -21,16 +21,18 @@ MenuFlyoutHelper::MenuFlyoutHelper(MenuFlyout menuFlyout) : DependencyObjectHelp
 	menuFlyout.Opening(
 			[this, menuFlyout](const IInspectable& sender, const IInspectable& args){
 				// Check if should enable items
-				for (auto menuFlyoutItem : menuFlyout.Items()) {
+				for (auto item : menuFlyout.Items()) {
 					// Check if MenuFlyoutItem
-					if (menuFlyoutItem.try_as<MenuFlyoutItem>())
+					if (auto menuFlyoutItem = item.try_as<MenuFlyoutItem>())
 						// Validate
-						MenuFlyoutItemHelper::validate(menuFlyoutItem.as<MenuFlyoutItem>());
-					else if (menuFlyoutItem.try_as<MenuFlyoutSubItem>()) {
-						// Validate sub items
-						for (auto menuFlyoutSubItem : menuFlyoutItem.as<MenuFlyoutSubItem>().Items())
-							// Validate
-							MenuFlyoutItemHelper::validate(menuFlyoutSubItem.as<MenuFlyoutItem>());
+						MenuFlyoutItemHelper::validate(menuFlyoutItem);
+					else if (auto menuFlyoutSubItem = item.try_as<MenuFlyoutSubItem>()) {
+						// Validate sub items (skip separators / non-item children)
+						for (auto subItem : menuFlyoutSubItem.Items())
+							// Check if MenuFlyoutItem
+							if (auto menuFlyoutSubMenuItem = subItem.try_as<MenuFlyoutItem>())
+								// Validate
+								MenuFlyoutItemHelper::validate(menuFlyoutSubMenuItem);
 					}
 				}
 			});

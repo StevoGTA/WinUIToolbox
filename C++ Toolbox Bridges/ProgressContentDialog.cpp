@@ -93,17 +93,20 @@ CProgress::UpdateInfo ProgressContentDialog::getProgressUpdateInfo() const
 	// Return update info
 	return CProgress::UpdateInfo([](const CProgress& progress, void* userData) {
 		// Setup
-				CString		message(progress.getMessage());
-				OV<Float32>	value(progress.getValue());
-		const	Internals&	internals = *((Internals*) userData);
+		CString		message(progress.getMessage());
+		OV<Float32>	value(progress.getValue());
+		Internals&	internals = *((Internals*) userData);
 
-		// Update UI
+		// Keep internals alive until the queued update runs
+		internals.addReference();
 		internals.mDispatcherQueue.TryEnqueue([=, &internals]() {
 			// Update UI
 			internals.mMessageTextBlock.Text(message.getOSString());
 
 			internals.mProgressBar.IsIndeterminate(!value.hasValue());
 			internals.mProgressBar.Value(value.hasValue() ? *value : 0.0);
+
+			internals.removeReference();
 		});
 	}, mInternals);
 }
@@ -133,17 +136,22 @@ void ProgressContentDialog::perform(const I<CProgress>& progress, Proc proc, Can
 		void*	result = proc(progress);
 
 		// Switch to UI
-		internals->mDispatcherQueue.TryEnqueue([=](){
-			// Hide
-			internals->mContentDialog.Hide();
+		bool	enqueued =
+						internals->mDispatcherQueue.TryEnqueue([=](){
+							// Hide
+							internals->mContentDialog.Hide();
 
-			// Check cancelled
-			if (!internals->mIsCancelled)
-				// Call completion proc
-				completionProc(result);
+							// Check cancelled
+							if (!internals->mIsCancelled)
+								// Call completion proc
+								completionProc(result);
 
-			// Cleanup
+							// Cleanup
+							internals->removeReference();
+						});
+
+		// If the enqueue failed, the lambda above will never run — release the reference now
+		if (!enqueued)
 			internals->removeReference();
-		});
 	});
 }
