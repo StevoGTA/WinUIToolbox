@@ -90,25 +90,33 @@ ProgressContentDialog::~ProgressContentDialog()
 CProgress::UpdateInfo ProgressContentDialog::getProgressUpdateInfo() const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Return update info
-	return CProgress::UpdateInfo([](const CProgress& progress, void* userData) {
+	// Setup
+	auto	internals = mInternals;
+
+	return CProgress::UpdateInfo([=](const CProgress& progress, void* userData) {
 		// Setup
 		CString		message(progress.getMessage());
 		OV<Float32>	value(progress.getValue());
-		Internals&	internals = *((Internals*) userData);
 
-		// Keep internals alive until the queued update runs
-		internals.addReference();
-		internals.mDispatcherQueue.TryEnqueue([=, &internals]() {
-			// Update UI
-			internals.mMessageTextBlock.Text(message.getOSString());
+		// Add reference to keep internals alive until this specific dispatch runs
+		internals->addReference();
 
-			internals.mProgressBar.IsIndeterminate(!value.hasValue());
-			internals.mProgressBar.Value(value.hasValue() ? *value : 0.0);
+		// Switch to UI
+		bool	enqueued =
+					internals->mDispatcherQueue.TryEnqueue([=]() {
+						// Update UI
+						internals->mMessageTextBlock.Text(message.getOSString());
 
-			internals.removeReference();
-		});
-	}, mInternals);
+						internals->mProgressBar.IsIndeterminate(!value.hasValue());
+						internals->mProgressBar.Value(value.hasValue() ? *value : 0.0);
+
+						internals->removeReference();
+					});
+
+		// If the enqueue failed, the lambda above will never run — release the reference now
+		if (!enqueued)
+			internals->removeReference();
+	});
 }
 
 //----------------------------------------------------------------------------------------------------------------------
