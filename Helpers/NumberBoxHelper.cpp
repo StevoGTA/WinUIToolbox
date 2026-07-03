@@ -15,7 +15,7 @@ using NumberBoxValueChangedEventArgs = winrt::Microsoft::UI::Xaml::Controls::Num
 static	NumberBox	sNumberBoxInUpdate(nullptr);
 
 //----------------------------------------------------------------------------------------------------------------------
-// MARK: ButtonHelper
+// MARK: NumberBoxHelper
 
 // MARK: Instance methods
 

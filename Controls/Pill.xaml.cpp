@@ -35,27 +35,34 @@ DependencyProperty	Pill::mStrokeThicknessProperty =
 Pill::Pill() : PillT<Pill>()
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Setup Loaded event handler
-	SizeChanged([this](const IInspectable& sender, const RoutedEventArgs& routedEventArgs)
-			{
-				// Setup
-				auto	width = ActualWidth();
-				auto	height = ActualHeight();
-				Brush	stroke = Stroke();
+	// Setup SizeChanged event handler
+	SizeChanged([this](const IInspectable& sender, const RoutedEventArgs& routedEventArgs){
+		// Setup
+		auto	width = ActualWidth();
+		auto	height = ActualHeight();
+		Brush	stroke = Stroke();
 
-				// Create rectangle
-				Shapes::Rectangle	rectangle = Shapes::Rectangle();
-				rectangle.Width(width);
-				rectangle.Height(height);
-				rectangle.RadiusX(height / 2.0);
-				rectangle.RadiusY(height / 2.0);
-				rectangle.Stroke(stroke ? stroke : SolidColorBrush(winrt::Windows::UI::Colors::White()));
-				rectangle.StrokeThickness(StrokeThickness());
+		// Get existing rectangle (if any)
+		Shapes::Rectangle	rectangle{nullptr};
+		if (Children().Size() > 0)
+			// Reuse existing rectangle
+			rectangle = Children().GetAt(0).try_as<Shapes::Rectangle>();
 
-				// Update children
-				Children().Clear();
-				Children().Append(rectangle);
-			});
+		// Create rectangle if needed
+		if (rectangle == nullptr) {
+			// Create and add
+			rectangle = Shapes::Rectangle();
+			Children().Append(rectangle);
+		}
+
+		// Update rectangle
+		rectangle.Width(width);
+		rectangle.Height(height);
+		rectangle.RadiusX(height / 2.0);
+		rectangle.RadiusY(height / 2.0);
+		rectangle.Stroke(stroke ? stroke : SolidColorBrush(winrt::Windows::UI::Colors::White()));
+		rectangle.StrokeThickness(StrokeThickness());
+	});
 }
 
 // MARK: Instance methods
