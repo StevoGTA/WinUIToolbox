@@ -16,7 +16,7 @@ struct FunctionWrapper : winrt::implements<FunctionWrapper, winrt::Windows::Foun
 // MARK: Class methods
 
 //----------------------------------------------------------------------------------------------------------------------
-MenuFlyoutItem MenuFlyoutItemHelper::forTitle(const hstring& title, std::function<bool()> validationProc,
+MenuFlyoutItem MenuFlyoutItemHelper::forTitle(const winrt::param::hstring& title, std::function<bool()> validationProc,
 		std::function<void()> actionProc)
 //----------------------------------------------------------------------------------------------------------------------
 {

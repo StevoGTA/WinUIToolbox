@@ -33,8 +33,7 @@ namespace winrt::WinUIToolbox::implementation {
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: - winrt::WinUIToolbox::factory_implementation
 
-namespace winrt::WinUIToolbox::factory_implementation
-{
+namespace winrt::WinUIToolbox::factory_implementation {
 	// MARK: SectionView
 	struct SectionView : SectionViewT<SectionView, implementation::SectionView> {};
 }

@@ -48,7 +48,7 @@ class TextBlockHelper : public FrameworkElementHelper<TextBlock, TextBlockHelper
 									return *this;
 								}
 
-		TextBlockHelper&	setText(const winrt::hstring& text)
+		TextBlockHelper&	setText(const winrt::param::hstring& text)
 								{ getTextBlock().Text(text); return *this; }
 		TextBlockHelper&	setTextWrapping(TextWrapping textWrapping)
 								{ getTextBlock().TextWrapping(textWrapping); return *this; }

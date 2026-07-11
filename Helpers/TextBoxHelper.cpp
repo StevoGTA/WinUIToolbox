@@ -79,7 +79,7 @@ TextBoxHelper& TextBoxHelper::setKeyDownProc(std::function<void(
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-TextBoxHelper& TextBoxHelper::setText(const winrt::hstring& string)
+TextBoxHelper& TextBoxHelper::setText(const winrt::param::hstring& string)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Update

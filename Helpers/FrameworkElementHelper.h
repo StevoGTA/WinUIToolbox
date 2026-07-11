@@ -42,6 +42,8 @@ template <typename C, typename H> class FrameworkElementHelper : public UIElemen
 				H&		setWidth(double width)
 							{ getFrameworkElement().Width(width); return (H&) *this; }
 
+				H&		setMinHeight(double minHeight)
+							{ getFrameworkElement().MinHeight(minHeight); return (H&) *this; }
 				H&		setHeight(double height)
 							{ getFrameworkElement().Height(height); return (H&) *this; }
 

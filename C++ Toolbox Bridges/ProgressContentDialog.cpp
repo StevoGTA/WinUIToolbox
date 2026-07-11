@@ -27,13 +27,39 @@ using ThreadPool = winrt::Windows::System::Threading::ThreadPool;
 
 class ProgressContentDialog::Internals : public TReferenceCountableAutoDelete<Internals> {
 	public:
-		Internals(ProgressContentDialog& progressContentDialog, const TextBlock& messageTextBlock,
-				const ProgressBar& progressBar, const Dispatching::DispatcherQueue& dispatcherQueue) :
-			TReferenceCountableAutoDelete(),
-					mContentDialog(progressContentDialog),
-							mIsCancelled(false), mDispatcherQueue(dispatcherQueue),
-							mMessageTextBlock(messageTextBlock), mProgressBar(progressBar)
-			{}
+						Internals(ProgressContentDialog& progressContentDialog, const TextBlock& messageTextBlock,
+								const ProgressBar& progressBar, const Dispatching::DispatcherQueue& dispatcherQueue) :
+							TReferenceCountableAutoDelete(),
+									mContentDialog(progressContentDialog),
+											mIsCancelled(false), mDispatcherQueue(dispatcherQueue),
+											mMessageTextBlock(messageTextBlock), mProgressBar(progressBar)
+							{}
+
+		static	void	progressUpdated(const CProgress& progress, Internals* internals)
+							{
+								// Setup
+								CString		message(progress.getMessage());
+								OV<Float32>	value(progress.getValue());
+
+								// Add reference to keep internals alive until this specific dispatch runs
+								internals->addReference();
+
+								// Switch to UI
+								bool	enqueued =
+												internals->mDispatcherQueue.TryEnqueue([=]() {
+													// Update UI
+													internals->mMessageTextBlock.Text(message.getOSString());
+
+													internals->mProgressBar.IsIndeterminate(!value.hasValue());
+													internals->mProgressBar.Value(value.hasValue() ? *value : 0.0);
+
+													internals->removeReference();
+												});
+
+								// If the enqueue failed, the lambda above will never run — release the reference now
+								if (!enqueued)
+									internals->removeReference();
+							}
 
 		ContentDialog					mContentDialog;
 
@@ -90,33 +116,7 @@ ProgressContentDialog::~ProgressContentDialog()
 CProgress::UpdateInfo ProgressContentDialog::getProgressUpdateInfo() const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Setup
-	auto	internals = mInternals;
-
-	return CProgress::UpdateInfo([=](const CProgress& progress, void* userData) {
-		// Setup
-		CString		message(progress.getMessage());
-		OV<Float32>	value(progress.getValue());
-
-		// Add reference to keep internals alive until this specific dispatch runs
-		internals->addReference();
-
-		// Switch to UI
-		bool	enqueued =
-					internals->mDispatcherQueue.TryEnqueue([=]() {
-						// Update UI
-						internals->mMessageTextBlock.Text(message.getOSString());
-
-						internals->mProgressBar.IsIndeterminate(!value.hasValue());
-						internals->mProgressBar.Value(value.hasValue() ? *value : 0.0);
-
-						internals->removeReference();
-					});
-
-		// If the enqueue failed, the lambda above will never run — release the reference now
-		if (!enqueued)
-			internals->removeReference();
-	});
+	return CProgress::UpdateInfo((CProgress::UpdateInfo::Proc) Internals::progressUpdated, mInternals);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

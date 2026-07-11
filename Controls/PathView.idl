@@ -1,0 +1,22 @@
+//----------------------------------------------------------------------------------------------------------------------
+//	PathView.idl			©2026 Stevo Brock		All rights reserved.
+//----------------------------------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: WinUIToolbox namespace
+namespace WinUIToolbox {
+
+	//------------------------------------------------------------------------------------------------------------------
+	// MARK: PathView
+	[default_interface]
+	runtimeclass PathView : Microsoft.UI.Xaml.Controls.Panel {
+														// Lifecycle Methods
+														PathView();
+
+														// Class methods
+		static	Microsoft.UI.Xaml.DependencyProperty	PathProperty { get; };
+
+														// Properties
+				String									Path;
+	}
+}

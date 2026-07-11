@@ -111,6 +111,16 @@ ComboBoxHelper& ComboBoxHelper::addItem(const hstring& displayName, std::functio
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+ComboBoxHelper& ComboBoxHelper::addItem(const hstring& string)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Add a plain string item (suitable for an editable ComboBox)
+	getComboBox().Items().Append(box_value(string));
+
+	return *this;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 ComboBoxHelper& ComboBoxHelper::addSectionTitleItem(const hstring& title)
 //----------------------------------------------------------------------------------------------------------------------
 {
@@ -170,6 +180,13 @@ int ComboBoxHelper::getSelectedIntValue() const
 	getIntFromTag(item.Tag(), intValue);
 
 	return intValue;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+hstring ComboBoxHelper::getText() const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	return getComboBox().Text();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -310,6 +327,26 @@ bool ComboBoxHelper::selectItemWithTag(std::function<bool(const IInspectable& va
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+ComboBoxHelper& ComboBoxHelper::setDropDownOpenedProc(std::function<void()> proc)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup DropDownOpened
+	getComboBox().DropDownOpened([this, proc](const IInspectable& sender, const IInspectable&){ proc(); });
+
+	return *this;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+ComboBoxHelper& ComboBoxHelper::setEditable(bool editable)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Set editable
+	getComboBox().IsEditable(editable);
+
+	return *this;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 ComboBoxHelper& ComboBoxHelper::setSelectedValueChangedProc(std::function<void(const IInspectable& value)> proc)
 //----------------------------------------------------------------------------------------------------------------------
 {
@@ -388,11 +425,52 @@ ComboBoxHelper& ComboBoxHelper::setSelectionChangedProc(std::function<void()> pr
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-ComboBoxHelper& ComboBoxHelper::setDropDownOpenedProc(std::function<void()> proc)
+ComboBoxHelper& ComboBoxHelper::setText(const hstring& text, bool addIfNotFound)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Setup DropDownOpened
-	getComboBox().DropDownOpened([this, proc](const IInspectable& sender, const IInspectable&){ proc(); });
+	// Find a matching item
+	auto	items = getComboBox().Items();
+	int32_t	selectedIndex = -1;
+	for (uint32_t i = 0; (selectedIndex == -1) && (i < items.Size()); i++) {
+		// Compare as a plain string
+		auto	itemString = items.GetAt(i).try_as<hstring>();
+		if (itemString && (*itemString == text))
+			// Found
+			selectedIndex = (int32_t) i;
+	}
+
+	// If there is no matching item but there is text, optionally add it as an item so an editable ComboBox
+	//	renders it (an editable ComboBox does not display a Text value set before it is loaded)
+	if ((selectedIndex == -1) && addIfNotFound && !text.empty()) {
+		// Add as an item
+		selectedIndex = (int32_t) items.Size();
+		items.Append(box_value(text));
+	}
+
+	// Update (suppressing selection change events)
+	sComboBoxInUpdate = getComboBox();
+	if (selectedIndex >= 0)
+		// Select item
+		getComboBox().SelectedIndex(selectedIndex);
+	else
+		// Set text
+		getComboBox().Text(text);
+	sComboBoxInUpdate = nullptr;
+
+	return *this;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+ComboBoxHelper& ComboBoxHelper::setTextChangedProc(std::function<void(const hstring& text)> proc)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Notify on every text change.  (An editable ComboBox keeps user-entered free text by default; do NOT
+	//	handle TextSubmitted, as marking it handled reverts the Text to its previous value.)
+	getComboBox().RegisterPropertyChangedCallback(ComboBox::TextProperty(),
+			[proc](const DependencyObject& sender, const DependencyProperty& property){
+				// Call proc
+				proc(sender.as<ComboBox>().Text());
+			});
 
 	return *this;
 }

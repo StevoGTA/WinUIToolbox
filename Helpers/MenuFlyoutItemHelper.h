@@ -35,7 +35,7 @@ class MenuFlyoutItemHelper : public ControlHelper<MenuFlyoutItem, MenuFlyoutItem
 		//						{ return getDependencyObject(); }
 
 								// Class methods
-		static	MenuFlyoutItem	forGroupTitle(const hstring& title)
+		static	MenuFlyoutItem	forGroupTitle(const winrt::param::hstring& title)
 									{
 										// Create MenuFlyoutItem
 										MenuFlyoutItem menuFlyoutItem;
@@ -44,7 +44,7 @@ class MenuFlyoutItemHelper : public ControlHelper<MenuFlyoutItem, MenuFlyoutItem
 
 										return menuFlyoutItem;
 									}
-		static	MenuFlyoutItem	forTitle(const hstring& title, std::function<bool()> validationProc,
+		static	MenuFlyoutItem	forTitle(const winrt::param::hstring& title, std::function<bool()> validationProc,
 										std::function<void()> actionProc);
 									//{
 									//	// Create MenuFlyoutItem

@@ -1,50 +1,55 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	Pill.xaml.h			©2025 Stevo Brock		All rights reserved.
+//	PathView.xaml.h			ï¿½2026 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #pragma once
 
-#include "WinUIToolbox.Pill.g.h"
+#include "WinUIToolbox.PathView.g.h"
 
 #include "winrt\Microsoft.UI.Xaml.h"
 
-using Brush = winrt::Microsoft::UI::Xaml::Media::Brush;
 using DependencyProperty = winrt::Microsoft::UI::Xaml::DependencyProperty;
+using Size = winrt::Windows::Foundation::Size;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: winrt::WinUIToolbox::implementation
 
 namespace winrt::WinUIToolbox::implementation {
 
-	// MARK: Pill
-	struct Pill : PillT<Pill> {
+	// MARK: PathView
+	struct PathView : PathViewT<PathView> {
+		// Classes
+		private:
+			class Internals;
+
 		// Methods
 		public:
 										// Lifecycle methods
-										Pill();
+										PathView();
+										~PathView();
+
+										// Control methods
+					Size				MeasureOverride(const Size& availableSize);
+					Size				ArrangeOverride(const Size& finalSize);
 
 										// Instance methods
-					Brush				Stroke() const;
-					void				Stroke(const Brush& brush);
-
-					double				StrokeThickness() const;
-					void				StrokeThickness(double strokeThickness);
+					hstring				Path() const;
+					void				Path(const hstring& path);
 
 										// Class methods
-			static	DependencyProperty	StrokeProperty() noexcept;
-			static	DependencyProperty	StrokeThicknessProperty() noexcept;
-
+			static	DependencyProperty	PathProperty() noexcept;
 
 		// Properties
 		private:
-			static	DependencyProperty	mStrokeProperty;
-			static	DependencyProperty	mStrokeThicknessProperty;
+			static	DependencyProperty	mPathProperty;
+
+					Internals*			mInternals;
 	};
 }
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: - winrt::WinUIToolbox::factory_implementation
 
 namespace winrt::WinUIToolbox::factory_implementation {
-	// MARK: Pill
-	struct Pill : PillT<Pill, implementation::Pill> {};
+	// MARK: PathView
+	struct PathView : PathViewT<PathView, implementation::PathView> {};
 }

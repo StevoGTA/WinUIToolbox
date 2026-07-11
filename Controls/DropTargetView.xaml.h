@@ -56,9 +56,7 @@ namespace winrt::WinUIToolbox::implementation {
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: - winrt::WinUIToolbox::factory_implementation
 
-namespace winrt::WinUIToolbox::factory_implementation
-{
+namespace winrt::WinUIToolbox::factory_implementation {
 	// MARK: DropTargetView
-	struct DropTargetView : DropTargetViewT<DropTargetView, implementation::DropTargetView> {
-	};
+	struct DropTargetView : DropTargetViewT<DropTargetView, implementation::DropTargetView> {};
 }

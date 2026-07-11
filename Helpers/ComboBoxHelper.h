@@ -34,6 +34,7 @@ class ComboBoxHelper : public ControlHelper<ComboBox, ComboBoxHelper> {
 	public:
 								// Lifecycle methods
 								ComboBoxHelper(ComboBox comboBox, Options options = kOptionsNone);
+								ComboBoxHelper() : ComboBoxHelper(ComboBox()) {}
 	
 								// Instance methods
 				ComboBoxHelper&	addItem(const winrt::hstring& displayName, const IInspectable& value,
@@ -42,11 +43,13 @@ class ComboBoxHelper : public ControlHelper<ComboBox, ComboBoxHelper> {
 									{ return addItem(displayName, winrt::box_value<int>(value), isSelected); }
 				ComboBoxHelper& addItem(const winrt::hstring& displayName, std::function<void()> proc,
 										bool isSelected = false);
+				ComboBoxHelper& addItem(const winrt::hstring& string);
 				ComboBoxHelper& addSectionTitleItem(const winrt::hstring& title);
 				ComboBoxHelper& addSeparatorItem();
 
 				IInspectable	getSelectedValue() const;
 				int				getSelectedIntValue() const;
+				winrt::hstring	getText() const;
 
 				void			selectIndex(uint32_t index) const;
 				bool			selectItemWithTag(const winrt::hstring& string) const;
@@ -54,11 +57,16 @@ class ComboBoxHelper : public ControlHelper<ComboBox, ComboBoxHelper> {
 				bool			selectItemWithTag(std::function<bool(const IInspectable& value)> tagValueCompareProc)
 										const;
 
+				ComboBoxHelper& setDropDownOpenedProc(std::function<void()> proc);
+
+				ComboBoxHelper& setEditable(bool editable = true);
+
 				ComboBoxHelper& setSelectedValueChangedProc(std::function<void(const IInspectable& value)> proc);
 				ComboBoxHelper& setSelectedIntValueChangedProc(std::function<void(int value)> proc);
 				ComboBoxHelper& setSelectionChangedProc(std::function<void()> proc);
 
-				ComboBoxHelper& setDropDownOpenedProc(std::function<void()> proc);
+				ComboBoxHelper& setText(const winrt::hstring& text, bool addIfNotFound = true);
+				ComboBoxHelper& setTextChangedProc(std::function<void(const winrt::hstring& text)> proc);
 
 				ComboBox		getComboBox() const
 									{ return getControl(); }

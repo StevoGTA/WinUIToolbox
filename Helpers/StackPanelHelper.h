@@ -25,6 +25,8 @@ class StackPanelHelper : public FrameworkElementHelper<StackPanel, StackPanelHel
 							// Instance methods
 		StackPanelHelper&	setOrientation(Orientation orientation)
 								{ getStackPanel().Orientation(orientation); return *this; }
+		StackPanelHelper&	setSpacing(double spacing)
+								{ getStackPanel().Spacing(spacing); return *this; }
 		StackPanelHelper&	setEnabled(bool enabled);
 		StackPanelHelper&	add(UIElement uiElement)
 								{ getStackPanel().Children().Append(uiElement); return *this; }

@@ -20,6 +20,8 @@ class ButtonHelper : public ControlHelper<Button, ButtonHelper> {
 
 						// Instance methods
 		ButtonHelper&	setClickedProc(std::function<void()> clickedProc);
+		ButtonHelper&	setPointerEnteredProc(std::function<void()> pointerEnteredProc);
+		ButtonHelper&	setPointerExitedProc(std::function<void()> pointerExitedProc);
 
 		Button			getButton() const
 							{ return getControl(); }

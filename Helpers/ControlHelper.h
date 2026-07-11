@@ -45,6 +45,9 @@ template <typename C, typename H> class ControlHelper : public FrameworkElementH
 				{ getControl().BorderThickness(ThicknessHelper::FromLengths(left, top, right, bottom));
 						return (H&) *this; }
 
+		H&	setContent(const UIElement& uiElement)
+				{ getControl().Content(uiElement); return (H&) *this; }
+
 		H&	setContentAsFontIcon(const winrt::param::hstring& glyph, double fontSize) const
 				{
 					// Create FontIcon
