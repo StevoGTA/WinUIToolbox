@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	CalendarViewHelper.cpp			©2026 Stevo Brock		All rights reserved.
+//	CalendarViewHelper.cpp			Â©2026 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #include "CalendarViewHelper.h"

@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	MenuFlyoutItemHelper.cpp			©2025 Stevo Brock		All rights reserved.
+//	MenuFlyoutItemHelper.cpp			Â©2025 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #include "MenuFlyoutItemHelper.h"

@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	ToggleButtonHelper.cpp			©2024 Stevo Brock		All rights reserved.
+//	ToggleButtonHelper.cpp			Â©2024 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #include "ToggleButtonHelper.h"

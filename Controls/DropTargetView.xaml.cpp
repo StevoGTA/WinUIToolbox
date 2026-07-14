@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	DropTargetView.xaml.cpp			©2023 Stevo Brock		All rights reserved.
+//	DropTargetView.xaml.cpp			Â©2023 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #include "DropTargetView.xaml.h"

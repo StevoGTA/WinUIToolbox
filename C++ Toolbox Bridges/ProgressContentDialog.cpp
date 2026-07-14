@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	ProgressContentDialog.cpp			�2021 Stevo Brock		All rights reserved.
+//	ProgressContentDialog.cpp			©2021 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #include "ProgressContentDialog.h"
@@ -56,7 +56,7 @@ class ProgressContentDialog::Internals : public TReferenceCountableAutoDelete<In
 													internals->removeReference();
 												});
 
-								// If the enqueue failed, the lambda above will never run — release the reference now
+								// If the enqueue failed, the lambda above will never run - release the reference now
 								if (!enqueued)
 									internals->removeReference();
 							}
@@ -158,7 +158,7 @@ void ProgressContentDialog::perform(const I<CProgress>& progress, Proc proc, Can
 							internals->removeReference();
 						});
 
-		// If the enqueue failed, the lambda above will never run — release the reference now
+		// If the enqueue failed, the lambda above will never run - release the reference now
 		if (!enqueued)
 			internals->removeReference();
 	});

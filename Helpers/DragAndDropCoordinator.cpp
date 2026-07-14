@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	DragAndDropCoordinator.cpp			©2023 Stevo Brock		All rights reserved.
+//	DragAndDropCoordinator.cpp			Â©2023 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #include "DragAndDropCoordinator.h"

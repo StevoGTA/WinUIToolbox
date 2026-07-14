@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	DispatcherQueueHelper.cpp			©2024 Stevo Brock		All rights reserved.
+//	DispatcherQueueHelper.cpp			Â©2024 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #include "DispatcherQueueHelper.h"

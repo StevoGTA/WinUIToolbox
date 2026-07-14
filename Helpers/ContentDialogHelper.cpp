@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	ContentDialogHelper.cpp			©2023 Stevo Brock		All rights reserved.
+//	ContentDialogHelper.cpp			Â©2023 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #include "ContentDialogHelper.h"

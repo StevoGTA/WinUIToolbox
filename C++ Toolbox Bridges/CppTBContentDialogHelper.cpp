@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	CppTBContentDialogHelper.cpp			©2023 Stevo Brock		All rights reserved.
+//	CppTBContentDialogHelper.cpp			Â©2023 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #include "CppTBContentDialogHelper.h"
