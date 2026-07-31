@@ -214,6 +214,12 @@ winrt::hstring PathView::Path() const
 void PathView::Path(const winrt::hstring& path)
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Check if changed - a recycled list item is handed the same path far more often than a different one, and
+	//	rebuilding the segments throws away every child element to build the same ones again
+	if (path == Path())
+		// Nothing to do
+		return;
+
 	// Store
 	SetValue(PathProperty(), winrt::box_value(path));
 
