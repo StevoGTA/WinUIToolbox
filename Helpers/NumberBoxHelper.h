@@ -8,6 +8,9 @@
 
 #include <functional>
 
+#include "winrt\Windows.Foundation.h"
+
+using Application = winrt::Microsoft::UI::Xaml::Application;
 using INumberFormatter2 = winrt::Windows::Globalization::NumberFormatting::INumberFormatter2;
 using NumberBox = winrt::Microsoft::UI::Xaml::Controls::NumberBox;
 
@@ -38,6 +41,24 @@ class NumberBoxHelper : public ControlHelper<NumberBox, NumberBoxHelper> {
 
 		bool				isValid() const
 								{ return getNumberBox().Text().size() > 0; }
+
+		NumberBoxHelper&	setBorderToDefault()
+								{
+									// Set to default
+									setBorderBrush(
+											Application::Current().Resources()
+													.TryLookup(winrt::box_value(L"TextControlBorderBrush"))
+													.as<Brush>());
+
+									return *this;
+								}
+		NumberBoxHelper&	setBorderToError()
+								{
+									// Set to error
+									setBorderBrush(SolidColorBrush(winrt::Windows::UI::Colors::Red()));
+
+									return *this;
+								}
 
 		NumberBoxHelper&	setDoubleValueChangedProc(std::function<void(double value)> valueChangedProc);
 		NumberBoxHelper&	setIntValueChangedProc(std::function<void(int value)> valueChangedProc);

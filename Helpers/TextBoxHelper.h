@@ -45,10 +45,7 @@ class TextBoxHelper : public ControlHelper<TextBox, TextBoxHelper> {
 		TextBoxHelper&	setBorderToError()
 							{
 								// Set to error
-								setBorderBrush(
-										Application::Current().Resources()
-												.TryLookup(winrt::box_value(L"TextControlErrorBorderBrush"))
-												.as<Brush>());
+								setBorderBrush(SolidColorBrush(winrt::Windows::UI::Colors::Red()));
 
 								return *this;
 							}
