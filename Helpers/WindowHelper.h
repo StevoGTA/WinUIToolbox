@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <windows.h>
+#undef GetCurrentTime	// winuser.h macro collides with WinUI Timeline::GetCurrentTime() - C4002
 
 using UIElement = winrt::Microsoft::UI::Xaml::UIElement;
 using Window = winrt::Microsoft::UI::Xaml::Window;
