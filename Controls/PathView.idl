@@ -7,6 +7,13 @@
 namespace WinUIToolbox {
 
 	//------------------------------------------------------------------------------------------------------------------
+	// MARK: PathViewStyle
+	enum PathViewStyle {
+		Standard,
+		Dimmed,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------
 	// MARK: PathView
 	[default_interface]
 	runtimeclass PathView : Microsoft.UI.Xaml.Controls.Panel {
@@ -18,5 +25,8 @@ namespace WinUIToolbox {
 
 														// Properties
 				String									Path;
+				String									RootPath;
+				Boolean									ShowsTrailingSeparator;
+				PathViewStyle							PathStyle;
 	}
 }

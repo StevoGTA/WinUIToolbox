@@ -9,6 +9,7 @@
 #include "winrt\Microsoft.UI.Xaml.h"
 
 using DependencyProperty = winrt::Microsoft::UI::Xaml::DependencyProperty;
+using PathViewStyle = winrt::WinUIToolbox::PathViewStyle;
 using Size = winrt::Windows::Foundation::Size;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -35,6 +36,15 @@ namespace winrt::WinUIToolbox::implementation {
 										// Instance methods
 					hstring				Path() const;
 					void				Path(const hstring& path);
+
+					hstring				RootPath() const;
+					void				RootPath(const hstring& rootPath);
+
+					bool				ShowsTrailingSeparator() const;
+					void				ShowsTrailingSeparator(bool showsTrailingSeparator);
+
+					PathViewStyle		PathStyle() const;
+					void				PathStyle(PathViewStyle pathStyle);
 
 										// Class methods
 			static	DependencyProperty	PathProperty() noexcept;
