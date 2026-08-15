@@ -30,6 +30,8 @@ class WindowHelper {
 								// Instance methods
 				HWND			getWindowHandle() const;
 
+				WindowHelper&	setMinimumContentSize(double width, double height);
+
 				WindowHelper&	setClosedProc(std::function<void()> closedProc);
 
 								// Class methods

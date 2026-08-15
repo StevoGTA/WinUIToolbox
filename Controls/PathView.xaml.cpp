@@ -11,11 +11,8 @@
 
 #include "winrt\Windows.UI.Xaml.Interop.h"
 
-#include <cmath>
-#include <limits>
-#include <shellapi.h>
-#include <vector>
 #include <windows.h>
+#include <shellapi.h>	// Needs windows.h
 
 #include "WinUIToolbox.PathView.g.cpp"
 
