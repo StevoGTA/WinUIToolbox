@@ -165,6 +165,17 @@ ImageHelper& ImageHelper::set(const ThemedSVG& themedSVG)
 	// Select the URI for the Image's current theme
 	winrt::hstring	uri = (image.ActualTheme() == ElementTheme::Dark) ? themedSVG.mDarkURI : themedSVG.mLightURI;
 
+	// Check if there is a current source
+	auto	currentImageSource = image.Source();
+	if (currentImageSource) {
+		// Check if current source is SVG and matches
+		auto	currentSVGImageSource = currentImageSource.try_as<SvgImageSource>();
+		if (currentSVGImageSource && currentSVGImageSource.UriSource() &&
+				(currentSVGImageSource.UriSource().RawUri() == uri))
+			// Already showing this SVG
+			return *this;
+	}
+
 	// Set Source
 	image.Source(SvgImageSource(Uri(uri)));
 
