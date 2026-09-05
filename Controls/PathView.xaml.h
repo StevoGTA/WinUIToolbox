@@ -7,8 +7,11 @@
 #include "WinUIToolbox.PathView.g.h"
 
 #include "winrt\Microsoft.UI.Xaml.h"
+#include "winrt\Windows.Foundation.h"
 
 using DependencyProperty = winrt::Microsoft::UI::Xaml::DependencyProperty;
+using event_token = winrt::event_token;
+using FolderDroppedEventHandler = winrt::Windows::Foundation::EventHandler<winrt::hstring>;
 using PathViewStyle = winrt::WinUIToolbox::PathViewStyle;
 using Size = winrt::Windows::Foundation::Size;
 
@@ -45,6 +48,13 @@ namespace winrt::WinUIToolbox::implementation {
 
 					PathViewStyle		PathStyle() const;
 					void				PathStyle(PathViewStyle pathStyle);
+
+					bool				IsEnabled() const;
+					void				IsEnabled(bool isEnabled);
+
+										// Event methods
+					event_token			FolderDroppedEvent(const FolderDroppedEventHandler& handler);
+					void				FolderDroppedEvent(const event_token& token) noexcept;
 
 										// Class methods
 			static	DependencyProperty	PathProperty() noexcept;

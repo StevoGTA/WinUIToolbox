@@ -28,5 +28,9 @@ namespace WinUIToolbox {
 				String									RootPath;
 				Boolean									ShowsTrailingSeparator;
 				PathViewStyle							PathStyle;
+				Boolean									IsEnabled;
+
+														// Events
+		event	Windows.Foundation.EventHandler<String>	FolderDroppedEvent;
 	}
 }
