@@ -146,7 +146,7 @@ namespace WinUIToolbox {
 																												// Properties
 		Double																									RowHeight;
 		Double																									ColumnHeaderHeight;
-		OutlineViewStyle																						Style;
+		OutlineViewStyle																						OutlineStyle;
 		OutlineViewSelectionMode																				SelectionMode;
 		Boolean																									CanUserReorderColumns;
 		Boolean																									CanUserResizeColumns;
@@ -178,6 +178,11 @@ namespace WinUIToolbox {
 		void																									ReloadAllItems();
 		void																									ReloadItemChildren(String identifier);
 		void																									ReloadItem(String identifier,
+																														Windows.Foundation.Collections.IVectorView<String>
+																																columnIdentifiers);
+		void																									ReloadItems(
+																														Windows.Foundation.Collections.IVectorView<String>
+																																identifiers,
 																														Windows.Foundation.Collections.IVectorView<String>
 																																columnIdentifiers);
 

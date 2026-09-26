@@ -333,8 +333,8 @@ namespace winrt::WinUIToolbox::implementation {
 			void										RowHeight(double rowHeight);
 			double										ColumnHeaderHeight() const;
 			void										ColumnHeaderHeight(double columnHeaderHeight);
-			OutlineViewStyle							Style() const;
-			void										Style(OutlineViewStyle style);
+			OutlineViewStyle							OutlineStyle() const;
+			void										OutlineStyle(OutlineViewStyle outlineStyle);
 			OutlineViewSelectionMode					SelectionMode() const;
 			void										SelectionMode(OutlineViewSelectionMode selectionMode);
 			bool										CanUserReorderColumns() const;
@@ -404,6 +404,8 @@ namespace winrt::WinUIToolbox::implementation {
 			void										ReloadAllItems();
 			void										ReloadItemChildren(const hstring& identifier);
 			void										ReloadItem(const hstring& identifier,
+																const IVectorView<hstring>& columnIdentifiers);
+			void										ReloadItems(const IVectorView<hstring>& identifiers,
 																const IVectorView<hstring>& columnIdentifiers);
 
 			uint32_t									GetRowCount() const;

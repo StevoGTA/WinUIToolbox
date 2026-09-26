@@ -342,6 +342,9 @@ class OutlineView::Internals {
 				void									reloadRow(RealizedRow& realizedRow,
 																const std::optional<std::vector<std::wstring> >&
 																		columnIdentifiers);
+				void									reloadItem(const std::wstring& identifier,
+																const std::optional<std::vector<std::wstring> >&
+																		columnIdentifiers);
 				double									getChevronX(const RealizedRow& realizedRow) const;
 				double									getFirstColumnIndent(const RealizedRow& realizedRow) const;
 				void									layoutRow(RealizedRow& realizedRow);
@@ -392,7 +395,9 @@ class OutlineView::Internals {
 														// Instance methods - selection
 				bool									isRowSelected(uint32_t row) const;
 				std::vector<std::wstring>				getSelectedIdentifiersInRowOrder() const;
-				void									selectionChanged();
+				void									selectionChanged(
+																const std::unordered_set<std::wstring>&
+																		previousSelectedIdentifiers);
 				void									setSelectedRows(const std::vector<uint32_t>& rows);
 				void									selectRows(const std::vector<uint32_t>& rows);
 				void									deselectRows(const std::vector<uint32_t>& rows);
@@ -1477,6 +1482,24 @@ void OutlineView::Internals::recycleAllRows()
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+void OutlineView::Internals::reloadItem(const std::wstring& identifier,
+		const std::optional<std::vector<std::wstring> >& columnIdentifiers)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Only what is showing needs anything done
+	std::optional<uint32_t>	row = rowForIdentifier(std::optional<std::wstring>(identifier));
+	if (!row.has_value())
+		return;
+
+	RealizedRow*	realizedRow = findRealizedRow(*row);
+	if (realizedRow == nullptr)
+		return;
+
+	// Reload
+	reloadRow(*realizedRow, columnIdentifiers);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 void OutlineView::Internals::reloadRow(RealizedRow& realizedRow,
 		const std::optional<std::vector<std::wstring> >& columnIdentifiers)
 //----------------------------------------------------------------------------------------------------------------------
@@ -2190,12 +2213,12 @@ std::vector<std::wstring> OutlineView::Internals::getSelectedIdentifiersInRowOrd
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void OutlineView::Internals::selectionChanged()
+void OutlineView::Internals::selectionChanged(const std::unordered_set<std::wstring>& previousSelectedIdentifiers)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Update visuals, then raise event
+	// Update visuals, then raise event only if the selection actually changed (as ListView / Selector)
 	updateAllRowVisuals();
-	if (mSelectionChangedEvent)
+	if (mSelectionChangedEvent && (mSelectedIdentifiers != previousSelectedIdentifiers))
 		mSelectionChangedEvent(getProjectedOutlineView(),
 				winrt::make<OutlineViewSelectionChangedEventArgs>(sToHStrings(getSelectedIdentifiersInRowOrder())));
 }
@@ -2204,6 +2227,9 @@ void OutlineView::Internals::selectionChanged()
 void OutlineView::Internals::setSelectedRows(const std::vector<uint32_t>& rows)
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Snapshot
+	std::unordered_set<std::wstring>	previousSelectedIdentifiers = mSelectedIdentifiers;
+
 	// Replace
 	mSelectedIdentifiers.clear();
 	for (uint32_t row : rows)
@@ -2212,13 +2238,16 @@ void OutlineView::Internals::setSelectedRows(const std::vector<uint32_t>& rows)
 			mSelectedIdentifiers.insert(mRowEntries[row].mIdentifier);
 
 	// Selection did change
-	selectionChanged();
+	selectionChanged(previousSelectedIdentifiers);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 void OutlineView::Internals::selectRows(const std::vector<uint32_t>& rows)
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Snapshot
+	std::unordered_set<std::wstring>	previousSelectedIdentifiers = mSelectedIdentifiers;
+
 	// Add
 	for (uint32_t row : rows)
 		// Add
@@ -2226,13 +2255,16 @@ void OutlineView::Internals::selectRows(const std::vector<uint32_t>& rows)
 			mSelectedIdentifiers.insert(mRowEntries[row].mIdentifier);
 
 	// Selection did change
-	selectionChanged();
+	selectionChanged(previousSelectedIdentifiers);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 void OutlineView::Internals::deselectRows(const std::vector<uint32_t>& rows)
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Snapshot
+	std::unordered_set<std::wstring>	previousSelectedIdentifiers = mSelectedIdentifiers;
+
 	// Remove
 	for (uint32_t row : rows)
 		// Remove
@@ -2240,13 +2272,16 @@ void OutlineView::Internals::deselectRows(const std::vector<uint32_t>& rows)
 			mSelectedIdentifiers.erase(mRowEntries[row].mIdentifier);
 
 	// Selection did change
-	selectionChanged();
+	selectionChanged(previousSelectedIdentifiers);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 void OutlineView::Internals::setSelectedIdentifiers(const std::vector<std::wstring>& identifiers)
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Snapshot
+	std::unordered_set<std::wstring>	previousSelectedIdentifiers = mSelectedIdentifiers;
+
 	// Replace
 	mSelectedIdentifiers.clear();
 	for (const std::wstring& identifier : identifiers)
@@ -2254,13 +2289,16 @@ void OutlineView::Internals::setSelectedIdentifiers(const std::vector<std::wstri
 		mSelectedIdentifiers.insert(identifier);
 
 	// Selection did change
-	selectionChanged();
+	selectionChanged(previousSelectedIdentifiers);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 void OutlineView::Internals::selectIdentifiers(const std::vector<std::wstring>& identifiers, bool byExtending)
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Snapshot
+	std::unordered_set<std::wstring>	previousSelectedIdentifiers = mSelectedIdentifiers;
+
 	// Replace or extend
 	if (!byExtending)
 		mSelectedIdentifiers.clear();
@@ -2269,44 +2307,53 @@ void OutlineView::Internals::selectIdentifiers(const std::vector<std::wstring>& 
 		mSelectedIdentifiers.insert(identifier);
 
 	// Selection did change
-	selectionChanged();
+	selectionChanged(previousSelectedIdentifiers);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 void OutlineView::Internals::deselectIdentifiers(const std::vector<std::wstring>& identifiers)
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Snapshot
+	std::unordered_set<std::wstring>	previousSelectedIdentifiers = mSelectedIdentifiers;
+
 	// Remove
 	for (const std::wstring& identifier : identifiers)
 		// Remove
 		mSelectedIdentifiers.erase(identifier);
 
 	// Selection did change
-	selectionChanged();
+	selectionChanged(previousSelectedIdentifiers);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 void OutlineView::Internals::selectAllInternal()
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Snapshot
+	std::unordered_set<std::wstring>	previousSelectedIdentifiers = mSelectedIdentifiers;
+
 	// Every row
 	for (const RowEntry& rowEntry : mRowEntries)
 		// Add
 		mSelectedIdentifiers.insert(rowEntry.mIdentifier);
 
 	// Selection did change
-	selectionChanged();
+	selectionChanged(previousSelectedIdentifiers);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 void OutlineView::Internals::deselectAllInternal()
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Snapshot
+	std::unordered_set<std::wstring>	previousSelectedIdentifiers = mSelectedIdentifiers;
+
 	// None
 	mSelectedIdentifiers.clear();
 
 	// Selection did change
-	selectionChanged();
+	selectionChanged(previousSelectedIdentifiers);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3007,22 +3054,22 @@ void OutlineView::ColumnHeaderHeight(double columnHeaderHeight)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-OutlineViewStyle OutlineView::Style() const
+OutlineViewStyle OutlineView::OutlineStyle() const
 //----------------------------------------------------------------------------------------------------------------------
 {
 	return mInternals->mOutlineStyle;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void OutlineView::Style(OutlineViewStyle style)
+void OutlineView::OutlineStyle(OutlineViewStyle outlineStyle)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Check if changed
-	if (style == mInternals->mOutlineStyle)
+	if (outlineStyle == mInternals->mOutlineStyle)
 		return;
 
 	// Update
-	mInternals->mOutlineStyle = style;
+	mInternals->mOutlineStyle = outlineStyle;
 	mInternals->recycleAllRows();
 	mInternals->layout();
 }
@@ -3398,22 +3445,29 @@ void OutlineView::ReloadItemChildren(const winrt::hstring& identifier)
 void OutlineView::ReloadItem(const winrt::hstring& identifier, const IVectorView<winrt::hstring>& columnIdentifiers)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Only what is showing needs anything done
-	std::optional<uint32_t>	rowIndex =
-									mInternals->rowForIdentifier(std::optional<std::wstring>(std::wstring(identifier)));
-	if (!rowIndex.has_value())
-		return;
-
-	Internals::RealizedRow*	realizedRow = mInternals->findRealizedRow(*rowIndex);
-	if (realizedRow == nullptr)
-		return;
-
 	// Reload - an empty column list means every column
 	std::vector<std::wstring>	identifiers = sToWStrings(columnIdentifiers);
-	mInternals->reloadRow(*realizedRow,
+	mInternals->reloadItem(std::wstring(identifier),
 			identifiers.empty() ?
 					std::optional<std::vector<std::wstring> >() :
 					std::optional<std::vector<std::wstring> >(identifiers));
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::ReloadItems(const IVectorView<winrt::hstring>& identifiers,
+		const IVectorView<winrt::hstring>& columnIdentifiers)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Reload - an empty column list means every column
+	std::vector<std::wstring>					columnIdentifiers_ = sToWStrings(columnIdentifiers);
+	std::optional<std::vector<std::wstring> >	columnIdentifiersOptional =
+														columnIdentifiers_.empty() ?
+																std::optional<std::vector<std::wstring> >() :
+																std::optional<std::vector<std::wstring> >(
+																		columnIdentifiers_);
+	for (const std::wstring& identifier : sToWStrings(identifiers))
+		// Reload
+		mInternals->reloadItem(identifier, columnIdentifiersOptional);
 }
 
 // MARK: Instance methods - rows and tree
