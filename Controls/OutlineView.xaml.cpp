@@ -4,6 +4,7 @@
 
 #include "OutlineView.xaml.h"
 
+#include "OutlineViewCellProvider.h"
 #include "OutlineViewDataSource.h"
 #include "PointerHelper.h"
 
@@ -41,7 +42,9 @@ using Brush = winrt::Microsoft::UI::Xaml::Media::Brush;
 using CharacterReceivedRoutedEventArgs = winrt::Microsoft::UI::Xaml::Input::CharacterReceivedRoutedEventArgs;
 using ContextRequestedEventArgs = winrt::Microsoft::UI::Xaml::Input::ContextRequestedEventArgs;
 using CoreVirtualKeyStates = winrt::Windows::UI::Core::CoreVirtualKeyStates;
+using CellProvider = OutlineViewCellProvider;
 using DataSource = OutlineViewDataSource;
+using DragStartingEventArgs = winrt::Microsoft::UI::Xaml::DragStartingEventArgs;
 using FontWeights = winrt::Microsoft::UI::Text::FontWeights;
 using InputCursor = winrt::Microsoft::UI::Input::InputCursor;
 using InputKeyboardSource = winrt::Microsoft::UI::Input::InputKeyboardSource;
@@ -49,6 +52,8 @@ using InputSystemCursor = winrt::Microsoft::UI::Input::InputSystemCursor;
 using InputSystemCursorShape = winrt::Microsoft::UI::Input::InputSystemCursorShape;
 using KeyRoutedEventArgs = winrt::Microsoft::UI::Xaml::Input::KeyRoutedEventArgs;
 using OutlineViewEditEndReason = winrt::WinUIToolbox::OutlineViewEditEndReason;
+using PointerEventHandler = winrt::Microsoft::UI::Xaml::Input::PointerEventHandler;
+using PointerPoint = winrt::Microsoft::UI::Input::PointerPoint;
 using RangeBaseValueChangedEventArgs = winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs;
 using Rect = winrt::Windows::Foundation::Rect;
 using RectangleGeometry = winrt::Microsoft::UI::Xaml::Media::RectangleGeometry;
@@ -68,7 +73,8 @@ static	const	double		kIndentPerLevel = 16.0;
 static	const	double		kChevronWidth = 16.0;
 static	const	double		kCellInset = 6.0;					// Horizontal breathing room inside a cell
 static	const	double		kResizeHitZone = 4.0;				// Either side of a header divider
-static	const	double		kDragThreshold = 6.0;				// Header movement before a press becomes a column drag
+static	const	double		kDragThreshold = 6.0;				// Movement before a press becomes a drag
+static	const	double		kDropEdgeFraction = 0.25;			// Top and bottom of a row that mean between rows
 static	const	double		kSelectionIndicatorWidth = 3.0;
 static	const	double		kSelectionIndicatorHeight = 16.0;
 static	const	double		kWheelRowsPerNotch = 3.0;
@@ -283,6 +289,7 @@ class OutlineView::Internals {
 
 														// Instance methods - setup
 				void									setDataSource(const IInspectable& dataSource);
+				void									setCellProvider(const IInspectable& cellProvider);
 
 														// Instance methods - view chrome
 				void									buildChrome();
@@ -428,13 +435,25 @@ class OutlineView::Internals {
 														// Instance methods - menus
 				void									contextRequested(const std::optional<Point>& point);
 
+														// Instance methods - drag and drop
+				void									startItemDrag();
+				void									itemDragStarting(
+															const DragStartingEventArgs& dragStartingEventArgs);
+				void									dragOver(const DragEventArgs& dragEventArgs);
+				void									dragLeave();
+				void									drop(const DragEventArgs& dragEventArgs);
+				void									updateDropVisuals();
+				void									hideDropVisuals();
+
 	// Properties
 	public:
 		OutlineView&													mOutlineView;
 
+		IInspectable													mCellProviderObject;
+		CellProvider*													mCellProvider;
+
 		IInspectable													mDataSourceObject;
 		DataSource*														mDataSource;
-		IOutlineViewCellFactory											mCellFactory;
 
 		winrt::event<OutlineViewItemEventHandler>						mItemExpandedEvent;
 		winrt::event<OutlineViewItemEventHandler>						mItemCollapsedEvent;
@@ -446,6 +465,9 @@ class OutlineView::Internals {
 		winrt::event<OutlineViewBeginningEditEventHandler>				mBeginningEditEvent;
 		winrt::event<OutlineViewEditEndedEventHandler>					mEditEndedEvent;
 		winrt::event<OutlineViewContextMenuOpeningEventHandler>			mContextMenuOpeningEvent;
+		winrt::event<OutlineViewItemDragStartingEventHandler>			mItemDragStartingEvent;
+		winrt::event<OutlineViewDragOverEventHandler>					mItemDragOverEvent;
+		winrt::event<OutlineViewDropEventHandler>						mItemDropEvent;
 
 		OutlineViewStyle												mOutlineStyle;
 		OutlineViewSelectionMode										mSelectionMode;
@@ -518,6 +540,18 @@ class OutlineView::Internals {
 		bool															mIsShowingResizeCursor;
 		InputCursor														mResizeCursor;
 
+		bool															mCanDragItems;
+		std::optional<uint32_t>											mPressedRow;
+		Point															mPressedPoint;
+		PointerPoint													mPressedPointerPoint;
+		bool															mDidStartItemDrag;
+		std::vector<std::wstring>										mDragIdentifiers;
+		Shapes::Rectangle												mDropTargetRect;
+		Shapes::Rectangle												mDropInsertLine;
+		std::optional<std::wstring>										mDropIdentifier;
+		OutlineViewDropPosition											mDropPosition;
+		DataPackageOperation											mDropAcceptedOperation;
+
 		TextBox															mEditTextBox;
 		std::optional<uint32_t>											mEditingRow;
 		std::optional<std::wstring>										mEditingColumnIdentifier;
@@ -532,7 +566,7 @@ class OutlineView::Internals {
 //----------------------------------------------------------------------------------------------------------------------
 OutlineView::Internals::Internals(OutlineView& outlineView) :
 		mOutlineView(outlineView),
-				mDataSourceObject(nullptr), mDataSource(nullptr), mCellFactory(nullptr),
+				mCellProviderObject(nullptr), mCellProvider(nullptr), mDataSourceObject(nullptr), mDataSource(nullptr),
 				mOutlineStyle(OutlineViewStyle::FirstColumn), mSelectionMode(OutlineViewSelectionMode::Extended),
 				mCanUserReorderColumns(true), mCanUserResizeColumns(true), mRowHeight(26.0), mColumnHeaderHeight(32.0),
 				mClipBorder(nullptr), mContentGrid(nullptr), mTranslateTransform(nullptr),
@@ -547,6 +581,9 @@ OutlineView::Internals::Internals(OutlineView& outlineView) :
 				mPointerHelper(nullptr), mPressedHeaderColumnIndex(-1), mPressedX(0.0), mIsDraggingColumn(false),
 				mDropColumnIndex(-1), mResizingColumnIndex(-1), mResizingStartWidth(0.0), mIsShowingResizeCursor(false),
 				mResizeCursor(nullptr),
+				mCanDragItems(false), mPressedPoint(), mPressedPointerPoint(nullptr), mDidStartItemDrag(false),
+				mDropTargetRect(nullptr), mDropInsertLine(nullptr), mDropPosition(OutlineViewDropPosition::On),
+				mDropAcceptedOperation(DataPackageOperation::None),
 				mEditTextBox(nullptr), mIsEndingEditing(false)
 //----------------------------------------------------------------------------------------------------------------------
 {}
@@ -569,6 +606,28 @@ winrt::WinUIToolbox::OutlineView OutlineView::Internals::getProjectedOutlineView
 }
 
 // MARK: Instance methods - setup
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::Internals::setCellProvider(const IInspectable& cellProvider)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Set cell provider
+	mCellProviderObject = cellProvider;
+	if (cellProvider != nullptr) {
+		// Carried across as Object, boxed by OutlineViewCellProviderRInspectable
+		auto	wrapper = cellProvider.try_as<OutlineViewCellProviderRInspectable>();
+		mCellProvider = (wrapper != nullptr) ? &wrapper->GetReference() : nullptr;
+	} else
+		// Cleared
+		mCellProvider = nullptr;
+
+	// Every cell in play came from the old factory
+	recycleAllRows();
+	mRowContentCanvas.Children().Clear();
+	mRecycledElementsByKey.clear();
+	mChevronPool.clear();
+	realize();
+}
 
 //----------------------------------------------------------------------------------------------------------------------
 void OutlineView::Internals::setDataSource(const IInspectable& dataSource)
@@ -701,6 +760,20 @@ void OutlineView::Internals::buildChrome()
 	mResizeLine.IsHitTestVisible(false);
 	mResizeLine.Visibility(Visibility::Collapsed);
 	mOverlayCanvas.Children().Append(mResizeLine);
+
+	mDropTargetRect = Shapes::Rectangle();
+	mDropTargetRect.Stroke(mAccentBrush);
+	mDropTargetRect.StrokeThickness(2.0);
+	mDropTargetRect.IsHitTestVisible(false);
+	mDropTargetRect.Visibility(Visibility::Collapsed);
+	mOverlayCanvas.Children().Append(mDropTargetRect);
+
+	mDropInsertLine = Shapes::Rectangle();
+	mDropInsertLine.Fill(mAccentBrush);
+	mDropInsertLine.Height(2.0);
+	mDropInsertLine.IsHitTestVisible(false);
+	mDropInsertLine.Visibility(Visibility::Collapsed);
+	mOverlayCanvas.Children().Append(mDropInsertLine);
 
 	// Scrollbars.  The vertical one works in rows, so its range is never large.
 	mVScrollBar = ScrollBar();
@@ -1382,20 +1455,20 @@ void OutlineView::Internals::populateCells(RealizedRow& realizedRow)
 
 	// Full width first
 	realizedRow.mIsFullWidth = false;
-	if (mCellFactory != nullptr) {
+	if (mCellProvider != nullptr) {
 		// Ask
-		winrt::WinUIToolbox::OutlineViewCell	cellView =
-															mCellFactory.GetRowCell(winrt::hstring(realizedRow.mID),
-																	projectedOutlineView);
-		if (cellView != nullptr) {
+		winrt::WinUIToolbox::OutlineViewCell	cell =
+														mCellProvider->getRowCell(winrt::hstring(realizedRow.mID),
+																projectedOutlineView);
+		if (cell != nullptr) {
 			// Full width
 			realizedRow.mIsFullWidth = true;
 
 			CellSlot	cellSlot{std::wstring()};
-			cellSlot.mCell = cellView;
-			cellView.Element().Visibility(Visibility::Visible);
+			cellSlot.mCell = cell;
+			cell.Element().Visibility(Visibility::Visible);
 
-			sEnsureCanvasDoesContainUIElement(mRowContentCanvas, cellView.Element());
+			sEnsureCanvasDoesContainUIElement(mRowContentCanvas, cell.Element());
 
 			realizedRow.mCellSlots.push_back(cellSlot);
 
@@ -1407,18 +1480,18 @@ void OutlineView::Internals::populateCells(RealizedRow& realizedRow)
 	for (const Column& column : mColumns) {
 		// Setup
 		CellSlot	cellSlot{std::wstring(column.mInfo.Identifier)};
-		if (mCellFactory != nullptr) {
+		if (mCellProvider != nullptr) {
 			// Ask
-			winrt::WinUIToolbox::OutlineViewCell	cellView =
-																mCellFactory.GetCell(column.mInfo.Identifier,
-																		winrt::hstring(realizedRow.mID),
-																		projectedOutlineView);
-			if (cellView != nullptr) {
+			winrt::WinUIToolbox::OutlineViewCell	cell =
+															mCellProvider->getCell(column.mInfo.Identifier,
+																	winrt::hstring(realizedRow.mID),
+																	projectedOutlineView);
+			if (cell != nullptr) {
 				// Have cell
-				cellSlot.mCell = cellView;
-				cellView.Element().Visibility(Visibility::Visible);
+				cellSlot.mCell = cell;
+				cell.Element().Visibility(Visibility::Visible);
 
-				sEnsureCanvasDoesContainUIElement(mRowContentCanvas, cellView.Element());
+				sEnsureCanvasDoesContainUIElement(mRowContentCanvas, cell.Element());
 			}
 		}
 		realizedRow.mCellSlots.push_back(cellSlot);
@@ -1526,18 +1599,18 @@ void OutlineView::Internals::reloadRow(RealizedRow& realizedRow,
 				recycleCell(cellSlot.mCell);
 				cellSlot.mCell = nullptr;
 			}
-			if (mCellFactory != nullptr) {
+			if (mCellProvider != nullptr) {
 				// Ask
-				winrt::WinUIToolbox::OutlineViewCell	cellView =
-																	mCellFactory.GetCell(
-																			winrt::hstring(cellSlot.mColumnIdentifier),
-																			winrt::hstring(realizedRow.mID),
-																			projectedOutlineView);
-				if (cellView != nullptr) {
+				winrt::WinUIToolbox::OutlineViewCell	cell =
+																mCellProvider->getCell(
+																		winrt::hstring(cellSlot.mColumnIdentifier),
+																		winrt::hstring(realizedRow.mID),
+																		projectedOutlineView);
+				if (cell != nullptr) {
 					// Have cell
-					cellSlot.mCell = cellView;
-					sEnsureCanvasDoesContainUIElement(mRowContentCanvas, cellView.Element());
-					cellView.Element().Visibility(Visibility::Visible);
+					cellSlot.mCell = cell;
+					sEnsureCanvasDoesContainUIElement(mRowContentCanvas, cell.Element());
+					cell.Element().Visibility(Visibility::Visible);
 				}
 			}
 		}
@@ -1781,8 +1854,8 @@ void OutlineView::Internals::setFocusedRow(const std::optional<uint32_t>& row)
 bool OutlineView::Internals::isInHeader(const Point& point) const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	return (getColumnHeaderHeight() > 0.0) && (point.Y >= 0.0) && (point.Y < getColumnHeaderHeight()) && (point.X >= 0.0) &&
-			(point.X < mViewportWidth);
+	return (getColumnHeaderHeight() > 0.0) && (point.Y >= 0.0) && (point.Y < getColumnHeaderHeight()) &&
+			(point.X >= 0.0) && (point.X < mViewportWidth);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -1948,6 +2021,8 @@ void OutlineView::Internals::pointerPressed(const Point& point, PointerHelper::B
 	std::optional<uint32_t>	row = getRowAt(point);
 	mClickedRow = row;
 	mClickedColumnIdentifier = getColumnIdentifierAt(contentX);
+	mPressedRow = std::optional<uint32_t>();
+	mDidStartItemDrag = false;
 
 	if (isLeft) {
 		// Chevron
@@ -1971,12 +2046,16 @@ void OutlineView::Internals::pointerPressed(const Point& point, PointerHelper::B
 		}
 
 		// Selection
-		if (row.has_value())
+		if (row.has_value()) {
 			// Row
 			selectRowFromPointer(*row,
 					sDoesVirtualKeyModifiersContain(virtualKeyModifiers, VirtualKeyModifiers::Control),
 					sDoesVirtualKeyModifiersContain(virtualKeyModifiers, VirtualKeyModifiers::Shift));
-		else if (!mSelectedIdentifiers.empty() && (mSelectionMode != OutlineViewSelectionMode::None))
+
+			// Arm an item drag
+			mPressedRow = row;
+			mPressedPoint = point;
+		} else if (!mSelectedIdentifiers.empty() && (mSelectionMode != OutlineViewSelectionMode::None))
 			// Empty area
 			deselectAllInternal();
 	} else if (isRight && row.has_value()) {
@@ -2037,6 +2116,15 @@ void OutlineView::Internals::pointerDragged(const Point& point, const VirtualKey
 		mDragIndicator.Height(mViewportHeight);
 		mDragIndicator.Visibility(Visibility::Visible);
 	}
+
+	// Item drag
+	if (mCanDragItems && mPressedRow.has_value() && !mDidStartItemDrag && (mEditTextBox == nullptr) &&
+			((std::abs(point.X - mPressedPoint.X) > kDragThreshold) ||
+					(std::abs(point.Y - mPressedPoint.Y) > kDragThreshold))) {
+		// Now dragging
+		mDidStartItemDrag = true;
+		startItemDrag();
+	}
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2077,6 +2165,9 @@ void OutlineView::Internals::pointerReleased(const Point& point)
 			applySortDescriptors(
 					getSortDescriptorsForHeaderClick(std::wstring(mColumns[columnIndex].mInfo.Identifier)));
 	}
+
+	// Item drag
+	mPressedRow = std::optional<uint32_t>();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2621,7 +2712,7 @@ void OutlineView::Internals::characterReceived(char16_t character)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Nothing without a way to match, and nothing while editing
-	if ((mDataSource == nullptr) || (mCellFactory == nullptr) || (mEditTextBox != nullptr) || (character < 0x20))
+	if ((mDataSource == nullptr) || (mCellProvider == nullptr) || (mEditTextBox != nullptr) || (character < 0x20))
 		return;
 
 	// Extend or restart the search string
@@ -2645,8 +2736,8 @@ void OutlineView::Internals::characterReceived(char16_t character)
 									(mFocusedRow.has_value() ? (*mFocusedRow + 1) % rowCount : 0);
 	for (uint32_t i = 0; i < rowCount; i++) {
 		// Check row
-		uint32_t	row = (startRow + i) % rowCount;
-		winrt::hstring	string = mCellFactory.GetTextSearchString(winrt::hstring(mRowEntries[row].mIdentifier));
+		uint32_t		row = (startRow + i) % rowCount;
+		winrt::hstring	string = mCellProvider->getTextSearchString(winrt::hstring(mRowEntries[row].mIdentifier));
 		if (!string.empty() &&
 				(sToLowercased(std::wstring(string)).compare(0, searchString.size(), searchString) == 0)) {
 			// Found
@@ -2925,6 +3016,165 @@ void OutlineView::Internals::contextRequested(const std::optional<Point>& point)
 		menuFlyout.ShowAt(mOutlineView, position);
 }
 
+// MARK: Instance methods - drag and drop
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::Internals::startItemDrag()
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Nothing without a listener, a pointer to hand over, or a row
+	if (!mItemDragStartingEvent || (mPressedPointerPoint == nullptr) || !mPressedRow.has_value())
+		return;
+
+	// The selection goes along when the pressed row is part of it, else just the pressed row
+	mDragIdentifiers =
+			isRowSelected(*mPressedRow) ?
+					getSelectedIdentifiersInRowOrder() :
+					std::vector<std::wstring>(1, mRowEntries[*mPressedRow].mIdentifier);
+
+	// Start - DragStarting follows, where the handler fills the data
+	mOutlineView.StartDragAsync(mPressedPointerPoint);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::Internals::itemDragStarting(const DragStartingEventArgs& dragStartingEventArgs)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Raise event - the handler fills the data, or refuses the drag
+	winrt::WinUIToolbox::OutlineViewItemDragStartingEventArgs	args =
+																		winrt::make<OutlineViewItemDragStartingEventArgs>(
+																				sToHStrings(mDragIdentifiers),
+																				dragStartingEventArgs.Data(),
+																				dragStartingEventArgs
+																						.AllowedOperations());
+	mItemDragStartingEvent(getProjectedOutlineView(), args);
+
+	// Apply
+	if (args.Cancel())
+		// Refused
+		dragStartingEventArgs.Cancel(true);
+	else
+		// Going ahead
+		dragStartingEventArgs.AllowedOperations(args.AllowedOperations());
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::Internals::dragOver(const DragEventArgs& dragEventArgs)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Where - on the row under the pointer, or between rows near its top or bottom edge
+	Point						point = dragEventArgs.GetPosition(mOutlineView);
+	std::optional<uint32_t>		row = getRowAt(point);
+	std::optional<std::wstring>	identifier = identifierForRow(row);
+	OutlineViewDropPosition		dropPosition = OutlineViewDropPosition::On;
+	if (row.has_value()) {
+		// Check edges
+		double	fraction = (point.Y - getRowY(*row)) / mRowHeight;
+		if (fraction < kDropEdgeFraction)
+			// Above
+			dropPosition = OutlineViewDropPosition::Before;
+		else if (fraction > (1.0 - kDropEdgeFraction))
+			// Below
+			dropPosition = OutlineViewDropPosition::After;
+	}
+
+	// Raise event - the handler accepts, and may redirect
+	winrt::WinUIToolbox::OutlineViewDragOverEventArgs	args =
+																winrt::make<OutlineViewDragOverEventArgs>(
+																		dragEventArgs.DataView(),
+																		sToHString(identifier), dropPosition);
+	if (mItemDragOverEvent)
+		// Raise
+		mItemDragOverEvent(getProjectedOutlineView(), args);
+
+	// Apply
+	mDropIdentifier =
+			!args.Identifier().empty() ?
+					std::optional<std::wstring>(std::wstring(args.Identifier())) : std::optional<std::wstring>();
+	mDropPosition = args.DropPosition();
+	mDropAcceptedOperation = args.AcceptedOperation();
+	dragEventArgs.AcceptedOperation(mDropAcceptedOperation);
+
+	// Update UI
+	updateDropVisuals();
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::Internals::dragLeave()
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Reset
+	mDropIdentifier = std::optional<std::wstring>();
+	mDropAcceptedOperation = DataPackageOperation::None;
+	hideDropVisuals();
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::Internals::drop(const DragEventArgs& dragEventArgs)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup - the target is what the last drag over settled on
+	std::optional<std::wstring>	identifier = mDropIdentifier;
+	OutlineViewDropPosition		dropPosition = mDropPosition;
+	DataPackageOperation		acceptedOperation = mDropAcceptedOperation;
+	dragLeave();
+
+	// Only an accepted drop goes anywhere
+	if ((acceptedOperation == DataPackageOperation::None) || !mItemDropEvent)
+		return;
+
+	// Raise event
+	dragEventArgs.AcceptedOperation(acceptedOperation);
+	mItemDropEvent(getProjectedOutlineView(),
+			winrt::make<OutlineViewDropEventArgs>(dragEventArgs.DataView(), sToHString(identifier), dropPosition,
+					acceptedOperation, dragEventArgs));
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::Internals::updateDropVisuals()
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Check if showing
+	std::optional<uint32_t>	row = rowForIdentifier(mDropIdentifier);
+	if ((mDropAcceptedOperation == DataPackageOperation::None) || !row.has_value() ||
+			(findRealizedRow(*row) == nullptr)) {
+		// Hide
+		hideDropVisuals();
+
+		return;
+	}
+
+	// Show
+	double	y = getRowY(*row);
+	double	width = std::max(mContentWidth, 0.0);
+	if (mDropPosition == OutlineViewDropPosition::On) {
+		// Outline the row
+		Canvas::SetLeft(mDropTargetRect, 1.0);
+		Canvas::SetTop(mDropTargetRect, y + 1.0);
+		mDropTargetRect.Width(std::max(width - 2.0, 0.0));
+		mDropTargetRect.Height(std::max(mRowHeight - 2.0, 0.0));
+		mDropTargetRect.Visibility(Visibility::Visible);
+		mDropInsertLine.Visibility(Visibility::Collapsed);
+	} else {
+		// A line above or below the row
+		Canvas::SetLeft(mDropInsertLine, 0.0);
+		Canvas::SetTop(mDropInsertLine,
+				((mDropPosition == OutlineViewDropPosition::Before) ? y : (y + mRowHeight)) - 1.0);
+		mDropInsertLine.Width(width);
+		mDropInsertLine.Visibility(Visibility::Visible);
+		mDropTargetRect.Visibility(Visibility::Collapsed);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::Internals::hideDropVisuals()
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Hide
+	mDropTargetRect.Visibility(Visibility::Collapsed);
+	mDropInsertLine.Visibility(Visibility::Collapsed);
+}
+
 //----------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: - OutlineView
@@ -2998,6 +3248,41 @@ OutlineView::OutlineView() : OutlineViewT<OutlineView>()
 		// Handle
 		mInternals->contextRequested(hasPoint ? std::optional<Point>(point) : std::optional<Point>());
 		contextRequestedEventArgs.Handled(true);
+	});
+
+	// Drag and drop - drops are refused until a handler accepts them
+	AllowDrop(true);
+	AddHandler(UIElement::PointerPressedEvent(),
+			winrt::box_value(
+					PointerEventHandler(
+							[this](const IInspectable& sender, const PointerRoutedEventArgs& pointerRoutedEventArgs){
+								// Keep the pointer - a drag started later needs it
+								mInternals->mPressedPointerPoint = pointerRoutedEventArgs.GetCurrentPoint(*this);
+							})),
+			true);
+	PointerCaptureLost([this](const IInspectable& sender, const PointerRoutedEventArgs& pointerRoutedEventArgs){
+		// The press is over
+		mInternals->mPressedRow = std::optional<uint32_t>();
+	});
+	DragStarting([this](const UIElement& sender, const DragStartingEventArgs& dragStartingEventArgs){
+		// Handle
+		mInternals->itemDragStarting(dragStartingEventArgs);
+	});
+	DragEnter([this](const IInspectable& sender, const DragEventArgs& dragEventArgs){
+		// Handle
+		mInternals->dragOver(dragEventArgs);
+	});
+	DragOver([this](const IInspectable& sender, const DragEventArgs& dragEventArgs){
+		// Handle
+		mInternals->dragOver(dragEventArgs);
+	});
+	DragLeave([this](const IInspectable& sender, const DragEventArgs& dragEventArgs){
+		// Handle
+		mInternals->dragLeave();
+	});
+	Drop([this](const IInspectable& sender, const DragEventArgs& dragEventArgs){
+		// Handle
+		mInternals->drop(dragEventArgs);
 	});
 }
 
@@ -3131,6 +3416,20 @@ void OutlineView::CanUserResizeColumns(bool canUserResizeColumns)
 	mInternals->mCanUserResizeColumns = canUserResizeColumns;
 }
 
+//----------------------------------------------------------------------------------------------------------------------
+bool OutlineView::CanDragItems() const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	return mInternals->mCanDragItems;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::CanDragItems(bool canDragItems)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	mInternals->mCanDragItems = canDragItems;
+}
+
 // MARK: Property methods - data source and delegate
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -3148,25 +3447,17 @@ IInspectable OutlineView::GetDataSource() const
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-IOutlineViewCellFactory OutlineView::CellFactory() const
+void OutlineView::SetCellProvider(const IInspectable& cellProvider)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	return mInternals->mCellFactory;
+	mInternals->setCellProvider(cellProvider);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void OutlineView::CellFactory(const IOutlineViewCellFactory& cellFactory)
+IInspectable OutlineView::GetCellProvider() const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Update
-	mInternals->mCellFactory = cellFactory;
-
-	// Every cell in play came from the old factory
-	mInternals->recycleAllRows();
-	mInternals->mRowContentCanvas.Children().Clear();
-	mInternals->mRecycledElementsByKey.clear();
-	mInternals->mChevronPool.clear();
-	mInternals->realize();
+	return mInternals->mCellProviderObject;
 }
 
 // MARK: Event methods
@@ -3309,6 +3600,48 @@ void OutlineView::ContextMenuOpening(const winrt::event_token& token) noexcept
 //----------------------------------------------------------------------------------------------------------------------
 {
 	mInternals->mContextMenuOpeningEvent.remove(token);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+winrt::event_token OutlineView::ItemDragStarting(const OutlineViewItemDragStartingEventHandler& handler)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	return mInternals->mItemDragStartingEvent.add(handler);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::ItemDragStarting(const winrt::event_token& token) noexcept
+//----------------------------------------------------------------------------------------------------------------------
+{
+	mInternals->mItemDragStartingEvent.remove(token);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+winrt::event_token OutlineView::ItemDragOver(const OutlineViewDragOverEventHandler& handler)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	return mInternals->mItemDragOverEvent.add(handler);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::ItemDragOver(const winrt::event_token& token) noexcept
+//----------------------------------------------------------------------------------------------------------------------
+{
+	mInternals->mItemDragOverEvent.remove(token);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+winrt::event_token OutlineView::ItemDrop(const OutlineViewDropEventHandler& handler)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	return mInternals->mItemDropEvent.add(handler);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::ItemDrop(const winrt::event_token& token) noexcept
+//----------------------------------------------------------------------------------------------------------------------
+{
+	mInternals->mItemDropEvent.remove(token);
 }
 
 // MARK: Instance methods - columns

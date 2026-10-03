@@ -129,12 +129,41 @@ namespace WinUIToolbox {
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	// MARK: IOutlineViewCellFactory
-	interface IOutlineViewCellFactory {
-		OutlineViewCell	GetCell(String columnIdentifier, String identifier, OutlineView outlineView);
-		OutlineViewCell	GetRowCell(String identifier, OutlineView outlineView);
-		String			GetTextSearchString(String identifier);
+	// MARK: OutlineViewDropPosition
+	enum OutlineViewDropPosition {
+		On,		// Onto the item
+		Before,	// Between rows, above the item
+		After,	// Between rows, below the item
 	};
+
+	//------------------------------------------------------------------------------------------------------------------
+	// MARK: OutlineViewItemDragStartingEventArgs
+	runtimeclass OutlineViewItemDragStartingEventArgs {
+		Windows.Foundation.Collections.IVectorView<String>			Identifiers{ get; };	// The rows being dragged
+		Windows.ApplicationModel.DataTransfer.DataPackage			Data{ get; };			// Fill to carry the drag
+		Windows.ApplicationModel.DataTransfer.DataPackageOperation	AllowedOperations;
+		Boolean														Cancel;					// Set to refuse the drag
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	// MARK: OutlineViewDragOverEventArgs
+	// Identifier is the row under the pointer, empty when there is none
+	runtimeclass OutlineViewDragOverEventArgs {
+		Windows.ApplicationModel.DataTransfer.DataPackageView		Data{ get; };
+		String														Identifier;			// Set to redirect the drop
+		OutlineViewDropPosition										DropPosition;		// Set to change where it lands
+		Windows.ApplicationModel.DataTransfer.DataPackageOperation	AcceptedOperation;	// None, the default, refuses
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	// MARK: OutlineViewDropEventArgs
+	runtimeclass OutlineViewDropEventArgs {
+		Windows.ApplicationModel.DataTransfer.DataPackageView		Data{ get; };
+		String														Identifier{ get; };
+		OutlineViewDropPosition										DropPosition{ get; };
+		Windows.ApplicationModel.DataTransfer.DataPackageOperation	AcceptedOperation{ get; };
+		Microsoft.UI.Xaml.DragOperationDeferral						GetDeferral();
+	}
 
 	//------------------------------------------------------------------------------------------------------------------
 	// MARK: OutlineView
@@ -150,11 +179,13 @@ namespace WinUIToolbox {
 		OutlineViewSelectionMode																				SelectionMode;
 		Boolean																									CanUserReorderColumns;
 		Boolean																									CanUserResizeColumns;
+		Boolean																									CanDragItems;
+
+		void																									SetCellProvider(Object cellProvider);
+		Object																									GetCellProvider();
 
 		void																									SetDataSource(Object dataSource);
 		Object																									GetDataSource();
-
-		IOutlineViewCellFactory																					CellFactory;
 
 		Windows.Foundation.Collections.IVectorView<OutlineViewColumn>											GetColumns();
 		void																									SetColumns(
@@ -245,5 +276,8 @@ namespace WinUIToolbox {
 		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewBeginningEditEventArgs>				BeginningEdit;
 		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewEditEndedEventArgs>					EditEnded;
 		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewContextMenuOpeningEventArgs>			ContextMenuOpening;
+		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewItemDragStartingEventArgs>			ItemDragStarting;
+		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewDragOverEventArgs>					ItemDragOver;
+		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewDropEventArgs>						ItemDrop;
 	}
 }

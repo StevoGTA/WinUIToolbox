@@ -10,7 +10,10 @@
 #include "WinUIToolbox.OutlineViewColumnEventArgs.g.h"
 #include "WinUIToolbox.OutlineViewColumnReorderedEventArgs.g.h"
 #include "WinUIToolbox.OutlineViewContextMenuOpeningEventArgs.g.h"
+#include "WinUIToolbox.OutlineViewDragOverEventArgs.g.h"
+#include "WinUIToolbox.OutlineViewDropEventArgs.g.h"
 #include "WinUIToolbox.OutlineViewEditEndedEventArgs.g.h"
+#include "WinUIToolbox.OutlineViewItemDragStartingEventArgs.g.h"
 #include "WinUIToolbox.OutlineViewItemEventArgs.g.h"
 #include "WinUIToolbox.OutlineViewItemInvokedEventArgs.g.h"
 #include "WinUIToolbox.OutlineViewSelectionChangedEventArgs.g.h"
@@ -18,11 +21,17 @@
 
 #include "winrt\Microsoft.UI.Xaml.h"
 #include "winrt\Microsoft.UI.Xaml.Controls.h"
+#include "winrt\Windows.ApplicationModel.DataTransfer.h"
 #include "winrt\Windows.Foundation.h"
 #include "winrt\Windows.Foundation.Collections.h"
 #include "winrt\Windows.UI.h"
 
 using Color = winrt::Windows::UI::Color;
+using DataPackage = winrt::Windows::ApplicationModel::DataTransfer::DataPackage;
+using DataPackageOperation = winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation;
+using DataPackageView = winrt::Windows::ApplicationModel::DataTransfer::DataPackageView;
+using DragEventArgs = winrt::Microsoft::UI::Xaml::DragEventArgs;
+using DragOperationDeferral = winrt::Microsoft::UI::Xaml::DragOperationDeferral;
 using IInspectable = winrt::Windows::Foundation::IInspectable;
 using MenuFlyout = winrt::Microsoft::UI::Xaml::Controls::MenuFlyout;
 using UIElement = winrt::Microsoft::UI::Xaml::UIElement;
@@ -30,9 +39,9 @@ using UIElement = winrt::Microsoft::UI::Xaml::UIElement;
 using OutlineViewStyle = winrt::WinUIToolbox::OutlineViewStyle;
 using OutlineViewSelectionMode = winrt::WinUIToolbox::OutlineViewSelectionMode;
 using OutlineViewEditEndReason = winrt::WinUIToolbox::OutlineViewEditEndReason;
+using OutlineViewDropPosition = winrt::WinUIToolbox::OutlineViewDropPosition;
 using OutlineViewColumn = winrt::WinUIToolbox::OutlineViewColumn;
 using OutlineViewSortDescription = winrt::WinUIToolbox::OutlineViewSortDescription;
-using IOutlineViewCellFactory = winrt::WinUIToolbox::IOutlineViewCellFactory;
 
 template <typename T> using IReference = winrt::Windows::Foundation::IReference<T>;
 template <typename T> using IVectorView = winrt::Windows::Foundation::Collections::IVectorView<T>;
@@ -59,6 +68,12 @@ using OutlineViewEditEndedEventHandler =
 using OutlineViewContextMenuOpeningEventHandler =
 		TypedEventHandler<winrt::WinUIToolbox::OutlineView,
 				winrt::WinUIToolbox::OutlineViewContextMenuOpeningEventArgs>;
+using OutlineViewItemDragStartingEventHandler =
+		TypedEventHandler<winrt::WinUIToolbox::OutlineView, winrt::WinUIToolbox::OutlineViewItemDragStartingEventArgs>;
+using OutlineViewDragOverEventHandler =
+		TypedEventHandler<winrt::WinUIToolbox::OutlineView, winrt::WinUIToolbox::OutlineViewDragOverEventArgs>;
+using OutlineViewDropEventHandler =
+		TypedEventHandler<winrt::WinUIToolbox::OutlineView, winrt::WinUIToolbox::OutlineViewDropEventArgs>;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: winrt::WinUIToolbox::implementation
@@ -301,6 +316,111 @@ namespace winrt::WinUIToolbox::implementation {
 			MenuFlyout	mFlyout;
 	};
 
+	// MARK: - OutlineViewItemDragStartingEventArgs
+	struct OutlineViewItemDragStartingEventArgs :
+			OutlineViewItemDragStartingEventArgsT<OutlineViewItemDragStartingEventArgs> {
+		// Methods
+		public:
+									// Lifecycle methods
+									OutlineViewItemDragStartingEventArgs(const IVectorView<hstring>& identifiers,
+											const DataPackage& data, DataPackageOperation allowedOperations) :
+										mIdentifiers(identifiers), mData(data), mAllowedOperations(allowedOperations),
+												mCancel(false)
+										{}
+
+									// Property methods
+			IVectorView<hstring>	Identifiers() const
+										{ return mIdentifiers; }
+			DataPackage				Data() const
+										{ return mData; }
+			DataPackageOperation	AllowedOperations() const
+										{ return mAllowedOperations; }
+			void					AllowedOperations(DataPackageOperation allowedOperations)
+										{ mAllowedOperations = allowedOperations; }
+			bool					Cancel() const
+										{ return mCancel; }
+			void					Cancel(bool cancel)
+										{ mCancel = cancel; }
+
+		// Properties
+		private:
+			IVectorView<hstring>	mIdentifiers;
+			DataPackage				mData;
+			DataPackageOperation	mAllowedOperations;
+			bool					mCancel;
+	};
+
+	// MARK: - OutlineViewDragOverEventArgs
+	struct OutlineViewDragOverEventArgs : OutlineViewDragOverEventArgsT<OutlineViewDragOverEventArgs> {
+		// Methods
+		public:
+									// Lifecycle methods
+									OutlineViewDragOverEventArgs(const DataPackageView& data, const hstring& identifier,
+											OutlineViewDropPosition dropPosition) :
+										mData(data), mIdentifier(identifier), mDropPosition(dropPosition),
+												mAcceptedOperation(DataPackageOperation::None)
+										{}
+
+									// Property methods
+			DataPackageView			Data() const
+										{ return mData; }
+			hstring					Identifier() const
+										{ return mIdentifier; }
+			void					Identifier(const hstring& identifier)
+										{ mIdentifier = identifier; }
+			OutlineViewDropPosition	DropPosition() const
+										{ return mDropPosition; }
+			void					DropPosition(OutlineViewDropPosition dropPosition)
+										{ mDropPosition = dropPosition; }
+			DataPackageOperation	AcceptedOperation() const
+										{ return mAcceptedOperation; }
+			void					AcceptedOperation(DataPackageOperation acceptedOperation)
+										{ mAcceptedOperation = acceptedOperation; }
+
+		// Properties
+		private:
+			DataPackageView			mData;
+			hstring					mIdentifier;
+			OutlineViewDropPosition	mDropPosition;
+			DataPackageOperation	mAcceptedOperation;
+	};
+
+	// MARK: - OutlineViewDropEventArgs
+	struct OutlineViewDropEventArgs : OutlineViewDropEventArgsT<OutlineViewDropEventArgs> {
+		// Methods
+		public:
+									// Lifecycle methods
+									OutlineViewDropEventArgs(const DataPackageView& data, const hstring& identifier,
+											OutlineViewDropPosition dropPosition,
+											DataPackageOperation acceptedOperation,
+											const DragEventArgs& dragEventArgs) :
+										mData(data), mIdentifier(identifier), mDropPosition(dropPosition),
+												mAcceptedOperation(acceptedOperation), mDragEventArgs(dragEventArgs)
+										{}
+
+									// Property methods
+			DataPackageView			Data() const
+										{ return mData; }
+			hstring					Identifier() const
+										{ return mIdentifier; }
+			OutlineViewDropPosition	DropPosition() const
+										{ return mDropPosition; }
+			DataPackageOperation	AcceptedOperation() const
+										{ return mAcceptedOperation; }
+
+									// Instance methods
+			DragOperationDeferral	GetDeferral() const
+										{ return mDragEventArgs.GetDeferral(); }
+
+		// Properties
+		private:
+			DataPackageView			mData;
+			hstring					mIdentifier;
+			OutlineViewDropPosition	mDropPosition;
+			DataPackageOperation	mAcceptedOperation;
+			DragEventArgs			mDragEventArgs;
+	};
+
 	// MARK: - OutlineView
 	/*
 		A multi-column, hierarchical, virtualized list.  It draws a column header, and
@@ -309,11 +429,11 @@ namespace winrt::WinUIToolbox::implementation {
 
 		The view owns the columns, the tree as a tree of item identifiers, which items are expanded, the flat list of
 			rows that follows, and the selection.  The OutlineViewDataSource supplies the tree's shape and applies the
-			sort; it is a C++ type, carried in as Object and unwrapped inside.  An IOutlineViewCellFactory supplies the
-			cells, and the view raises events for what the user does.  Cells come from a recycle pool keyed by recycle
-			key and are populated in code.
+			sort, and the OutlineViewCellProvider supplies the cells; both are C++ types, carried in as Object and
+			unwrapped inside.  The view raises events for what the user does.  Cells come from a recycle pool keyed by
+			recycle key and are populated in code.
 
-		The flow: set the data source, compose the columns and the cell factory, subscribe to events, then
+		The flow: set the data source, compose the columns and the cell provider, subscribe to events, then
 			ReloadAllItems.  Items are named by identifier throughout, never by row index, so a reference stays good as
 			rows shuffle.
 	*/
@@ -341,8 +461,8 @@ namespace winrt::WinUIToolbox::implementation {
 			void										CanUserReorderColumns(bool canUserReorderColumns);
 			bool										CanUserResizeColumns() const;
 			void										CanUserResizeColumns(bool canUserResizeColumns);
-			IOutlineViewCellFactory						CellFactory() const;
-			void										CellFactory(const IOutlineViewCellFactory& cellFactory);
+			bool										CanDragItems() const;
+			void										CanDragItems(bool canDragItems);
 
 														// Event methods
 			winrt::event_token							ItemExpanded(const OutlineViewItemEventHandler& handler);
@@ -383,7 +503,20 @@ namespace winrt::WinUIToolbox::implementation {
 																		handler);
 			void										ContextMenuOpening(const winrt::event_token& token) noexcept;
 
+			winrt::event_token							ItemDragStarting(
+																const OutlineViewItemDragStartingEventHandler& handler);
+			void										ItemDragStarting(const winrt::event_token& token) noexcept;
+
+			winrt::event_token							ItemDragOver(const OutlineViewDragOverEventHandler& handler);
+			void										ItemDragOver(const winrt::event_token& token) noexcept;
+
+			winrt::event_token							ItemDrop(const OutlineViewDropEventHandler& handler);
+			void										ItemDrop(const winrt::event_token& token) noexcept;
+
 														// Instance methods
+			void										SetCellProvider(const IInspectable& cellProvider);
+			IInspectable								GetCellProvider() const;
+
 			void										SetDataSource(const IInspectable& dataSource);
 			IInspectable								GetDataSource() const;
 
