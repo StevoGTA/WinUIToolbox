@@ -23,7 +23,7 @@ static ChipInfo sChipInfoFor(const SChipInfo& chipInfo)
 	return ChipInfo(chipInfo.getText().getOSString(),
 			(chipInfo.getStyle() == SChipInfo::kStyleAccented) ?
 					ChipInfoStyle::Accented :
-					(chipInfo.getStyle() == SChipInfo::kStyleFilled) ? ChipInfoStyle::Filled : ChipInfoStyle::Outlined,
+					((chipInfo.getStyle() == SChipInfo::kStyleFilled) ? ChipInfoStyle::Filled : ChipInfoStyle::Outlined),
 			(chipInfo.getSymbol() == SChipInfo::kSymbolLocked) ? ChipInfoSymbol::Locked : ChipInfoSymbol::None,
 			chipInfo.getColor().hasValue() ? ColorReference(CColorEx::toColor(*chipInfo.getColor())) : nullptr);
 }
