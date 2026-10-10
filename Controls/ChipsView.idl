@@ -1,0 +1,50 @@
+//----------------------------------------------------------------------------------------------------------------------
+//	ChipsView.idl			©2026 Stevo Brock		All rights reserved.
+//----------------------------------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: WinUIToolbox namespace
+namespace WinUIToolbox {
+
+	//------------------------------------------------------------------------------------------------------------------
+	// MARK: ChipInfoStyle
+	enum ChipInfoStyle {
+		Outlined,
+		Filled,
+		Accented,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------
+	// MARK: ChipInfoSymbol
+	enum ChipInfoSymbol {
+		None,
+		Locked,
+	};
+
+	//------------------------------------------------------------------------------------------------------------------
+	// MARK: ChipInfo
+	runtimeclass ChipInfo {
+														// Lifecycle Methods
+														ChipInfo(String text, ChipInfoStyle style,
+																ChipInfoSymbol symbol,
+																Windows.Foundation.IReference<Windows.UI.Color>
+																		tintColor);
+
+														// Properties
+		String											Text { get; };
+		ChipInfoStyle									Style { get; };
+		ChipInfoSymbol									Symbol { get; };
+		Windows.Foundation.IReference<Windows.UI.Color>	TintColor { get; };
+	}
+
+	//------------------------------------------------------------------------------------------------------------------
+	// MARK: ChipsView
+	[default_interface]
+	runtimeclass ChipsView : Microsoft.UI.Xaml.Controls.UserControl {
+																// Lifecycle Methods
+																ChipsView();
+
+																// Properties
+		Windows.Foundation.Collections.IVectorView<ChipInfo>	Infos;
+	}
+}
