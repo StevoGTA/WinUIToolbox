@@ -181,11 +181,15 @@ namespace WinUIToolbox {
 		Boolean																									CanUserResizeColumns;
 		Boolean																									CanDragItems;
 
+		void																									SetDataSource(Object dataSource);
+		Object																									GetDataSource();
+
 		void																									SetCellProvider(Object cellProvider);
 		Object																									GetCellProvider();
 
-		void																									SetDataSource(Object dataSource);
-		Object																									GetDataSource();
+		void																									SetRowHeightProvider(
+																														Object rowHeightProvider);
+		Object																									GetRowHeightProvider();
 
 		Windows.Foundation.Collections.IVectorView<OutlineViewColumn>											GetColumns();
 		void																									SetColumns(
@@ -216,6 +220,9 @@ namespace WinUIToolbox {
 																																identifiers,
 																														Windows.Foundation.Collections.IVectorView<String>
 																																columnIdentifiers);
+		void																									NoteHeightOfItemsChanged(
+																														Windows.Foundation.Collections.IVectorView<String>
+																																identifiers);
 
 		UInt32																									GetRowCount();
 		String																									GetIdentifierAtRow(UInt32 rowIndex);

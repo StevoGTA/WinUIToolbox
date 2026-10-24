@@ -423,13 +423,14 @@ namespace winrt::WinUIToolbox::implementation {
 
 	// MARK: - OutlineView
 	/*
-		A multi-column, hierarchical, virtualized list.  It draws a column header, and
-			below it only the rows that are showing: a fixed row height and a private scrollbar working in rows keep
-			every coordinate the framework sees the size of the viewport, whatever the row count.
+		A multi-column, hierarchical, virtualized list.  It draws a column header, and below it only the rows that are
+			showing: a private scrollbar and rows placed relative to the viewport keep every coordinate the framework
+			sees the size of the viewport, whatever the row count.
 
 		The view owns the columns, the tree as a tree of item identifiers, which items are expanded, the flat list of
 			rows that follows, and the selection.  The OutlineViewDataSource supplies the tree's shape and applies the
-			sort, and the OutlineViewCellProvider supplies the cells; both are C++ types, carried in as Object and
+			sort, the OutlineViewCellProvider supplies the cells, and an optional OutlineViewRowHeightProvider supplies
+			row heights - without one every row is RowHeight.  All three are C++ types, carried in as Object and
 			unwrapped inside.  The view raises events for what the user does.  Cells come from a recycle pool keyed by
 			recycle key and are populated in code.
 
@@ -514,11 +515,14 @@ namespace winrt::WinUIToolbox::implementation {
 			void										ItemDrop(const winrt::event_token& token) noexcept;
 
 														// Instance methods
+			void										SetDataSource(const IInspectable& dataSource);
+			IInspectable								GetDataSource() const;
+
 			void										SetCellProvider(const IInspectable& cellProvider);
 			IInspectable								GetCellProvider() const;
 
-			void										SetDataSource(const IInspectable& dataSource);
-			IInspectable								GetDataSource() const;
+			void										SetRowHeightProvider(const IInspectable& rowHeightProvider);
+			IInspectable								GetRowHeightProvider() const;
 
 			IVectorView<OutlineViewColumn>				GetColumns() const;
 			void										SetColumns(const IVectorView<OutlineViewColumn>& columns);
@@ -540,6 +544,9 @@ namespace winrt::WinUIToolbox::implementation {
 																const IVectorView<hstring>& columnIdentifiers);
 			void										ReloadItems(const IVectorView<hstring>& identifiers,
 																const IVectorView<hstring>& columnIdentifiers);
+
+			void										NoteHeightOfItemsChanged(
+																const IVectorView<hstring>& identifiers);
 
 			uint32_t									GetRowCount() const;
 			hstring										GetIdentifierAtRow(uint32_t rowIndex) const;

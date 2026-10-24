@@ -6,6 +6,7 @@
 
 #include "OutlineViewCellProvider.h"
 #include "OutlineViewDataSource.h"
+#include "OutlineViewRowHeightProvider.h"
 #include "PointerHelper.h"
 
 #include "winrt\Microsoft.UI.h"
@@ -57,6 +58,7 @@ using PointerPoint = winrt::Microsoft::UI::Input::PointerPoint;
 using RangeBaseValueChangedEventArgs = winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs;
 using Rect = winrt::Windows::Foundation::Rect;
 using RectangleGeometry = winrt::Microsoft::UI::Xaml::Media::RectangleGeometry;
+using RowHeightProvider = OutlineViewRowHeightProvider;
 using ScrollBar = winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollBar;
 using ScrollingIndicatorMode = winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollingIndicatorMode;
 using Size = winrt::Windows::Foundation::Size;
@@ -290,6 +292,7 @@ class OutlineView::Internals {
 														// Instance methods - setup
 				void									setDataSource(const IInspectable& dataSource);
 				void									setCellProvider(const IInspectable& cellProvider);
+				void									setRowHeightProvider(const IInspectable& rowHeightProvider);
 
 														// Instance methods - view chrome
 				void									buildChrome();
@@ -307,17 +310,18 @@ class OutlineView::Internals {
 														// Instance methods - layout
 				double									getBodyHeight() const;
 				double									getColumnHeaderHeight() const;
-				double									getViewportRows() const;
 				uint32_t								getRowCount() const;
-				uint32_t								getFirstRow() const;
-				double									getSubRowOffset() const;
+				double									getRowTop(uint32_t row) const;
+				double									getRowHeight(uint32_t row) const;
+				double									getContentHeight() const;
+				uint32_t								getRowAtOffset(double offset) const;
 				double									getRowY(uint32_t row) const;
 
 				void									viewportSizeChanged(double width, double height);
 				void									layout();
 				void									setHOffset(double offset);
 				void									updateVScrollBar();
-				void									scrollTo(double scrollRow);
+				void									scrollTo(double scrollOffset);
 				void									scrollRowIntoView(uint32_t row);
 
 														// Instance methods - tree
@@ -328,6 +332,9 @@ class OutlineView::Internals {
 				void									appendChildRows(const std::optional<std::wstring>& identifier,
 																uint32_t level);
 				void									buildRows();
+				void									buildRowTops();
+				void									noteHeightOfItemsChanged(
+																const std::vector<std::wstring>& identifiers);
 				void									reloadTree();
 				void									setExpanded(const std::wstring& identifier, bool expanded,
 																bool includeChildren);
@@ -356,7 +363,7 @@ class OutlineView::Internals {
 				double									getFirstColumnIndent(const RealizedRow& realizedRow) const;
 				void									layoutRow(RealizedRow& realizedRow);
 				void									placeCell(const UIElement& element, double x, double width,
-																double y);
+																double y, double height);
 				void									updateRowVisuals(RealizedRow& realizedRow);
 				void									updateAllRowVisuals();
 				void									updateFocusRect();
@@ -449,11 +456,14 @@ class OutlineView::Internals {
 	public:
 		OutlineView&													mOutlineView;
 
+		IInspectable													mDataSourceObject;
+		DataSource*														mDataSource;
+
 		IInspectable													mCellProviderObject;
 		CellProvider*													mCellProvider;
 
-		IInspectable													mDataSourceObject;
-		DataSource*														mDataSource;
+		IInspectable													mRowHeightProviderObject;
+		RowHeightProvider*												mRowHeightProvider;
 
 		winrt::event<OutlineViewItemEventHandler>						mItemExpandedEvent;
 		winrt::event<OutlineViewItemEventHandler>						mItemCollapsedEvent;
@@ -507,13 +517,14 @@ class OutlineView::Internals {
 		double															mTotalWidth;
 		double															mContentWidth;
 		double															mHOffset;
-		double															mScrollRow;
+		double															mScrollOffset;
 		bool															mIsUpdatingScrollBars;
 		bool															mHasFocus;
 
 		std::vector<Column>												mColumns;
 		std::vector<RowEntry>											mRowEntries;
 		std::unordered_map<std::wstring, uint32_t>						mRowByIdentifier;
+		std::vector<double>												mRowTops;
 		std::set<std::wstring>											mExpandedIdentifiers;
 		std::unordered_set<std::wstring>								mSelectedIdentifiers;
 		std::vector<SortDescriptor>										mSortDescriptors;
@@ -566,7 +577,9 @@ class OutlineView::Internals {
 //----------------------------------------------------------------------------------------------------------------------
 OutlineView::Internals::Internals(OutlineView& outlineView) :
 		mOutlineView(outlineView),
-				mCellProviderObject(nullptr), mCellProvider(nullptr), mDataSourceObject(nullptr), mDataSource(nullptr),
+				mDataSourceObject(nullptr), mDataSource(nullptr),
+				mCellProviderObject(nullptr), mCellProvider(nullptr),
+				mRowHeightProviderObject(nullptr), mRowHeightProvider(nullptr),
 				mOutlineStyle(OutlineViewStyle::FirstColumn), mSelectionMode(OutlineViewSelectionMode::Extended),
 				mCanUserReorderColumns(true), mCanUserResizeColumns(true), mRowHeight(26.0), mColumnHeaderHeight(32.0),
 				mClipBorder(nullptr), mContentGrid(nullptr), mTranslateTransform(nullptr),
@@ -577,7 +590,7 @@ OutlineView::Internals::Internals(OutlineView& outlineView) :
 				mTextBrush(nullptr), mSelectedBrush(nullptr), mHoverBrush(nullptr), mSelectedHoverBrush(nullptr),
 				mAccentBrush(nullptr), mTransparentBrush(nullptr),
 				mViewportWidth(0.0), mViewportHeight(0.0), mGutterWidth(0.0), mTotalWidth(0.0), mContentWidth(0.0),
-				mHOffset(0.0), mScrollRow(0.0), mIsUpdatingScrollBars(false), mHasFocus(false),
+				mHOffset(0.0), mScrollOffset(0.0), mIsUpdatingScrollBars(false), mHasFocus(false),
 				mPointerHelper(nullptr), mPressedHeaderColumnIndex(-1), mPressedX(0.0), mIsDraggingColumn(false),
 				mDropColumnIndex(-1), mResizingColumnIndex(-1), mResizingStartWidth(0.0), mIsShowingResizeCursor(false),
 				mResizeCursor(nullptr),
@@ -630,6 +643,26 @@ void OutlineView::Internals::setCellProvider(const IInspectable& cellProvider)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+void OutlineView::Internals::setRowHeightProvider(const IInspectable& rowHeightProvider)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Set row height provider
+	mRowHeightProviderObject = rowHeightProvider;
+	if (rowHeightProvider != nullptr) {
+		// Carried across as Object, boxed by OutlineViewRowHeightProviderRInspectable
+		auto	wrapper = rowHeightProvider.try_as<OutlineViewRowHeightProviderRInspectable>();
+		mRowHeightProvider = (wrapper != nullptr) ? &wrapper->GetReference() : nullptr;
+	} else
+		// Cleared - every row is RowHeight
+		mRowHeightProvider = nullptr;
+
+	// Every row may have moved
+	buildRowTops();
+	updateVScrollBar();
+	realize();
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 void OutlineView::Internals::setDataSource(const IInspectable& dataSource)
 //----------------------------------------------------------------------------------------------------------------------
 {
@@ -658,9 +691,10 @@ void OutlineView::Internals::setDataSource(const IInspectable& dataSource)
 	mHoveredRow = std::optional<uint32_t>();
 	mClickedRow = std::optional<uint32_t>();
 	mClickedColumnIdentifier = std::optional<std::wstring>();
-	mScrollRow = 0.0;
+	mScrollOffset = 0.0;
 	mRowEntries.clear();
 	mRowByIdentifier.clear();
+	buildRowTops();
 
 	// Setup UI
 	updateVScrollBar();
@@ -780,7 +814,6 @@ void OutlineView::Internals::buildChrome()
 	mVScrollBar.Orientation(Orientation::Vertical);
 	mVScrollBar.IndicatorMode(ScrollingIndicatorMode::MouseIndicator);
 	mVScrollBar.Minimum(0.0);
-	mVScrollBar.SmallChange(1.0);
 	mOutlineView.Children().Append(mVScrollBar);
 
 	Grid::SetRow(mVScrollBar, 0);
@@ -808,7 +841,7 @@ void OutlineView::Internals::buildChrome()
 			return;
 
 		// Scroll
-		mScrollRow = args.NewValue();
+		mScrollOffset = args.NewValue();
 		realize();
 	});
 	mHScrollBar.ValueChanged([this](const IInspectable& sender, const RangeBaseValueChangedEventArgs& args){
@@ -1001,13 +1034,6 @@ double OutlineView::Internals::getColumnHeaderHeight() const
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-double OutlineView::Internals::getViewportRows() const
-//----------------------------------------------------------------------------------------------------------------------
-{
-	return (mRowHeight > 0.0) ? (getBodyHeight() / mRowHeight) : 0.0;
-}
-
-//----------------------------------------------------------------------------------------------------------------------
 uint32_t OutlineView::Internals::getRowCount() const
 //----------------------------------------------------------------------------------------------------------------------
 {
@@ -1015,24 +1041,52 @@ uint32_t OutlineView::Internals::getRowCount() const
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-uint32_t OutlineView::Internals::getFirstRow() const
+double OutlineView::Internals::getRowTop(uint32_t row) const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	return (uint32_t) std::floor(mScrollRow);
+	return mRowTops.empty() ? ((double) row * mRowHeight) : mRowTops[row];
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-double OutlineView::Internals::getSubRowOffset() const
+double OutlineView::Internals::getRowHeight(uint32_t row) const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	return (mScrollRow - std::floor(mScrollRow)) * mRowHeight;
+	return mRowTops.empty() ? mRowHeight : (mRowTops[row + 1] - mRowTops[row]);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+double OutlineView::Internals::getContentHeight() const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	return mRowTops.empty() ? ((double) getRowCount() * mRowHeight) : mRowTops.back();
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+uint32_t OutlineView::Internals::getRowAtOffset(double offset) const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Check situation - offsets before the first row are the first row, and after the last row are the last row
+	uint32_t	rowCount = getRowCount();
+	if ((rowCount == 0) || (offset <= 0.0))
+		return 0;
+
+	// Check row heights
+	if (mRowTops.empty())
+		// All RowHeight
+		return (uint32_t) std::min(std::floor(offset / mRowHeight), (double) (rowCount - 1));
+	else {
+		// The last row whose top is at or above the offset
+		auto	iterator = std::upper_bound(mRowTops.begin(), mRowTops.end(), offset);
+
+		return (uint32_t) std::min((ptrdiff_t) (iterator - mRowTops.begin()) - 1, (ptrdiff_t) (rowCount - 1));
+	}
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 double OutlineView::Internals::getRowY(uint32_t row) const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	return getColumnHeaderHeight() + ((double) row - (double) getFirstRow()) * mRowHeight - getSubRowOffset();
+	return getColumnHeaderHeight() + getRowTop(row) - mScrollOffset;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -1123,26 +1177,27 @@ void OutlineView::Internals::updateVScrollBar()
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	double	viewportRows = getViewportRows();
-	double	maximum = std::max((double) getRowCount() - viewportRows, 0.0);
-	mScrollRow = std::min(std::max(mScrollRow, 0.0), maximum);
+	double	bodyHeight = getBodyHeight();
+	double	maximum = std::max(getContentHeight() - bodyHeight, 0.0);
+	mScrollOffset = std::min(std::max(mScrollOffset, 0.0), maximum);
 
 	// Update
 	mIsUpdatingScrollBars = true;
 	mVScrollBar.Maximum(maximum);
-	mVScrollBar.ViewportSize(viewportRows);
-	mVScrollBar.LargeChange(std::max(viewportRows, 1.0));
-	mVScrollBar.Value(mScrollRow);
+	mVScrollBar.ViewportSize(bodyHeight);
+	mVScrollBar.SmallChange(mRowHeight);
+	mVScrollBar.LargeChange(std::max(bodyHeight, mRowHeight));
+	mVScrollBar.Value(mScrollOffset);
 	mVScrollBar.Visibility((maximum > 0.0) ? Visibility::Visible : Visibility::Collapsed);
 	mIsUpdatingScrollBars = false;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void OutlineView::Internals::scrollTo(double scrollRow)
+void OutlineView::Internals::scrollTo(double scrollOffset)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Update
-	mScrollRow = scrollRow;
+	mScrollOffset = scrollOffset;
 
 	// Update UI
 	updateVScrollBar();
@@ -1154,17 +1209,20 @@ void OutlineView::Internals::scrollRowIntoView(uint32_t row)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Setup
-	double	viewportRows = getViewportRows();
-	if (viewportRows <= 0.0)
+	double	bodyHeight = getBodyHeight();
+	if ((bodyHeight <= 0.0) || (row >= getRowCount()))
 		return;
 
+	double	top = getRowTop(row);
+	double	bottom = top + getRowHeight(row);
+
 	// Check where it is
-	if ((double) row < mScrollRow)
+	if (top < mScrollOffset)
 		// Above
-		scrollTo((double) row);
-	else if (((double) row + 1.0) > (mScrollRow + viewportRows))
-		// Below
-		scrollTo((double) row + 1.0 - viewportRows);
+		scrollTo(top);
+	else if (bottom > (mScrollOffset + bodyHeight))
+		// Below - but a row taller than the body keeps its top showing
+		scrollTo(std::min(bottom - bodyHeight, top));
 }
 
 // MARK: Instance methods - tree
@@ -1241,6 +1299,85 @@ void OutlineView::Internals::buildRows()
 	mRowEntries.clear();
 	mRowByIdentifier.clear();
 	appendChildRows(std::optional<std::wstring>(), 0);
+	buildRowTops();
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::Internals::buildRowTops()
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Every row is RowHeight unless there is a row height provider, and then each row's top is kept, plus the bottom
+	//	of the last row
+	mRowTops.clear();
+	if (mRowHeightProvider == nullptr)
+		return;
+
+	// Ask for each row's height
+	mRowTops.reserve(mRowEntries.size() + 1);
+	mRowTops.push_back(0.0);
+	if (!mRowEntries.empty()) {
+		// Setup
+		winrt::WinUIToolbox::OutlineView	outlineView = getProjectedOutlineView();
+		double								top = 0.0;
+
+		// Iterate rows
+		for (const RowEntry& rowEntry : mRowEntries) {
+			// Add
+			top += std::max(mRowHeightProvider->getRowHeight(winrt::hstring(rowEntry.mIdentifier), outlineView), 1.0);
+			mRowTops.push_back(top);
+		}
+	}
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::Internals::noteHeightOfItemsChanged(const std::vector<std::wstring>& identifiers)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Nothing to do when every row is RowHeight
+	if (mRowHeightProvider == nullptr)
+		return;
+
+	// Ask again for the height of each item that has a row
+	winrt::WinUIToolbox::OutlineView	outlineView = getProjectedOutlineView();
+	std::map<uint32_t, double>			heightByRow;
+	for (const std::wstring& identifier : identifiers) {
+		// Check for row
+		std::optional<uint32_t>	row = rowForIdentifier(std::optional<std::wstring>(identifier));
+		if (row.has_value())
+			// Ask
+			heightByRow[*row] =
+					std::max(mRowHeightProvider->getRowHeight(winrt::hstring(identifier), outlineView), 1.0);
+	}
+	if (heightByRow.empty())
+		return;
+
+	// Recompute the tops from the first of those rows down, keeping the height of every other row
+	uint32_t	rowCount = getRowCount();
+	auto		iterator = heightByRow.begin();
+	double		top = mRowTops[iterator->first];
+	double		previousTop = top;
+	for (uint32_t row = iterator->first; row < rowCount; row++) {
+		// Setup
+		double	previousNextTop = mRowTops[row + 1];
+		double	height;
+		if ((iterator != heightByRow.end()) && (iterator->first == row)) {
+			// Asked
+			height = iterator->second;
+			iterator++;
+		} else
+			// Unchanged
+			height = previousNextTop - previousTop;
+
+		// Update
+		top += height;
+		mRowTops[row + 1] = top;
+		previousTop = previousNextTop;
+	}
+
+	// Update UI
+	updateVScrollBar();
+	realize();
+	updateDropVisuals();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -1342,13 +1479,16 @@ void OutlineView::Internals::toggleExpanded(uint32_t row, bool includeChildren)
 void OutlineView::Internals::realize()
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Setup
+	// Setup - the rows from the one at the top of the body through the one at the bottom
 	uint32_t	rowCount = getRowCount();
 	double		bodyHeight = getBodyHeight();
-	uint32_t	firstRow = getFirstRow();
-	uint32_t	realizeCount =
-						(mRowHeight > 0.0) ? (uint32_t) std::ceil((bodyHeight + getSubRowOffset()) / mRowHeight) : 0;
-	uint32_t	endRow = std::min(firstRow + realizeCount, rowCount);
+	uint32_t	firstRow = 0;
+	uint32_t	endRow = 0;
+	if ((rowCount > 0) && (bodyHeight > 0.0)) {
+		// Have rows showing
+		firstRow = getRowAtOffset(mScrollOffset);
+		endRow = std::min(getRowAtOffset(mScrollOffset + bodyHeight) + 1, rowCount);
+	}
 
 	// Keep what is still showing, recycle what is not
 	std::vector<RealizedRow>	realizedRows;
@@ -1644,22 +1784,23 @@ void OutlineView::Internals::layoutRow(RealizedRow& realizedRow)
 {
 	// Setup
 	double	y = getRowY(realizedRow.mRow);
+	double	height = getRowHeight(realizedRow.mRow);
 
 	// Chrome
 	Canvas::SetLeft(realizedRow.mBackground, 0.0);
 	Canvas::SetTop(realizedRow.mBackground, y);
 	realizedRow.mBackground.Width(mContentWidth);
-	realizedRow.mBackground.Height(mRowHeight);
+	realizedRow.mBackground.Height(height);
 
 	Canvas::SetLeft(realizedRow.mSelectionIndicator, 2.0);
-	Canvas::SetTop(realizedRow.mSelectionIndicator, y + (mRowHeight - kSelectionIndicatorHeight) / 2.0);
+	Canvas::SetTop(realizedRow.mSelectionIndicator, y + (height - kSelectionIndicatorHeight) / 2.0);
 
 	if (realizedRow.mChevron != nullptr) {
 		// Place
 		Canvas::SetLeft(realizedRow.mChevron, getChevronX(realizedRow));
 		Canvas::SetTop(realizedRow.mChevron, y);
 		realizedRow.mChevron.Width(kChevronWidth);
-		realizedRow.mChevron.Height(mRowHeight);
+		realizedRow.mChevron.Height(height);
 	}
 
 	// Cells
@@ -1669,7 +1810,7 @@ void OutlineView::Internals::layoutRow(RealizedRow& realizedRow)
 		if (!realizedRow.mCellSlots.empty() && (realizedRow.mCellSlots[0].mCell != nullptr)) {
 			// Place
 			double	x = (mColumns.empty() ? mGutterWidth : mColumns[0].mX) + indent + kCellInset;
-			placeCell(realizedRow.mCellSlots[0].mCell.Element(), x, mContentWidth - x - kCellInset, y);
+			placeCell(realizedRow.mCellSlots[0].mCell.Element(), x, mContentWidth - x - kCellInset, y, height);
 		}
 	} else {
 		// One per column
@@ -1685,13 +1826,13 @@ void OutlineView::Internals::layoutRow(RealizedRow& realizedRow)
 					double	cellIndent = (i == 0) ? indent : 0.0;
 					double	x = column.mX + cellIndent + kCellInset;
 					double	width = column.mWidth - cellIndent - 2.0 * kCellInset;
-			placeCell(cellSlot.mCell.Element(), x, width, y);
+			placeCell(cellSlot.mCell.Element(), x, width, y, height);
 		}
 	}
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void OutlineView::Internals::placeCell(const UIElement& element, double x, double width, double y)
+void OutlineView::Internals::placeCell(const UIElement& element, double x, double width, double y, double height)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Size, then see how tall it wants to be so it can sit centered in the row
@@ -1699,11 +1840,11 @@ void OutlineView::Internals::placeCell(const UIElement& element, double x, doubl
 	if (frameworkElement != nullptr)
 		// Set width
 		frameworkElement.Width(std::max(width, 0.0));
-	element.Measure(Size{(float) std::max(width, 0.0), (float) mRowHeight});
+	element.Measure(Size{(float) std::max(width, 0.0), (float) height});
 
-	double	height = std::min((double) element.DesiredSize().Height, mRowHeight);
+	double	elementHeight = std::min((double) element.DesiredSize().Height, height);
 	Canvas::SetLeft(element, x);
-	Canvas::SetTop(element, y + (mRowHeight - height) / 2.0);
+	Canvas::SetTop(element, y + (height - elementHeight) / 2.0);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -1752,7 +1893,7 @@ void OutlineView::Internals::updateFocusRect()
 	Canvas::SetLeft(mFocusRect, 0.5);
 	Canvas::SetTop(mFocusRect, getRowY(realizedRow->mRow) + 0.5);
 	mFocusRect.Width(std::max(mContentWidth - 1.0, 0.0));
-	mFocusRect.Height(std::max(mRowHeight - 1.0, 0.0));
+	mFocusRect.Height(std::max(getRowHeight(realizedRow->mRow) - 1.0, 0.0));
 	mFocusRect.Visibility(Visibility::Visible);
 }
 
@@ -1888,14 +2029,13 @@ std::optional<uint32_t> OutlineView::Internals::getRowAt(const Point& point) con
 {
 	// Check body
 	if ((point.Y < getColumnHeaderHeight()) || (point.Y >= mViewportHeight) || (point.X < 0.0) ||
-			(point.X >= mViewportWidth) || (mRowHeight <= 0.0))
+			(point.X >= mViewportWidth))
 		return std::optional<uint32_t>();
 
-	// Compute
-	double		y = point.Y - getColumnHeaderHeight() + getSubRowOffset();
-	uint32_t	row = getFirstRow() + (uint32_t) std::floor(y / mRowHeight);
+	// Compute - below the last row is no row
+	double	offset = point.Y - getColumnHeaderHeight() + mScrollOffset;
 
-	return (row < getRowCount()) ? std::optional<uint32_t>(row) : std::optional<uint32_t>();
+	return (offset < getContentHeight()) ? std::optional<uint32_t>(getRowAtOffset(offset)) : std::optional<uint32_t>();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2558,7 +2698,6 @@ bool OutlineView::Internals::keyDown(VirtualKey virtualKey)
 	bool		isControl = sIsVirtualKeyDown(VirtualKey::Control);
 	uint32_t	rowCount = getRowCount();
 	uint32_t	focusedRow = mFocusedRow.has_value() ? *mFocusedRow : 0;
-	uint32_t	pageRows = std::max((uint32_t) std::floor(getViewportRows()), (uint32_t) 1);
 
 	// Check key
 	switch (virtualKey) {
@@ -2595,21 +2734,34 @@ bool OutlineView::Internals::keyDown(VirtualKey virtualKey)
 
 			return true;
 
-		case VirtualKey::PageUp:
-			// Page up
+		case VirtualKey::PageUp: {
+			// Page up - to the first row wholly inside the body height above the focused row, and always at least one
 			if (rowCount == 0)	return true;
 
-			moveFocus((focusedRow > pageRows) ? focusedRow - pageRows : 0, isShift, isControl);
+			uint32_t	fromRow = std::min(focusedRow, rowCount - 1);
+			double		offset = getRowTop(fromRow) - getBodyHeight();
+			uint32_t	row = getRowAtOffset(offset);
+			if ((row < fromRow) && (getRowTop(row) < offset))
+				// Partly above, so the next one
+				row++;
+			if ((row >= fromRow) && (fromRow > 0))
+				// Not moved
+				row = fromRow - 1;
+			moveFocus(row, isShift, isControl);
 
 			return true;
+		}
 
-		case VirtualKey::PageDown:
-			// Page down
+		case VirtualKey::PageDown: {
+			// Page down - to the row the body height below the focused row, and always at least one
 			if (rowCount == 0)	return true;
 
-			moveFocus(focusedRow + pageRows, isShift, isControl);
+			uint32_t	fromRow = std::min(focusedRow, rowCount - 1);
+			moveFocus(std::max(getRowAtOffset(getRowTop(fromRow) + getBodyHeight()), fromRow + 1), isShift,
+					isControl);
 
 			return true;
+		}
 
 		case VirtualKey::Left: {
 			// Left
@@ -2812,7 +2964,7 @@ bool OutlineView::Internals::beginEdit(uint32_t row, const std::wstring& columnI
 	mEditTextBox.Text(winrt::hstring(text));
 	mEditTextBox.MinHeight(0.0);
 	mEditTextBox.Width(width);
-	mEditTextBox.Height(mRowHeight);
+	mEditTextBox.Height(getRowHeight(row));
 	mEditTextBox.Padding(ThicknessHelper::FromLengths(kCellInset - 2.0, 0.0, 4.0, 0.0));
 	mEditTextBox.VerticalContentAlignment(VerticalAlignment::Center);
 	mOverlayCanvas.Children().Append(mEditTextBox);
@@ -2992,7 +3144,9 @@ void OutlineView::Internals::contextRequested(const std::optional<Point>& point)
 			mClickedRow = mFocusedRow;
 			mClickedColumnIdentifier = std::optional<std::wstring>();
 			if (mFocusedRow.has_value() && (findRealizedRow(*mFocusedRow) != nullptr))
-				position = Point{(float) (mViewportWidth / 2.0), (float) (getRowY(*mFocusedRow) + mRowHeight / 2.0)};
+				position =
+						Point{(float) (mViewportWidth / 2.0),
+								(float) (getRowY(*mFocusedRow) + getRowHeight(*mFocusedRow) / 2.0)};
 		}
 		identifier = identifierForRow(mClickedRow);
 		columnIdentifier = mClickedColumnIdentifier;
@@ -3069,7 +3223,7 @@ void OutlineView::Internals::dragOver(const DragEventArgs& dragEventArgs)
 	OutlineViewDropPosition		dropPosition = OutlineViewDropPosition::On;
 	if (row.has_value()) {
 		// Check edges
-		double	fraction = (point.Y - getRowY(*row)) / mRowHeight;
+		double	fraction = (point.Y - getRowY(*row)) / getRowHeight(*row);
 		if (fraction < kDropEdgeFraction)
 			// Above
 			dropPosition = OutlineViewDropPosition::Before;
@@ -3147,19 +3301,20 @@ void OutlineView::Internals::updateDropVisuals()
 	// Show
 	double	y = getRowY(*row);
 	double	width = std::max(mContentWidth, 0.0);
+	double	height = getRowHeight(*row);
 	if (mDropPosition == OutlineViewDropPosition::On) {
 		// Outline the row
 		Canvas::SetLeft(mDropTargetRect, 1.0);
 		Canvas::SetTop(mDropTargetRect, y + 1.0);
 		mDropTargetRect.Width(std::max(width - 2.0, 0.0));
-		mDropTargetRect.Height(std::max(mRowHeight - 2.0, 0.0));
+		mDropTargetRect.Height(std::max(height - 2.0, 0.0));
 		mDropTargetRect.Visibility(Visibility::Visible);
 		mDropInsertLine.Visibility(Visibility::Collapsed);
 	} else {
 		// A line above or below the row
 		Canvas::SetLeft(mDropInsertLine, 0.0);
 		Canvas::SetTop(mDropInsertLine,
-				((mDropPosition == OutlineViewDropPosition::Before) ? y : (y + mRowHeight)) - 1.0);
+				((mDropPosition == OutlineViewDropPosition::Before) ? y : (y + height)) - 1.0);
 		mDropInsertLine.Width(width);
 		mDropInsertLine.Visibility(Visibility::Visible);
 		mDropTargetRect.Visibility(Visibility::Collapsed);
@@ -3234,7 +3389,7 @@ OutlineView::OutlineView() : OutlineViewT<OutlineView>()
 			mInternals->setHOffset(mInternals->mHOffset - notches * kWheelPixelsPerNotch);
 		else
 			// Up and down
-			mInternals->scrollTo(mInternals->mScrollRow - notches * kWheelRowsPerNotch);
+			mInternals->scrollTo(mInternals->mScrollOffset - notches * kWheelRowsPerNotch * mInternals->mRowHeight);
 
 		pointerRoutedEventArgs.Handled(true);
 	});
@@ -3313,6 +3468,7 @@ void OutlineView::RowHeight(double rowHeight)
 
 	// Update
 	mInternals->mRowHeight = std::max(rowHeight, 1.0);
+	mInternals->buildRowTops();
 	mInternals->recycleAllRows();
 	mInternals->layout();
 }
@@ -3458,6 +3614,20 @@ IInspectable OutlineView::GetCellProvider() const
 //----------------------------------------------------------------------------------------------------------------------
 {
 	return mInternals->mCellProviderObject;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::SetRowHeightProvider(const IInspectable& rowHeightProvider)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	mInternals->setRowHeightProvider(rowHeightProvider);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+IInspectable OutlineView::GetRowHeightProvider() const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	return mInternals->mRowHeightProviderObject;
 }
 
 // MARK: Event methods
@@ -3801,6 +3971,14 @@ void OutlineView::ReloadItems(const IVectorView<winrt::hstring>& identifiers,
 	for (const std::wstring& identifier : sToWStrings(identifiers))
 		// Reload
 		mInternals->reloadItem(identifier, columnIdentifiersOptional);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::NoteHeightOfItemsChanged(const IVectorView<winrt::hstring>& identifiers)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Note
+	mInternals->noteHeightOfItemsChanged(sToWStrings(identifiers));
 }
 
 // MARK: Instance methods - rows and tree
