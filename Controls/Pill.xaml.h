@@ -30,7 +30,7 @@ namespace winrt::WinUIToolbox::implementation {
 					double				StrokeThickness() const;
 					void				StrokeThickness(double strokeThickness);
 
-										// Class methods
+										// Dependency property identifiers
 			static	DependencyProperty	StrokeProperty() noexcept;
 			static	DependencyProperty	StrokeThicknessProperty() noexcept;
 

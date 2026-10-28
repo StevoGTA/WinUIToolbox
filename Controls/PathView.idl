@@ -20,7 +20,7 @@ namespace WinUIToolbox {
 														// Lifecycle Methods
 														PathView();
 
-														// Class methods
+														// Dependency property identifiers
 		static	Microsoft.UI.Xaml.DependencyProperty	PathProperty { get; };
 
 														// Properties

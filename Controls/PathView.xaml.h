@@ -56,7 +56,7 @@ namespace winrt::WinUIToolbox::implementation {
 					event_token			FolderDroppedEvent(const FolderDroppedEventHandler& handler);
 					void				FolderDroppedEvent(const event_token& token) noexcept;
 
-										// Class methods
+										// Dependency property identifiers
 			static	DependencyProperty	PathProperty() noexcept;
 
 		// Properties

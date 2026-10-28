@@ -169,122 +169,126 @@ namespace WinUIToolbox {
 	// MARK: OutlineView
 	[default_interface]
 	runtimeclass OutlineView : Microsoft.UI.Xaml.Controls.Grid {
-																												// Lifecycle methods
-																												OutlineView();
+																														// Lifecycle methods
+																														OutlineView();
 
-																												// Properties
-		Double																									RowHeight;
-		Double																									ColumnHeaderHeight;
-		OutlineViewStyle																						OutlineStyle;
-		OutlineViewSelectionMode																				SelectionMode;
-		Boolean																									CanUserReorderColumns;
-		Boolean																									CanUserResizeColumns;
-		Boolean																									CanDragItems;
+																														// Dependency property identifiers
+		static	Microsoft.UI.Xaml.DependencyProperty																	AlternatingRowBackgroundProperty { get; };
 
-		void																									SetDataSource(Object dataSource);
-		Object																									GetDataSource();
+																														// Properties
+				Double																									RowHeight;
+				Double																									ColumnHeaderHeight;
+				OutlineViewStyle																						OutlineStyle;
+				OutlineViewSelectionMode																				SelectionMode;
+				Boolean																									CanUserReorderColumns;
+				Boolean																									CanUserResizeColumns;
+				Boolean																									CanDragItems;
+				Microsoft.UI.Xaml.Media.Brush																			AlternatingRowBackground;
 
-		void																									SetCellProvider(Object cellProvider);
-		Object																									GetCellProvider();
+				void																									SetDataSource(Object dataSource);
+				Object																									GetDataSource();
 
-		void																									SetRowHeightProvider(
-																														Object rowHeightProvider);
-		Object																									GetRowHeightProvider();
+				void																									SetCellProvider(Object cellProvider);
+				Object																									GetCellProvider();
 
-		Windows.Foundation.Collections.IVectorView<OutlineViewColumn>											GetColumns();
-		void																									SetColumns(
-																														Windows.Foundation.Collections.IVectorView<OutlineViewColumn>
-																																columns);
-		void																									AddColumn(OutlineViewColumn column);
-		void																									InsertColumn(OutlineViewColumn column,
-																														UInt32 index);
-		void																									RemoveColumn(String columnIdentifier);
-		void																									MoveColumn(UInt32 fromIndex,
-																														UInt32 toIndex);
-		void																									UpdateColumn(OutlineViewColumn column);
-		void																									ReloadColumn(String columnIdentifier);
+				void																									SetRowHeightProvider(
+																																Object rowHeightProvider);
+				Object																									GetRowHeightProvider();
 
-		Windows.Foundation.Collections.IVectorView<OutlineViewSortDescription>									GetSortDescriptions();
-		void																									SetSortDescriptions(
-																														Windows.Foundation.Collections.IVectorView<
-																																		OutlineViewSortDescription>
-																																sortDescriptions);
+				Windows.Foundation.Collections.IVectorView<OutlineViewColumn>											GetColumns();
+				void																									SetColumns(
+																																Windows.Foundation.Collections.IVectorView<OutlineViewColumn>
+																																		columns);
+				void																									AddColumn(OutlineViewColumn column);
+				void																									InsertColumn(OutlineViewColumn column,
+																																UInt32 index);
+				void																									RemoveColumn(String columnIdentifier);
+				void																									MoveColumn(UInt32 fromIndex,
+																																UInt32 toIndex);
+				void																									UpdateColumn(OutlineViewColumn column);
+				void																									ReloadColumn(String columnIdentifier);
 
-		void																									ReloadAllItems();
-		void																									ReloadItemChildren(String identifier);
-		void																									ReloadItem(String identifier,
-																														Windows.Foundation.Collections.IVectorView<String>
-																																columnIdentifiers);
-		void																									ReloadItems(
-																														Windows.Foundation.Collections.IVectorView<String>
-																																identifiers,
-																														Windows.Foundation.Collections.IVectorView<String>
-																																columnIdentifiers);
-		void																									NoteHeightOfItemsChanged(
-																														Windows.Foundation.Collections.IVectorView<String>
-																																identifiers);
+				Windows.Foundation.Collections.IVectorView<OutlineViewSortDescription>									GetSortDescriptions();
+				void																									SetSortDescriptions(
+																																Windows.Foundation.Collections.IVectorView<
+																																				OutlineViewSortDescription>
+																																		sortDescriptions);
 
-		UInt32																									GetRowCount();
-		String																									GetIdentifierAtRow(UInt32 rowIndex);
-		Windows.Foundation.IReference<UInt32>																	GetRowForIdentifier(String identifier);
-		String																									GetParentIdentifier(String identifier);
-		Boolean																									IsExpandable(String identifier);
-		Boolean																									IsExpanded(String identifier);
-		void																									ExpandItem(String identifier,
-																														Boolean expandChildren);
-		void																									CollapseItem(String identifier,
-																														Boolean collapseChildren);
-		Windows.Foundation.Collections.IVectorView<String>														GetExpandedIdentifiers();
-		void																									ScrollRowIntoView(UInt32 rowIndex);
-		void																									ScrollItemIntoView(String identifier);
+				void																									ReloadAllItems();
+				void																									ReloadItemChildren(String identifier);
+				void																									ReloadItem(String identifier,
+																																Windows.Foundation.Collections.IVectorView<String>
+																																		columnIdentifiers);
+				void																									ReloadItems(
+																																Windows.Foundation.Collections.IVectorView<String>
+																																		identifiers,
+																																Windows.Foundation.Collections.IVectorView<String>
+																																		columnIdentifiers);
+				void																									NoteHeightOfItemsChanged(
+																																Windows.Foundation.Collections.IVectorView<String>
+																																		identifiers);
 
-		UInt32																									GetSelectedCount();
-		Windows.Foundation.Collections.IVectorView<String>														GetSelectedIdentifiers();
-		void																									SetSelectedIdentifiers(
-																														Windows.Foundation.Collections.IVectorView<String>
-																																identifiers);
-		void																									SelectItems(
-																														Windows.Foundation.Collections.IVectorView<String>
-																																identifiers,
-																														Boolean byExtendingSelection);
-		void																									DeselectItems(
-																														Windows.Foundation.Collections.IVectorView<String>
-																																identifiers);
-		void																									SelectAll();
-		void																									DeselectAll();
-		String																									GetFocusedIdentifier();
-		Windows.Foundation.IReference<UInt32>																	GetClickedRowIndex();
-		String																									GetClickedIdentifier();
-		String																									GetClickedColumnIdentifier();
-		Windows.Foundation.Collections.IVectorView<String>														GetContextMenuIdentifiers();
+				UInt32																									GetRowCount();
+				String																									GetIdentifierAtRow(UInt32 rowIndex);
+				Windows.Foundation.IReference<UInt32>																	GetRowForIdentifier(String identifier);
+				String																									GetParentIdentifier(String identifier);
+				Boolean																									IsExpandable(String identifier);
+				Boolean																									IsExpanded(String identifier);
+				void																									ExpandItem(String identifier,
+																																Boolean expandChildren);
+				void																									CollapseItem(String identifier,
+																																Boolean collapseChildren);
+				Windows.Foundation.Collections.IVectorView<String>														GetExpandedIdentifiers();
+				void																									ScrollRowIntoView(UInt32 rowIndex);
+				void																									ScrollItemIntoView(String identifier);
 
-		Boolean																									BeginEdit(String identifier,
-																														String columnIdentifier);
-		void																									CommitEdit();
-		void																									CancelEdit();
-		Boolean																									IsEditing();
+				UInt32																									GetSelectedCount();
+				Windows.Foundation.Collections.IVectorView<String>														GetSelectedIdentifiers();
+				void																									SetSelectedIdentifiers(
+																																Windows.Foundation.Collections.IVectorView<String>
+																																		identifiers);
+				void																									SelectItems(
+																																Windows.Foundation.Collections.IVectorView<String>
+																																		identifiers,
+																																Boolean byExtendingSelection);
+				void																									DeselectItems(
+																																Windows.Foundation.Collections.IVectorView<String>
+																																		identifiers);
+				void																									SelectAll();
+				void																									DeselectAll();
+				String																									GetFocusedIdentifier();
+				Windows.Foundation.IReference<UInt32>																	GetClickedRowIndex();
+				String																									GetClickedIdentifier();
+				String																									GetClickedColumnIdentifier();
+				Windows.Foundation.Collections.IVectorView<String>														GetContextMenuIdentifiers();
 
-		Microsoft.UI.Xaml.UIElement																				TryGetRecycledElement(
-																														String recycleKey);
-		OutlineViewCell																							MakeTextCell(String text,
-																														Windows.Foundation.IReference<Windows.UI.Color>
-																																color,
-																														Boolean isBold,
-																														String toolTip);
+				Boolean																									BeginEdit(String identifier,
+																																String columnIdentifier);
+				void																									CommitEdit();
+				void																									CancelEdit();
+				Boolean																									IsEditing();
 
-																												// Events
-		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewItemEventArgs>						ItemExpanded;
-		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewItemEventArgs>						ItemCollapsed;
-		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewItemInvokedEventArgs>				ItemInvoked;
-		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewSelectionChangedEventArgs>			SelectionChanged;
-		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewSortDescriptionsChangedEventArgs>	SortDescriptionsChanged;
-		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewColumnReorderedEventArgs>			ColumnReordered;
-		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewColumnEventArgs>						ColumnResized;
-		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewBeginningEditEventArgs>				BeginningEdit;
-		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewEditEndedEventArgs>					EditEnded;
-		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewContextMenuOpeningEventArgs>			ContextMenuOpening;
-		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewItemDragStartingEventArgs>			ItemDragStarting;
-		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewDragOverEventArgs>					ItemDragOver;
-		event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewDropEventArgs>						ItemDrop;
+				Microsoft.UI.Xaml.UIElement																				TryGetRecycledElement(
+																																String recycleKey);
+				OutlineViewCell																							MakeTextCell(String text,
+																																Windows.Foundation.IReference<Windows.UI.Color>
+																																		color,
+																																Boolean isBold,
+																																String toolTip);
+
+																														// Events
+				event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewItemEventArgs>						ItemExpanded;
+				event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewItemEventArgs>						ItemCollapsed;
+				event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewItemInvokedEventArgs>				ItemInvoked;
+				event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewSelectionChangedEventArgs>			SelectionChanged;
+				event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewSortDescriptionsChangedEventArgs>	SortDescriptionsChanged;
+				event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewColumnReorderedEventArgs>			ColumnReordered;
+				event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewColumnEventArgs>						ColumnResized;
+				event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewBeginningEditEventArgs>				BeginningEdit;
+				event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewEditEndedEventArgs>					EditEnded;
+				event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewContextMenuOpeningEventArgs>			ContextMenuOpening;
+				event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewItemDragStartingEventArgs>			ItemDragStarting;
+				event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewDragOverEventArgs>					ItemDragOver;
+				event Windows.Foundation.TypedEventHandler<OutlineView, OutlineViewDropEventArgs>						ItemDrop;
 	}
 }

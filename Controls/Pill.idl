@@ -13,7 +13,7 @@ namespace WinUIToolbox {
 														// Lifecycle Methods
 														Pill();
 
-														// Class methods
+														// Dependency property identifiers
 		static	Microsoft.UI.Xaml.DependencyProperty	StrokeProperty { get; };
 		static	Microsoft.UI.Xaml.DependencyProperty	StrokeThicknessProperty { get; };
 

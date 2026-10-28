@@ -21,15 +21,18 @@
 
 #include "winrt\Microsoft.UI.Xaml.h"
 #include "winrt\Microsoft.UI.Xaml.Controls.h"
+#include "winrt\Microsoft.UI.Xaml.Media.h"
 #include "winrt\Windows.ApplicationModel.DataTransfer.h"
 #include "winrt\Windows.Foundation.h"
 #include "winrt\Windows.Foundation.Collections.h"
 #include "winrt\Windows.UI.h"
 
+using Brush = winrt::Microsoft::UI::Xaml::Media::Brush;
 using Color = winrt::Windows::UI::Color;
 using DataPackage = winrt::Windows::ApplicationModel::DataTransfer::DataPackage;
 using DataPackageOperation = winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation;
 using DataPackageView = winrt::Windows::ApplicationModel::DataTransfer::DataPackageView;
+using DependencyProperty = winrt::Microsoft::UI::Xaml::DependencyProperty;
 using DragEventArgs = winrt::Microsoft::UI::Xaml::DragEventArgs;
 using DragOperationDeferral = winrt::Microsoft::UI::Xaml::DragOperationDeferral;
 using IInspectable = winrt::Windows::Foundation::IInspectable;
@@ -445,149 +448,178 @@ namespace winrt::WinUIToolbox::implementation {
 
 		// Methods
 		public:
-														// Lifecycle methods
-														OutlineView();
-														~OutlineView();
+																// Lifecycle methods
+																OutlineView();
+																~OutlineView();
 
-														// Property methods
-			double										RowHeight() const;
-			void										RowHeight(double rowHeight);
-			double										ColumnHeaderHeight() const;
-			void										ColumnHeaderHeight(double columnHeaderHeight);
-			OutlineViewStyle							OutlineStyle() const;
-			void										OutlineStyle(OutlineViewStyle outlineStyle);
-			OutlineViewSelectionMode					SelectionMode() const;
-			void										SelectionMode(OutlineViewSelectionMode selectionMode);
-			bool										CanUserReorderColumns() const;
-			void										CanUserReorderColumns(bool canUserReorderColumns);
-			bool										CanUserResizeColumns() const;
-			void										CanUserResizeColumns(bool canUserResizeColumns);
-			bool										CanDragItems() const;
-			void										CanDragItems(bool canDragItems);
+																// Dependency property identifiers
+			static	DependencyProperty							AlternatingRowBackgroundProperty() noexcept;
 
-														// Event methods
-			winrt::event_token							ItemExpanded(const OutlineViewItemEventHandler& handler);
-			void										ItemExpanded(const winrt::event_token& token) noexcept;
+																// Property methods
+					double										RowHeight() const;
+					void										RowHeight(double rowHeight);
+					double										ColumnHeaderHeight() const;
+					void										ColumnHeaderHeight(double columnHeaderHeight);
+					OutlineViewStyle							OutlineStyle() const;
+					void										OutlineStyle(OutlineViewStyle outlineStyle);
+					OutlineViewSelectionMode					SelectionMode() const;
+					void										SelectionMode(OutlineViewSelectionMode selectionMode);
+					bool										CanUserReorderColumns() const;
+					void										CanUserReorderColumns(bool canUserReorderColumns);
+					bool										CanUserResizeColumns() const;
+					void										CanUserResizeColumns(bool canUserResizeColumns);
+					bool										CanDragItems() const;
+					void										CanDragItems(bool canDragItems);
+					Brush										AlternatingRowBackground() const;
+					void										AlternatingRowBackground(
+																		const Brush& alternatingRowBackground);
 
-			winrt::event_token							ItemCollapsed(const OutlineViewItemEventHandler& handler);
-			void										ItemCollapsed(const winrt::event_token& token) noexcept;
+																// Event methods
+					winrt::event_token							ItemExpanded(
+																		const OutlineViewItemEventHandler& handler);
+					void										ItemExpanded(const winrt::event_token& token) noexcept;
 
-			winrt::event_token							ItemInvoked(const OutlineViewItemInvokedEventHandler& handler);
-			void										ItemInvoked(const winrt::event_token& token) noexcept;
+					winrt::event_token							ItemCollapsed(
+																		const OutlineViewItemEventHandler& handler);
+					void										ItemCollapsed(const winrt::event_token& token) noexcept;
 
-			winrt::event_token							SelectionChanged(
-																const OutlineViewSelectionChangedEventHandler& handler);
-			void										SelectionChanged(const winrt::event_token& token) noexcept;
+					winrt::event_token							ItemInvoked(
+																		const OutlineViewItemInvokedEventHandler& handler);
+					void										ItemInvoked(const winrt::event_token& token) noexcept;
 
-			winrt::event_token							SortDescriptionsChanged(
-																const OutlineViewSortDescriptionsChangedEventHandler&
+					winrt::event_token							SelectionChanged(
+																		const OutlineViewSelectionChangedEventHandler&
+																				handler);
+					void										SelectionChanged(const winrt::event_token& token)
+																		noexcept;
+
+					winrt::event_token							SortDescriptionsChanged(
+																		const OutlineViewSortDescriptionsChangedEventHandler&
+																				handler);
+					void										SortDescriptionsChanged(const winrt::event_token& token)
+																		noexcept;
+
+					winrt::event_token							ColumnReordered(
+																		const OutlineViewColumnReorderedEventHandler&
+																				handler);
+					void										ColumnReordered(const winrt::event_token& token)
+																		noexcept;
+
+					winrt::event_token							ColumnResized(
+																		const OutlineViewColumnEventHandler& handler);
+					void										ColumnResized(const winrt::event_token& token) noexcept;
+
+					winrt::event_token							BeginningEdit(
+																		const OutlineViewBeginningEditEventHandler&
+																				handler);
+					void										BeginningEdit(const winrt::event_token& token) noexcept;
+
+					winrt::event_token							EditEnded(
+																		const OutlineViewEditEndedEventHandler&
+																				handler);
+					void										EditEnded(const winrt::event_token& token) noexcept;
+
+					winrt::event_token							ContextMenuOpening(
+																		const OutlineViewContextMenuOpeningEventHandler&
+																				handler);
+					void										ContextMenuOpening(const winrt::event_token& token)
+																		noexcept;
+
+					winrt::event_token							ItemDragStarting(
+																		const OutlineViewItemDragStartingEventHandler&
 																		handler);
-			void										SortDescriptionsChanged(const winrt::event_token& token)
-																noexcept;
+					void										ItemDragStarting(const winrt::event_token& token)
+																		noexcept;
 
-			winrt::event_token							ColumnReordered(
-																const OutlineViewColumnReorderedEventHandler& handler);
-			void										ColumnReordered(const winrt::event_token& token) noexcept;
+					winrt::event_token							ItemDragOver(
+																		const OutlineViewDragOverEventHandler& handler);
+					void										ItemDragOver(const winrt::event_token& token) noexcept;
 
-			winrt::event_token							ColumnResized(const OutlineViewColumnEventHandler& handler);
-			void										ColumnResized(const winrt::event_token& token) noexcept;
+					winrt::event_token							ItemDrop(const OutlineViewDropEventHandler& handler);
+					void										ItemDrop(const winrt::event_token& token) noexcept;
 
-			winrt::event_token							BeginningEdit(
-																const OutlineViewBeginningEditEventHandler& handler);
-			void										BeginningEdit(const winrt::event_token& token) noexcept;
+																// Instance methods
+					void										SetDataSource(const IInspectable& dataSource);
+					IInspectable								GetDataSource() const;
 
-			winrt::event_token							EditEnded(const OutlineViewEditEndedEventHandler& handler);
-			void										EditEnded(const winrt::event_token& token) noexcept;
+					void										SetCellProvider(const IInspectable& cellProvider);
+					IInspectable								GetCellProvider() const;
 
-			winrt::event_token							ContextMenuOpening(
-																const OutlineViewContextMenuOpeningEventHandler&
-																		handler);
-			void										ContextMenuOpening(const winrt::event_token& token) noexcept;
+					void										SetRowHeightProvider(
+																		const IInspectable& rowHeightProvider);
+					IInspectable								GetRowHeightProvider() const;
 
-			winrt::event_token							ItemDragStarting(
-																const OutlineViewItemDragStartingEventHandler& handler);
-			void										ItemDragStarting(const winrt::event_token& token) noexcept;
+					IVectorView<OutlineViewColumn>				GetColumns() const;
+					void										SetColumns(
+																		const IVectorView<OutlineViewColumn>& columns);
+					void										AddColumn(const OutlineViewColumn& column);
+					void										InsertColumn(const OutlineViewColumn& column,
+																		uint32_t index);
+					void										RemoveColumn(const hstring& columnIdentifier);
+					void										MoveColumn(uint32_t fromIndex, uint32_t toIndex);
+					void										UpdateColumn(const OutlineViewColumn& column);
+					void										ReloadColumn(const hstring& columnIdentifier);
 
-			winrt::event_token							ItemDragOver(const OutlineViewDragOverEventHandler& handler);
-			void										ItemDragOver(const winrt::event_token& token) noexcept;
+					IVectorView<OutlineViewSortDescription>		GetSortDescriptions() const;
+					void										SetSortDescriptions(
+																		const IVectorView<OutlineViewSortDescription>&
+																				sortDescriptions);
 
-			winrt::event_token							ItemDrop(const OutlineViewDropEventHandler& handler);
-			void										ItemDrop(const winrt::event_token& token) noexcept;
+					void										ReloadAllItems();
+					void										ReloadItemChildren(const hstring& identifier);
+					void										ReloadItem(const hstring& identifier,
+																		const IVectorView<hstring>& columnIdentifiers);
+					void										ReloadItems(const IVectorView<hstring>& identifiers,
+																		const IVectorView<hstring>& columnIdentifiers);
 
-														// Instance methods
-			void										SetDataSource(const IInspectable& dataSource);
-			IInspectable								GetDataSource() const;
+					void										NoteHeightOfItemsChanged(
+																		const IVectorView<hstring>& identifiers);
 
-			void										SetCellProvider(const IInspectable& cellProvider);
-			IInspectable								GetCellProvider() const;
+					uint32_t									GetRowCount() const;
+					hstring										GetIdentifierAtRow(uint32_t rowIndex) const;
+					IReference<uint32_t>						GetRowForIdentifier(const hstring& identifier) const;
+					hstring										GetParentIdentifier(const hstring& identifier) const;
+					bool										IsExpandable(const hstring& identifier) const;
+					bool										IsExpanded(const hstring& identifier) const;
+					void										ExpandItem(const hstring& identifier,
+																		bool expandChildren);
+					void										CollapseItem(const hstring& identifier,
+																		bool collapseChildren);
+					IVectorView<hstring>						GetExpandedIdentifiers() const;
+					void										ScrollRowIntoView(uint32_t rowIndex);
+					void										ScrollItemIntoView(const hstring& identifier);
 
-			void										SetRowHeightProvider(const IInspectable& rowHeightProvider);
-			IInspectable								GetRowHeightProvider() const;
+					uint32_t									GetSelectedCount() const;
+					IVectorView<hstring>						GetSelectedIdentifiers() const;
+					void										SetSelectedIdentifiers(
+																		const IVectorView<hstring>& identifiers);
+					void										SelectItems(const IVectorView<hstring>& identifiers,
+																		bool byExtendingSelection);
+					void										DeselectItems(const IVectorView<hstring>& identifiers);
+					void										SelectAll();
+					void										DeselectAll();
+					hstring										GetFocusedIdentifier() const;
+					IReference<uint32_t>						GetClickedRowIndex() const;
+					hstring										GetClickedIdentifier() const;
+					hstring										GetClickedColumnIdentifier() const;
+					IVectorView<hstring>						GetContextMenuIdentifiers() const;
 
-			IVectorView<OutlineViewColumn>				GetColumns() const;
-			void										SetColumns(const IVectorView<OutlineViewColumn>& columns);
-			void										AddColumn(const OutlineViewColumn& column);
-			void										InsertColumn(const OutlineViewColumn& column, uint32_t index);
-			void										RemoveColumn(const hstring& columnIdentifier);
-			void										MoveColumn(uint32_t fromIndex, uint32_t toIndex);
-			void										UpdateColumn(const OutlineViewColumn& column);
-			void										ReloadColumn(const hstring& columnIdentifier);
+					bool										BeginEdit(const hstring& identifier,
+																		const hstring& columnIdentifier);
+					void										CommitEdit();
+					void										CancelEdit();
+					bool										IsEditing() const;
 
-			IVectorView<OutlineViewSortDescription>		GetSortDescriptions() const;
-			void										SetSortDescriptions(
-																const IVectorView<OutlineViewSortDescription>&
-																		sortDescriptions);
-
-			void										ReloadAllItems();
-			void										ReloadItemChildren(const hstring& identifier);
-			void										ReloadItem(const hstring& identifier,
-																const IVectorView<hstring>& columnIdentifiers);
-			void										ReloadItems(const IVectorView<hstring>& identifiers,
-																const IVectorView<hstring>& columnIdentifiers);
-
-			void										NoteHeightOfItemsChanged(
-																const IVectorView<hstring>& identifiers);
-
-			uint32_t									GetRowCount() const;
-			hstring										GetIdentifierAtRow(uint32_t rowIndex) const;
-			IReference<uint32_t>						GetRowForIdentifier(const hstring& identifier) const;
-			hstring										GetParentIdentifier(const hstring& identifier) const;
-			bool										IsExpandable(const hstring& identifier) const;
-			bool										IsExpanded(const hstring& identifier) const;
-			void										ExpandItem(const hstring& identifier, bool expandChildren);
-			void										CollapseItem(const hstring& identifier, bool collapseChildren);
-			IVectorView<hstring>						GetExpandedIdentifiers() const;
-			void										ScrollRowIntoView(uint32_t rowIndex);
-			void										ScrollItemIntoView(const hstring& identifier);
-
-			uint32_t									GetSelectedCount() const;
-			IVectorView<hstring>						GetSelectedIdentifiers() const;
-			void										SetSelectedIdentifiers(const IVectorView<hstring>& identifiers);
-			void										SelectItems(const IVectorView<hstring>& identifiers,
-																bool byExtendingSelection);
-			void										DeselectItems(const IVectorView<hstring>& identifiers);
-			void										SelectAll();
-			void										DeselectAll();
-			hstring										GetFocusedIdentifier() const;
-			IReference<uint32_t>						GetClickedRowIndex() const;
-			hstring										GetClickedIdentifier() const;
-			hstring										GetClickedColumnIdentifier() const;
-			IVectorView<hstring>						GetContextMenuIdentifiers() const;
-
-			bool										BeginEdit(const hstring& identifier,
-																const hstring& columnIdentifier);
-			void										CommitEdit();
-			void										CancelEdit();
-			bool										IsEditing() const;
-
-			UIElement									TryGetRecycledElement(const hstring& recycleKey);
-			winrt::WinUIToolbox::OutlineViewCell		MakeTextCell(const hstring& text,
-																const IReference<Color>& color, bool isBold,
-																const hstring& toolTip);
+					UIElement									TryGetRecycledElement(const hstring& recycleKey);
+					winrt::WinUIToolbox::OutlineViewCell		MakeTextCell(const hstring& text,
+																		const IReference<Color>& color, bool isBold,
+																		const hstring& toolTip);
 
 		// Properties
 		private:
-			Internals*	mInternals;
+			static	DependencyProperty					mAlternatingRowBackgroundProperty;
+
+					Internals*							mInternals;
 	};
 }
 

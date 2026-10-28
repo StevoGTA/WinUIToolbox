@@ -20,6 +20,7 @@
 #include "winrt\Windows.Foundation.Collections.h"
 #include "winrt\Windows.System.h"
 #include "winrt\Windows.UI.Core.h"
+#include "winrt\Windows.UI.Xaml.Interop.h"
 
 #include <algorithm>
 #include <chrono>
@@ -79,6 +80,7 @@ static	const	double		kDragThreshold = 6.0;				// Movement before a press becomes
 static	const	double		kDropEdgeFraction = 0.25;			// Top and bottom of a row that mean between rows
 static	const	double		kSelectionIndicatorWidth = 3.0;
 static	const	double		kSelectionIndicatorHeight = 16.0;
+static	const	int			kBackgroundRectZIndex = -1;			// Backgrounds sit beneath the other row visuals
 static	const	double		kWheelRowsPerNotch = 3.0;
 static	const	double		kWheelPixelsPerNotch = 48.0;
 static	const	int			kTextSearchTimeoutMilliseconds = 1000;
@@ -263,7 +265,8 @@ class OutlineView::Internals {
 			// Lifecycle methods
 			RealizedRow() :
 				mRow(0), mLevel(0), mHasChildren(false), mIsExpanded(false), mIsFullWidth(false),
-						mBackground(nullptr), mSelectionIndicator(nullptr), mChevron(nullptr)
+						mBackgroundRect(nullptr), mHighlightRect(nullptr), mSelectionIndicatorRect(nullptr),
+						mChevronFontIcon(nullptr)
 				{}
 
 			// Properties
@@ -274,9 +277,10 @@ class OutlineView::Internals {
 			bool					mIsExpanded;
 			bool					mIsFullWidth;
 
-			Shapes::Rectangle		mBackground;
-			Shapes::Rectangle		mSelectionIndicator;
-			FontIcon				mChevron;
+			Shapes::Rectangle		mBackgroundRect;
+			Shapes::Rectangle		mHighlightRect;
+			Shapes::Rectangle		mSelectionIndicatorRect;
+			FontIcon				mChevronFontIcon;
 			std::vector<CellSlot>	mCellSlots;
 		};
 
@@ -362,6 +366,7 @@ class OutlineView::Internals {
 				double									getChevronX(const RealizedRow& realizedRow) const;
 				double									getFirstColumnIndent(const RealizedRow& realizedRow) const;
 				void									layoutRow(RealizedRow& realizedRow);
+				void									layoutTrailingBackgroundRects();
 				void									placeCell(const UIElement& element, double x, double width,
 																double y, double height);
 				void									updateRowVisuals(RealizedRow& realizedRow);
@@ -495,11 +500,11 @@ class OutlineView::Internals {
 		Canvas															mOverlayCanvas;
 		ScrollBar														mVScrollBar;
 		ScrollBar														mHScrollBar;
-		Shapes::Rectangle												mHeaderBackground;
-		Shapes::Rectangle												mHeaderBottomLine;
+		Shapes::Rectangle												mHeaderBackgroundRect;
+		Shapes::Rectangle												mHeaderBottomLineRect;
 		Shapes::Rectangle												mFocusRect;
-		Shapes::Rectangle												mDragIndicator;
-		Shapes::Rectangle												mResizeLine;
+		Shapes::Rectangle												mDragIndicatorRect;
+		Shapes::Rectangle												mResizeLineRect;
 
 		Brush															mHeaderBackgroundBrush;
 		Brush															mHeaderTextBrush;
@@ -510,6 +515,7 @@ class OutlineView::Internals {
 		Brush															mSelectedHoverBrush;
 		Brush															mAccentBrush;
 		Brush															mTransparentBrush;
+		Brush															mAlternatingRowBackgroundBrush;
 
 		double															mViewportWidth;
 		double															mViewportHeight;
@@ -530,9 +536,11 @@ class OutlineView::Internals {
 		std::vector<SortDescriptor>										mSortDescriptors;
 
 		std::vector<RealizedRow>										mRealizedRows;
-		std::vector<Shapes::Rectangle>									mBackgroundPool;
-		std::vector<Shapes::Rectangle>									mIndicatorPool;
-		std::vector<FontIcon>											mChevronPool;
+		std::vector<Shapes::Rectangle>									mTrailingBackgroundRects;
+		std::vector<Shapes::Rectangle>									mHighlightRectPool;
+		std::vector<Shapes::Rectangle>									mSelectionIndicatorRectPool;
+		std::vector<Shapes::Rectangle>									mBackgroundRectPool;
+		std::vector<FontIcon>											mChevronFontIconPool;
 		std::map<std::wstring, std::vector<UIElement> >					mRecycledElementsByKey;
 
 		std::optional<uint32_t>											mFocusedRow;
@@ -558,7 +566,7 @@ class OutlineView::Internals {
 		bool															mDidStartItemDrag;
 		std::vector<std::wstring>										mDragIdentifiers;
 		Shapes::Rectangle												mDropTargetRect;
-		Shapes::Rectangle												mDropInsertLine;
+		Shapes::Rectangle												mDropInsertLineRect;
 		std::optional<std::wstring>										mDropIdentifier;
 		OutlineViewDropPosition											mDropPosition;
 		DataPackageOperation											mDropAcceptedOperation;
@@ -584,18 +592,19 @@ OutlineView::Internals::Internals(OutlineView& outlineView) :
 				mCanUserReorderColumns(true), mCanUserResizeColumns(true), mRowHeight(26.0), mColumnHeaderHeight(32.0),
 				mClipBorder(nullptr), mContentGrid(nullptr), mTranslateTransform(nullptr),
 				mRowBackgroundsCanvas(nullptr), mRowContentCanvas(nullptr), mHeaderCanvas(nullptr),
-				mOverlayCanvas(nullptr), mVScrollBar(nullptr), mHScrollBar(nullptr), mHeaderBackground(nullptr),
-				mHeaderBottomLine(nullptr), mFocusRect(nullptr), mDragIndicator(nullptr), mResizeLine(nullptr),
+				mOverlayCanvas(nullptr), mVScrollBar(nullptr), mHScrollBar(nullptr), mHeaderBackgroundRect(nullptr),
+				mHeaderBottomLineRect(nullptr), mFocusRect(nullptr), mDragIndicatorRect(nullptr),
+				mResizeLineRect(nullptr),
 				mHeaderBackgroundBrush(nullptr), mHeaderTextBrush(nullptr), mDividerBrush(nullptr),
 				mTextBrush(nullptr), mSelectedBrush(nullptr), mHoverBrush(nullptr), mSelectedHoverBrush(nullptr),
-				mAccentBrush(nullptr), mTransparentBrush(nullptr),
+				mAccentBrush(nullptr), mTransparentBrush(nullptr), mAlternatingRowBackgroundBrush(nullptr),
 				mViewportWidth(0.0), mViewportHeight(0.0), mGutterWidth(0.0), mTotalWidth(0.0), mContentWidth(0.0),
 				mHOffset(0.0), mScrollOffset(0.0), mIsUpdatingScrollBars(false), mHasFocus(false),
 				mPointerHelper(nullptr), mPressedHeaderColumnIndex(-1), mPressedX(0.0), mIsDraggingColumn(false),
 				mDropColumnIndex(-1), mResizingColumnIndex(-1), mResizingStartWidth(0.0), mIsShowingResizeCursor(false),
 				mResizeCursor(nullptr),
 				mCanDragItems(false), mPressedPoint(), mPressedPointerPoint(nullptr), mDidStartItemDrag(false),
-				mDropTargetRect(nullptr), mDropInsertLine(nullptr), mDropPosition(OutlineViewDropPosition::On),
+				mDropTargetRect(nullptr), mDropInsertLineRect(nullptr), mDropPosition(OutlineViewDropPosition::On),
 				mDropAcceptedOperation(DataPackageOperation::None),
 				mEditTextBox(nullptr), mIsEndingEditing(false)
 //----------------------------------------------------------------------------------------------------------------------
@@ -638,7 +647,7 @@ void OutlineView::Internals::setCellProvider(const IInspectable& cellProvider)
 	recycleAllRows();
 	mRowContentCanvas.Children().Clear();
 	mRecycledElementsByKey.clear();
-	mChevronPool.clear();
+	mChevronFontIconPool.clear();
 	realize();
 }
 
@@ -671,7 +680,7 @@ void OutlineView::Internals::setDataSource(const IInspectable& dataSource)
 	recycleAllRows();
 	mRowContentCanvas.Children().Clear();
 	mRecycledElementsByKey.clear();
-	mChevronPool.clear();
+	mChevronFontIconPool.clear();
 
 	// Set data source
 	mDataSourceObject = dataSource;
@@ -762,16 +771,16 @@ void OutlineView::Internals::buildChrome()
 	mOutlineView.Children().Append(mClipBorder);
 
 	// Header chrome
-	mHeaderBackground = Shapes::Rectangle();
-	mHeaderBackground.Fill(mHeaderBackgroundBrush);
-	mHeaderBackground.IsHitTestVisible(false);
-	mHeaderCanvas.Children().Append(mHeaderBackground);
+	mHeaderBackgroundRect = Shapes::Rectangle();
+	mHeaderBackgroundRect.Fill(mHeaderBackgroundBrush);
+	mHeaderBackgroundRect.IsHitTestVisible(false);
+	mHeaderCanvas.Children().Append(mHeaderBackgroundRect);
 
-	mHeaderBottomLine = Shapes::Rectangle();
-	mHeaderBottomLine.Fill(mDividerBrush);
-	mHeaderBottomLine.Height(1.0);
-	mHeaderBottomLine.IsHitTestVisible(false);
-	mHeaderCanvas.Children().Append(mHeaderBottomLine);
+	mHeaderBottomLineRect = Shapes::Rectangle();
+	mHeaderBottomLineRect.Fill(mDividerBrush);
+	mHeaderBottomLineRect.Height(1.0);
+	mHeaderBottomLineRect.IsHitTestVisible(false);
+	mHeaderCanvas.Children().Append(mHeaderBottomLineRect);
 
 	// Overlays
 	mFocusRect = Shapes::Rectangle();
@@ -781,19 +790,19 @@ void OutlineView::Internals::buildChrome()
 	mFocusRect.Visibility(Visibility::Collapsed);
 	mOverlayCanvas.Children().Append(mFocusRect);
 
-	mDragIndicator = Shapes::Rectangle();
-	mDragIndicator.Fill(mAccentBrush);
-	mDragIndicator.Width(2.0);
-	mDragIndicator.IsHitTestVisible(false);
-	mDragIndicator.Visibility(Visibility::Collapsed);
-	mOverlayCanvas.Children().Append(mDragIndicator);
+	mDragIndicatorRect = Shapes::Rectangle();
+	mDragIndicatorRect.Fill(mAccentBrush);
+	mDragIndicatorRect.Width(2.0);
+	mDragIndicatorRect.IsHitTestVisible(false);
+	mDragIndicatorRect.Visibility(Visibility::Collapsed);
+	mOverlayCanvas.Children().Append(mDragIndicatorRect);
 
-	mResizeLine = Shapes::Rectangle();
-	mResizeLine.Fill(mAccentBrush);
-	mResizeLine.Width(1.0);
-	mResizeLine.IsHitTestVisible(false);
-	mResizeLine.Visibility(Visibility::Collapsed);
-	mOverlayCanvas.Children().Append(mResizeLine);
+	mResizeLineRect = Shapes::Rectangle();
+	mResizeLineRect.Fill(mAccentBrush);
+	mResizeLineRect.Width(1.0);
+	mResizeLineRect.IsHitTestVisible(false);
+	mResizeLineRect.Visibility(Visibility::Collapsed);
+	mOverlayCanvas.Children().Append(mResizeLineRect);
 
 	mDropTargetRect = Shapes::Rectangle();
 	mDropTargetRect.Stroke(mAccentBrush);
@@ -802,12 +811,12 @@ void OutlineView::Internals::buildChrome()
 	mDropTargetRect.Visibility(Visibility::Collapsed);
 	mOverlayCanvas.Children().Append(mDropTargetRect);
 
-	mDropInsertLine = Shapes::Rectangle();
-	mDropInsertLine.Fill(mAccentBrush);
-	mDropInsertLine.Height(2.0);
-	mDropInsertLine.IsHitTestVisible(false);
-	mDropInsertLine.Visibility(Visibility::Collapsed);
-	mOverlayCanvas.Children().Append(mDropInsertLine);
+	mDropInsertLineRect = Shapes::Rectangle();
+	mDropInsertLineRect.Fill(mAccentBrush);
+	mDropInsertLineRect.Height(2.0);
+	mDropInsertLineRect.IsHitTestVisible(false);
+	mDropInsertLineRect.Visibility(Visibility::Collapsed);
+	mOverlayCanvas.Children().Append(mDropInsertLineRect);
 
 	// Scrollbars.  The vertical one works in rows, so its range is never large.
 	mVScrollBar = ScrollBar();
@@ -1129,10 +1138,10 @@ void OutlineView::Internals::layout()
 
 	// Header
 	mHeaderCanvas.Visibility((getColumnHeaderHeight() > 0.0) ? Visibility::Visible : Visibility::Collapsed);
-	mHeaderBackground.Width(mContentWidth);
-	mHeaderBackground.Height(getColumnHeaderHeight());
-	mHeaderBottomLine.Width(mContentWidth);
-	Canvas::SetTop(mHeaderBottomLine, std::max(getColumnHeaderHeight() - 1.0, 0.0));
+	mHeaderBackgroundRect.Width(mContentWidth);
+	mHeaderBackgroundRect.Height(getColumnHeaderHeight());
+	mHeaderBottomLineRect.Width(mContentWidth);
+	Canvas::SetTop(mHeaderBottomLineRect, std::max(getColumnHeaderHeight() - 1.0, 0.0));
 	for (Column& column : mColumns) {
 		// Place header cell
 		Canvas::SetLeft(column.mHeaderCell, column.mX);
@@ -1517,6 +1526,7 @@ void OutlineView::Internals::realize()
 		layoutRow(realizedRow);
 		updateRowVisuals(realizedRow);
 	}
+	layoutTrailingBackgroundRects();
 	updateFocusRect();
 }
 
@@ -1550,34 +1560,36 @@ OutlineView::Internals::RealizedRow OutlineView::Internals::realizeRow(uint32_t 
 	realizedRow.mIsExpanded = rowEntry.mIsExpanded;
 
 	// Background
-	realizedRow.mBackground = dequeueRectangle(mBackgroundPool);
-	realizedRow.mSelectionIndicator = dequeueRectangle(mIndicatorPool);
-	realizedRow.mSelectionIndicator.Fill(mAccentBrush);
-	realizedRow.mSelectionIndicator.Width(kSelectionIndicatorWidth);
-	realizedRow.mSelectionIndicator.Height(kSelectionIndicatorHeight);
-	realizedRow.mSelectionIndicator.RadiusX(kSelectionIndicatorWidth / 2.0);
-	realizedRow.mSelectionIndicator.RadiusY(kSelectionIndicatorWidth / 2.0);
+	realizedRow.mBackgroundRect = dequeueRectangle(mBackgroundRectPool);
+	Canvas::SetZIndex(realizedRow.mBackgroundRect, kBackgroundRectZIndex);
+	realizedRow.mHighlightRect = dequeueRectangle(mHighlightRectPool);
+	realizedRow.mSelectionIndicatorRect = dequeueRectangle(mSelectionIndicatorRectPool);
+	realizedRow.mSelectionIndicatorRect.Fill(mAccentBrush);
+	realizedRow.mSelectionIndicatorRect.Width(kSelectionIndicatorWidth);
+	realizedRow.mSelectionIndicatorRect.Height(kSelectionIndicatorHeight);
+	realizedRow.mSelectionIndicatorRect.RadiusX(kSelectionIndicatorWidth / 2.0);
+	realizedRow.mSelectionIndicatorRect.RadiusY(kSelectionIndicatorWidth / 2.0);
 
-	Canvas::SetZIndex(realizedRow.mSelectionIndicator, 1);	// Above any background
+	Canvas::SetZIndex(realizedRow.mSelectionIndicatorRect, 1);	// Above any background
 
 	// Chevron
 	if (realizedRow.mHasChildren && (mOutlineStyle != OutlineViewStyle::None)) {
 		// Setup
-		if (!mChevronPool.empty()) {
+		if (!mChevronFontIconPool.empty()) {
 			// Reuse
-			realizedRow.mChevron = mChevronPool.back();
-			mChevronPool.pop_back();
+			realizedRow.mChevronFontIcon = mChevronFontIconPool.back();
+			mChevronFontIconPool.pop_back();
 		} else {
 			// Create
-			realizedRow.mChevron = FontIcon();
-			realizedRow.mChevron.FontSize(12.0);
-			realizedRow.mChevron.HorizontalAlignment(HorizontalAlignment::Center);
-			realizedRow.mChevron.VerticalAlignment(VerticalAlignment::Center);
-			realizedRow.mChevron.IsHitTestVisible(false);
-			mRowContentCanvas.Children().Append(realizedRow.mChevron);
+			realizedRow.mChevronFontIcon = FontIcon();
+			realizedRow.mChevronFontIcon.FontSize(12.0);
+			realizedRow.mChevronFontIcon.HorizontalAlignment(HorizontalAlignment::Center);
+			realizedRow.mChevronFontIcon.VerticalAlignment(VerticalAlignment::Center);
+			realizedRow.mChevronFontIcon.IsHitTestVisible(false);
+			mRowContentCanvas.Children().Append(realizedRow.mChevronFontIcon);
 		}
-		realizedRow.mChevron.Foreground(mTextBrush);
-		realizedRow.mChevron.Visibility(Visibility::Visible);
+		realizedRow.mChevronFontIcon.Foreground(mTextBrush);
+		realizedRow.mChevronFontIcon.Visibility(Visibility::Visible);
 	}
 
 	// Cells
@@ -1669,17 +1681,19 @@ void OutlineView::Internals::recycleRow(RealizedRow& realizedRow)
 	recycleCells(realizedRow);
 
 	// Chrome
-	realizedRow.mBackground.Visibility(Visibility::Collapsed);
-	realizedRow.mSelectionIndicator.Visibility(Visibility::Collapsed);
+	realizedRow.mBackgroundRect.Visibility(Visibility::Collapsed);
+	realizedRow.mHighlightRect.Visibility(Visibility::Collapsed);
+	realizedRow.mSelectionIndicatorRect.Visibility(Visibility::Collapsed);
 
-	mBackgroundPool.push_back(realizedRow.mBackground);
-	mIndicatorPool.push_back(realizedRow.mSelectionIndicator);
+	mBackgroundRectPool.push_back(realizedRow.mBackgroundRect);
+	mHighlightRectPool.push_back(realizedRow.mHighlightRect);
+	mSelectionIndicatorRectPool.push_back(realizedRow.mSelectionIndicatorRect);
 
-	if (realizedRow.mChevron != nullptr) {
+	if (realizedRow.mChevronFontIcon != nullptr) {
 		// Pool
-		realizedRow.mChevron.Visibility(Visibility::Collapsed);
+		realizedRow.mChevronFontIcon.Visibility(Visibility::Collapsed);
 
-		mChevronPool.push_back(realizedRow.mChevron);
+		mChevronFontIconPool.push_back(realizedRow.mChevronFontIcon);
 	}
 }
 
@@ -1787,20 +1801,25 @@ void OutlineView::Internals::layoutRow(RealizedRow& realizedRow)
 	double	height = getRowHeight(realizedRow.mRow);
 
 	// Chrome
-	Canvas::SetLeft(realizedRow.mBackground, 0.0);
-	Canvas::SetTop(realizedRow.mBackground, y);
-	realizedRow.mBackground.Width(mContentWidth);
-	realizedRow.mBackground.Height(height);
+	Canvas::SetLeft(realizedRow.mBackgroundRect, 0.0);
+	Canvas::SetTop(realizedRow.mBackgroundRect, y);
+	realizedRow.mBackgroundRect.Width(mContentWidth);
+	realizedRow.mBackgroundRect.Height(height);
 
-	Canvas::SetLeft(realizedRow.mSelectionIndicator, 2.0);
-	Canvas::SetTop(realizedRow.mSelectionIndicator, y + (height - kSelectionIndicatorHeight) / 2.0);
+	Canvas::SetLeft(realizedRow.mHighlightRect, 0.0);
+	Canvas::SetTop(realizedRow.mHighlightRect, y);
+	realizedRow.mHighlightRect.Width(mContentWidth);
+	realizedRow.mHighlightRect.Height(height);
 
-	if (realizedRow.mChevron != nullptr) {
+	Canvas::SetLeft(realizedRow.mSelectionIndicatorRect, 2.0);
+	Canvas::SetTop(realizedRow.mSelectionIndicatorRect, y + (height - kSelectionIndicatorHeight) / 2.0);
+
+	if (realizedRow.mChevronFontIcon != nullptr) {
 		// Place
-		Canvas::SetLeft(realizedRow.mChevron, getChevronX(realizedRow));
-		Canvas::SetTop(realizedRow.mChevron, y);
-		realizedRow.mChevron.Width(kChevronWidth);
-		realizedRow.mChevron.Height(height);
+		Canvas::SetLeft(realizedRow.mChevronFontIcon, getChevronX(realizedRow));
+		Canvas::SetTop(realizedRow.mChevronFontIcon, y);
+		realizedRow.mChevronFontIcon.Width(kChevronWidth);
+		realizedRow.mChevronFontIcon.Height(height);
 	}
 
 	// Cells
@@ -1832,6 +1851,51 @@ void OutlineView::Internals::layoutRow(RealizedRow& realizedRow)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+void OutlineView::Internals::layoutTrailingBackgroundRects()
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup - the alternating backgrounds carry on below the last row to the bottom of the body at the standard row
+	//	height, so an empty or short list alternates all the way down
+	double	headerHeight = getColumnHeaderHeight();
+	double	top = std::max(headerHeight + getContentHeight() - mScrollOffset, headerHeight);
+	double	bottom = headerHeight + getBodyHeight();
+	size_t	count = 0;
+	if ((mAlternatingRowBackgroundBrush != nullptr) && (mRowHeight > 0.0)) {
+		// Place - the alternation continues from the last row
+		for (uint32_t row = getRowCount(); top < bottom; row++, top += mRowHeight) {
+			// Check row - odd rows carry the alternating background
+			if ((row % 2) == 0)
+				continue;
+
+			// Get background rect
+			if (count == mTrailingBackgroundRects.size()) {
+				// Add
+				Shapes::Rectangle	backgroundRect = dequeueRectangle(mBackgroundRectPool);
+				Canvas::SetZIndex(backgroundRect, kBackgroundRectZIndex);
+				mTrailingBackgroundRects.push_back(backgroundRect);
+			}
+			Shapes::Rectangle&	backgroundRect = mTrailingBackgroundRects[count++];
+
+			// Place
+			backgroundRect.Fill(mAlternatingRowBackgroundBrush);
+			Canvas::SetLeft(backgroundRect, 0.0);
+			Canvas::SetTop(backgroundRect, top);
+			backgroundRect.Width(mContentWidth);
+			backgroundRect.Height(mRowHeight);
+			backgroundRect.Visibility(Visibility::Visible);
+		}
+	}
+
+	// Pool the ones no longer needed
+	while (mTrailingBackgroundRects.size() > count) {
+		// Pool
+		mTrailingBackgroundRects.back().Visibility(Visibility::Collapsed);
+		mBackgroundRectPool.push_back(mTrailingBackgroundRects.back());
+		mTrailingBackgroundRects.pop_back();
+	}
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 void OutlineView::Internals::placeCell(const UIElement& element, double x, double width, double y, double height)
 //----------------------------------------------------------------------------------------------------------------------
 {
@@ -1855,15 +1919,19 @@ void OutlineView::Internals::updateRowVisuals(RealizedRow& realizedRow)
 	bool	isSelected = isRowSelected(realizedRow.mRow);
 	bool	isHovered = mHoveredRow.has_value() && (*mHoveredRow == realizedRow.mRow);
 
-	// Update
-	realizedRow.mBackground.Fill(
+	// Update - odd rows carry the alternating background, and the selection covers it as on macOS
+	realizedRow.mBackgroundRect.Fill(mAlternatingRowBackgroundBrush);
+	realizedRow.mBackgroundRect.Visibility(
+			((mAlternatingRowBackgroundBrush != nullptr) && ((realizedRow.mRow % 2) == 1) && !isSelected) ?
+					Visibility::Visible : Visibility::Collapsed);
+	realizedRow.mHighlightRect.Fill(
 			isSelected ?
 					(isHovered ? mSelectedHoverBrush : mSelectedBrush) : (isHovered ? mHoverBrush : mTransparentBrush));
-	realizedRow.mBackground.Visibility(Visibility::Visible);
-	realizedRow.mSelectionIndicator.Visibility(isSelected ? Visibility::Visible : Visibility::Collapsed);
-	if (realizedRow.mChevron != nullptr)
+	realizedRow.mHighlightRect.Visibility(Visibility::Visible);
+	realizedRow.mSelectionIndicatorRect.Visibility(isSelected ? Visibility::Visible : Visibility::Collapsed);
+	if (realizedRow.mChevronFontIcon != nullptr)
 		// Update glyph
-		realizedRow.mChevron.Glyph(realizedRow.mIsExpanded ? kChevronDownGlyph : kChevronRightGlyph);
+		realizedRow.mChevronFontIcon.Glyph(realizedRow.mIsExpanded ? kChevronDownGlyph : kChevronRightGlyph);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2088,7 +2156,7 @@ bool OutlineView::Internals::isInChevron(const RealizedRow& realizedRow, double 
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Check
-	if ((realizedRow.mChevron == nullptr) || (mOutlineStyle == OutlineViewStyle::None))
+	if ((realizedRow.mChevronFontIcon == nullptr) || (mOutlineStyle == OutlineViewStyle::None))
 		return false;
 
 	double	x = getChevronX(realizedRow);
@@ -2251,10 +2319,10 @@ void OutlineView::Internals::pointerDragged(const Point& point, const VirtualKey
 
 		// Show
 		double	x = (mDropColumnIndex < (int) mColumns.size()) ? mColumns[mDropColumnIndex].mX : mTotalWidth;
-		Canvas::SetLeft(mDragIndicator, x - 1.0);
-		Canvas::SetTop(mDragIndicator, 0.0);
-		mDragIndicator.Height(mViewportHeight);
-		mDragIndicator.Visibility(Visibility::Visible);
+		Canvas::SetLeft(mDragIndicatorRect, x - 1.0);
+		Canvas::SetTop(mDragIndicatorRect, 0.0);
+		mDragIndicatorRect.Height(mViewportHeight);
+		mDragIndicatorRect.Visibility(Visibility::Visible);
 	}
 
 	// Item drag
@@ -2287,7 +2355,7 @@ void OutlineView::Internals::pointerReleased(const Point& point)
 		// Setup
 		int	columnIndex = mPressedHeaderColumnIndex;
 		mPressedHeaderColumnIndex = -1;
-		mDragIndicator.Visibility(Visibility::Collapsed);
+		mDragIndicatorRect.Visibility(Visibility::Collapsed);
 
 		if (mIsDraggingColumn) {
 			// Drop
@@ -3309,14 +3377,14 @@ void OutlineView::Internals::updateDropVisuals()
 		mDropTargetRect.Width(std::max(width - 2.0, 0.0));
 		mDropTargetRect.Height(std::max(height - 2.0, 0.0));
 		mDropTargetRect.Visibility(Visibility::Visible);
-		mDropInsertLine.Visibility(Visibility::Collapsed);
+		mDropInsertLineRect.Visibility(Visibility::Collapsed);
 	} else {
 		// A line above or below the row
-		Canvas::SetLeft(mDropInsertLine, 0.0);
-		Canvas::SetTop(mDropInsertLine,
+		Canvas::SetLeft(mDropInsertLineRect, 0.0);
+		Canvas::SetTop(mDropInsertLineRect,
 				((mDropPosition == OutlineViewDropPosition::Before) ? y : (y + height)) - 1.0);
-		mDropInsertLine.Width(width);
-		mDropInsertLine.Visibility(Visibility::Visible);
+		mDropInsertLineRect.Width(width);
+		mDropInsertLineRect.Visibility(Visibility::Visible);
 		mDropTargetRect.Visibility(Visibility::Collapsed);
 	}
 }
@@ -3327,12 +3395,18 @@ void OutlineView::Internals::hideDropVisuals()
 {
 	// Hide
 	mDropTargetRect.Visibility(Visibility::Collapsed);
-	mDropInsertLine.Visibility(Visibility::Collapsed);
+	mDropInsertLineRect.Visibility(Visibility::Collapsed);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: - OutlineView
+
+// MARK: Properties
+
+DependencyProperty	OutlineView::mAlternatingRowBackgroundProperty =
+							DependencyProperty::Register(L"AlternatingRowBackground", winrt::xaml_typename<Brush>(),
+									winrt::xaml_typename<winrt::WinUIToolbox::OutlineView>(), nullptr);
 
 // MARK: Lifecycle methods
 
@@ -3346,6 +3420,17 @@ OutlineView::OutlineView() : OutlineViewT<OutlineView>()
 	IsTabStop(true);
 	UseSystemFocusVisuals(false);
 	mInternals->buildChrome();
+
+	// Alternating rows - a {ThemeResource} sets the property again when the theme changes
+	RegisterPropertyChangedCallback(mAlternatingRowBackgroundProperty,
+			[this](const DependencyObject& sender, const DependencyProperty& dependencyProperty){
+				// Update
+				mInternals->mAlternatingRowBackgroundBrush = AlternatingRowBackground();
+
+				// Update UI
+				mInternals->updateAllRowVisuals();
+				mInternals->layoutTrailingBackgroundRects();
+			});
 
 	// Keyboard
 	KeyDown([this](const IInspectable& sender, const KeyRoutedEventArgs& keyRoutedEventArgs){
@@ -3584,6 +3669,20 @@ void OutlineView::CanDragItems(bool canDragItems)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	mInternals->mCanDragItems = canDragItems;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+Brush OutlineView::AlternatingRowBackground() const
+//----------------------------------------------------------------------------------------------------------------------
+{
+	return GetValue(mAlternatingRowBackgroundProperty).try_as<Brush>();
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void OutlineView::AlternatingRowBackground(const Brush& alternatingRowBackground)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	SetValue(mAlternatingRowBackgroundProperty, alternatingRowBackground);
 }
 
 // MARK: Property methods - data source and delegate
@@ -4249,4 +4348,13 @@ winrt::WinUIToolbox::OutlineViewCell OutlineView::MakeTextCell(const winrt::hstr
 	ToolTipService::SetToolTip(textBlock, !toolTip.empty() ? winrt::box_value(toolTip) : IInspectable(nullptr));
 
 	return winrt::make<OutlineViewCell>(textBlock, winrt::hstring(recycleKey));
+}
+
+// MARK: Class methods
+
+//----------------------------------------------------------------------------------------------------------------------
+DependencyProperty OutlineView::AlternatingRowBackgroundProperty() noexcept
+//----------------------------------------------------------------------------------------------------------------------
+{
+	return mAlternatingRowBackgroundProperty;
 }
