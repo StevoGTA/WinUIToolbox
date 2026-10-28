@@ -20,6 +20,8 @@ template <typename C, typename H> class UIElementHelper : public DependencyObjec
 		virtual		~UIElementHelper() {}
  
 					// Instance methods
+				H&	setOpacity(double opacity)
+						{ getUIElement().Opacity(opacity); return (H&) *this; }
 				H&	setVisibility(Visibility visibility)
 						{ getUIElement().Visibility(visibility); return (H&) *this; }
 
