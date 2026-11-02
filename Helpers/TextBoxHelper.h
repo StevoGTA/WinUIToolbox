@@ -20,15 +20,10 @@ using TextBox = winrt::Microsoft::UI::Xaml::Controls::TextBox;
 // MARK: TextBoxHelper
 
 class TextBoxHelper : public ControlHelper<TextBox, TextBoxHelper> {
-	// Classes
-	private:
-		class	Internals;
-
 	// Methods
 	public:
 						// Lifecycle methods
-						TextBoxHelper(TextBox textBox);
-						~TextBoxHelper();
+						TextBoxHelper(TextBox textBox) : ControlHelper(textBox) {}
 
 						// Instance methods
 		TextBoxHelper&	setBorderBrush(const Brush& brush)
@@ -60,8 +55,4 @@ class TextBoxHelper : public ControlHelper<TextBox, TextBoxHelper> {
 
 		TextBox			getTextBox() const
 							{ return getControl(); }
-
-	// Properties
-	private:
-		Internals*	mInternals;
 };

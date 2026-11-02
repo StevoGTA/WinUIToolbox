@@ -81,6 +81,7 @@ static	const	double		kDropEdgeFraction = 0.25;			// Top and bottom of a row that
 static	const	double		kSelectionIndicatorWidth = 3.0;
 static	const	double		kSelectionIndicatorHeight = 16.0;
 static	const	int			kBackgroundRectZIndex = -1;			// Backgrounds sit beneath the other row visuals
+static	const	double		kWheelDeltaPerNotch = 120.0;
 static	const	double		kWheelRowsPerNotch = 3.0;
 static	const	double		kWheelPixelsPerNotch = 48.0;
 static	const	int			kTextSearchTimeoutMilliseconds = 1000;
@@ -633,6 +634,9 @@ winrt::WinUIToolbox::OutlineView OutlineView::Internals::getProjectedOutlineView
 void OutlineView::Internals::setCellProvider(const IInspectable& cellProvider)
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Cleanup
+	endEdit(false, OutlineViewEditEndReason::Other);
+
 	// Set cell provider
 	mCellProviderObject = cellProvider;
 	if (cellProvider != nullptr) {
@@ -3460,7 +3464,7 @@ OutlineView::OutlineView() : OutlineViewT<OutlineView>()
 		// Setup
 		auto	pointerPoint = pointerRoutedEventArgs.GetCurrentPoint(*this);
 		auto	properties = pointerPoint.Properties();
-		double	notches = (double) properties.MouseWheelDelta() / 120.0;
+		double	notches = (double) properties.MouseWheelDelta() / kWheelDeltaPerNotch;
 		bool	isShift =
 						sDoesVirtualKeyModifiersContain(pointerRoutedEventArgs.KeyModifiers(),
 								VirtualKeyModifiers::Shift);
@@ -3623,9 +3627,17 @@ void OutlineView::SelectionMode(OutlineViewSelectionMode selectionMode)
 	else if ((selectionMode == OutlineViewSelectionMode::Single) && (mInternals->mSelectedIdentifiers.size() > 1)) {
 		// Keep the focused row if it is selected, else the first selected row
 		std::optional<std::wstring>	keep = mInternals->identifierForRow(mInternals->mFocusedRow);
-		if (!keep.has_value() || (mInternals->mSelectedIdentifiers.count(*keep) == 0))
-			keep = mInternals->getSelectedIdentifiersInRowOrder().front();
-		mInternals->setSelectedIdentifiers(std::vector<std::wstring>(1, *keep));
+		if (!keep.has_value() || (mInternals->mSelectedIdentifiers.count(*keep) == 0)) {
+			// First selected row - selected identifiers may include rows hidden under a collapsed parent
+			std::vector<std::wstring>	selectedIdentifiers = mInternals->getSelectedIdentifiersInRowOrder();
+			keep = !selectedIdentifiers.empty() ? selectedIdentifiers.front() : std::optional<std::wstring>();
+		}
+		if (keep.has_value())
+			// Keep one
+			mInternals->setSelectedIdentifiers(std::vector<std::wstring>(1, *keep));
+		else
+			// No selected row is in the rows
+			mInternals->deselectAllInternal();
 	}
 }
 

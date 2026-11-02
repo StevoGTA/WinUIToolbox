@@ -154,8 +154,13 @@ ComboBoxHelper& ComboBoxHelper::addSeparatorItem()
 IInspectable ComboBoxHelper::getSelectedValue() const
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Get selected index
+	int	selectedIndex = getComboBox().SelectedIndex();
+	if (selectedIndex < 0)
+		return nullptr;
+
 	// Get item
-	auto	item = getComboBox().Items().GetAt(getComboBox().SelectedIndex()).try_as<ComboBoxItem>();
+	auto	item = getComboBox().Items().GetAt(selectedIndex).try_as<ComboBoxItem>();
 	if (!item)
 		return nullptr;
 
@@ -170,8 +175,13 @@ IInspectable ComboBoxHelper::getSelectedValue() const
 int ComboBoxHelper::getSelectedIntValue() const
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Get selected index
+	int	selectedIndex = getComboBox().SelectedIndex();
+	if (selectedIndex < 0)
+		return 0;
+
 	// Get item
-	auto	item = getComboBox().Items().GetAt(getComboBox().SelectedIndex()).try_as<ComboBoxItem>();
+	auto	item = getComboBox().Items().GetAt(selectedIndex).try_as<ComboBoxItem>();
 	if (!item)
 		return 0;
 
@@ -393,8 +403,17 @@ ComboBoxHelper& ComboBoxHelper::setSelectedIntValueChangedProc(std::function<voi
 				if (sender == sComboBoxInUpdate)
 					return;
 
+				// Skip if no added item (e.g. selection cleared)
+				if (selectionChangedEventArgs.AddedItems().Size() == 0)
+					return;
+
+				// Try to resolve as a ComboBoxItem (skip separators / section titles)
+				auto	comboBoxItem = selectionChangedEventArgs.AddedItems().GetAt(0).try_as<ComboBoxItem>();
+				if (comboBoxItem == nullptr)
+					return;
+
 				// Get tag
-				auto	tag = selectionChangedEventArgs.AddedItems().GetAt(0).as<ComboBoxItem>().Tag();
+				auto	tag = comboBoxItem.Tag();
 
 				// Try to get int
 				int	tagValue;

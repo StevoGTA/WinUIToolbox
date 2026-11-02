@@ -52,14 +52,14 @@ ContentDialogStack::~ContentDialogStack()
 void ContentDialogStack::showAsync(const ContentDialog& contentDialog)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Check if have any current Content Dialogs
+	// Add
 	size_t	count = mInternals->mContentDialogs.size();
+	mInternals->mContentDialogs.push_back(contentDialog);
+
+	// Check if had any Content Dialogs (pushed first so the Closed handler sees the hidden one is not the most recent)
 	if (count > 0)
 		// Hide and teardown
 		mInternals->mContentDialogs[count - 1].Hide();
-
-	// Add
-	mInternals->mContentDialogs.push_back(contentDialog);
 
 	// Setup and show
 	contentDialog.XamlRoot(mInternals->mXamlRoot);

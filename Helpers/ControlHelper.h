@@ -67,7 +67,8 @@ template <typename C, typename H> class ControlHelper : public FrameworkElementH
 				{
 					// Set
 					getControl().IsEnabledChanged(
-							[this](const IInspectable& sender, const DependencyPropertyChangedEventArgs& args){
+							[enabledChangedProc](const IInspectable& sender,
+									const DependencyPropertyChangedEventArgs& args){
 								// Call proc
 								enabledChangedProc(sender.as<C>().IsEnabled());
 							});

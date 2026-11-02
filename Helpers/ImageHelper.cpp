@@ -134,8 +134,8 @@ ImageHelper& ImageHelper::setImageData(const std::vector<uint8_t>& imageData)
 		// Write image data to stream
 		DataWriter	dataWriter(memoryStream.GetOutputStreamAt(0));
 		dataWriter.WriteBytes(imageData);
-		dataWriter.StoreAsync();
-		dataWriter.FlushAsync();
+		dataWriter.StoreAsync().get();
+		dataWriter.FlushAsync().get();
 		dataWriter.DetachStream();
 
 		// Switch to UI thread

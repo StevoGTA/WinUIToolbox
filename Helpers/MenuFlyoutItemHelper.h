@@ -19,21 +19,6 @@ class MenuFlyoutItemHelper : public ControlHelper<MenuFlyoutItem, MenuFlyoutItem
 								// Lifecycle methods
 								MenuFlyoutItemHelper(MenuFlyoutItem menuFlyoutItem) : ControlHelper(menuFlyoutItem) {}
  
-								// Instance methods
-		//MenuFlyoutHelper&	addSectionTitle(const hstring& title)
-		//						{
-		//							// Create item
-		//							MenuFlyoutItem item;
-		//							item.Text(title);
-		//							item.IsEnabled(false);
-		//							getMenuFlyout().Items().Append(item);
-
-		//							return *this;
-		//						}
-
-		//MenuFlyout			getMenuFlyout() const
-		//						{ return getDependencyObject(); }
-
 								// Class methods
 		static	MenuFlyoutItem	forGroupTitle(const winrt::param::hstring& title)
 									{
@@ -46,18 +31,5 @@ class MenuFlyoutItemHelper : public ControlHelper<MenuFlyoutItem, MenuFlyoutItem
 									}
 		static	MenuFlyoutItem	forTitle(const winrt::param::hstring& title, std::function<bool()> validationProc,
 										std::function<void()> actionProc);
-									//{
-									//	// Create MenuFlyoutItem
-									//	MenuFlyoutItem menuFlyoutItem;
-									//	menuFlyoutItem.Text(title);
-									//	menuFlyoutItem.Click(
-									//			[actionProc](const IInspectable& sender,
-									//					const RoutedEventArgs& routedEventArgs){
-									//				// Call actionProc
-									//				actionProc();
-									//			});
-
-									//	return menuFlyoutItem;
-									//}
 		static	void			validate(MenuFlyoutItem menuFlyoutItem);
 };

@@ -5,8 +5,7 @@
 <UserControl
 		x:Class="WinUIToolbox.BorderedView"
 		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:winUIToolbox="using:WinUIToolbox">
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
 	<Border x:Name="mBorder" BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
 			BorderThickness="1,1,1,1" HorizontalAlignment="Stretch">

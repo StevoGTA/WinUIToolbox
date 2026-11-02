@@ -137,21 +137,12 @@ class PointerHelper::Internals {
 						[this](const IInspectable& sender, const PointerRoutedEventArgs& pointerRoutedEventArgs){
 							// Setup
 							auto	uiElement = sender.as<UIElement>();
-							auto	properties = pointerRoutedEventArgs.GetCurrentPoint(uiElement).Properties();
-
-							Buttons	buttons = static_cast<Buttons>(0);
-							if (properties.IsLeftButtonPressed())
-								buttons = (Buttons) (buttons | kButtonsLeft);
-							if (properties.IsMiddleButtonPressed())
-								buttons = (Buttons) (buttons | kButtonsMiddle);
-							if (properties.IsRightButtonPressed())
-								buttons = (Buttons) (buttons | kButtonsRight);
 
 							// Suspend timer
 							mPromotePressedToDragDispatchTimer.Stop();
 
 							// Call proc
-							mReleasedProc(pointerRoutedEventArgs.GetCurrentPoint(uiElement).Position(), buttons,
+							mReleasedProc(pointerRoutedEventArgs.GetCurrentPoint(uiElement).Position(), mPressedButtons,
 									mPressedCount, mSentOnDragged ? kReleasedReasonDragEnd : kReleasedReasonPressEnd,
 									pointerRoutedEventArgs.KeyModifiers());
 
@@ -171,20 +162,9 @@ class PointerHelper::Internals {
 
 							// Check if pressed
 							if (mPressedCount > 0) {
-								// Setup buttons
-								auto	properties = pointerRoutedEventArgs.GetCurrentPoint(uiElement).Properties();
-
-								Buttons	buttons = static_cast<Buttons>(0);
-								if (properties.IsLeftButtonPressed())
-									buttons = (Buttons) (buttons | kButtonsLeft);
-								if (properties.IsMiddleButtonPressed())
-									buttons = (Buttons) (buttons | kButtonsMiddle);
-								if (properties.IsRightButtonPressed())
-									buttons = (Buttons) (buttons | kButtonsRight);
-
 								// Call proc
-								mReleasedProc(pointerRoutedEventArgs.GetCurrentPoint(uiElement).Position(), buttons,
-										mPressedCount,
+								mReleasedProc(pointerRoutedEventArgs.GetCurrentPoint(uiElement).Position(),
+										mPressedButtons, mPressedCount,
 										mSentOnDragged ? kReleasedReasonDragEnd : kReleasedReasonPressEnd,
 										pointerRoutedEventArgs.KeyModifiers());
 							}

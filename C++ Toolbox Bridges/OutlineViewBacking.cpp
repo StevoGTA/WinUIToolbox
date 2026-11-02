@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------------------------------------------------
-//	OutlineViewBacking.cpp			Â©2026 Stevo Brock		All rights reserved.
+//	OutlineViewBacking.cpp			©2026 Stevo Brock		All rights reserved.
 //----------------------------------------------------------------------------------------------------------------------
 
 #include "OutlineViewBacking.h"

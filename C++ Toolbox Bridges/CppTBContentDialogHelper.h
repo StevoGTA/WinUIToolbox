@@ -16,10 +16,6 @@
 // MARK: CppTBContentDialogHelper
 
 class CppTBContentDialogHelper : public ContentDialogHelper {
-	// Types
-	public:
-		typedef	std::function<void()>	ButtonProc;
-
 	// Methods
 	public:
 								// Class methods

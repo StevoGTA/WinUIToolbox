@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: Local data
 
-static	SelectorBar	sSelectorBar(nullptr);
+static	SelectorBar	sSelectorBarInUpdate(nullptr);
 
 //----------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
@@ -25,9 +25,9 @@ SelectorBarHelper& SelectorBarHelper::setSelectedIntTag(int value)
 		int	tag;
 		if (getTagAsInt(item.Tag(), tag) && (tag == value)) {
 			// Found it
-			sSelectorBar = getSelectorBar();
+			sSelectorBarInUpdate = getSelectorBar();
 			getSelectorBar().SelectedItem(item);
-			sSelectorBar = nullptr;
+			sSelectorBarInUpdate = nullptr;
 			break;
 		}
 	}
@@ -46,7 +46,7 @@ SelectorBarHelper& SelectorBarHelper::setSelectedItemChangedProc(
 			[selectedItemChangedProc](const SelectorBar& selectorBar,
 					const SelectorBarSelectionChangedEventArgs& selectorBarSelectionChangedEventArgs){
 		// Check if handling events
-		if (selectorBar == sSelectorBar)
+		if (selectorBar == sSelectorBarInUpdate)
 			return;
 
 		// Get info

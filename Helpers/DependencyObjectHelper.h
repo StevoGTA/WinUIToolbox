@@ -25,8 +25,8 @@ template <typename C, typename H> class DependencyObjectHelper {
 				H&	setGridPosition(int columnIndex, int rowIndex) const
 						{
 							// Set
-							mC.SetValue(Grid::ColumnProperty(), columnIndex);
-							mC.SetValue(Grid::RowProperty(), rowIndex);
+							mC.SetValue(Grid::ColumnProperty(), winrt::box_value(columnIndex));
+							mC.SetValue(Grid::RowProperty(), winrt::box_value(rowIndex));
 
 							return (H&) *this;
 						}

@@ -38,7 +38,7 @@ SliderHelper& SliderHelper::setNormalizedValue(double value)
 {
 	// Set value
 	sSliderInUpdate = getSlider();
-	getSlider().Value(value * getSlider().Maximum());
+	getSlider().Value(getSlider().Minimum() + value * (getSlider().Maximum() - getSlider().Minimum()));
 	sSliderInUpdate = nullptr;
 
 	return *this;
@@ -67,19 +67,21 @@ SliderHelper& SliderHelper::setValueChangedProc(std::function<void(double value)
 SliderHelper& SliderHelper::setNormalizedValueChangedProc(std::function<void(double value)> valueChangedProc)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Setup
-	auto	maximum = getSlider().Maximum();
-
 	// Set handler
 	getSlider().ValueChanged(
-			[valueChangedProc, maximum](const IInspectable& sender,
+			[valueChangedProc](const IInspectable& sender,
 					const RangeBaseValueChangedEventArgs& rangeBaseValueChangedEventArgs) {
 				// Check if handling events
 				if (sender == sSliderInUpdate)
 					return;
 
+				// Setup
+				auto	slider = sender.as<Slider>();
+
 				// Call proc
-				valueChangedProc(rangeBaseValueChangedEventArgs.NewValue() / maximum);
+				valueChangedProc(
+						(rangeBaseValueChangedEventArgs.NewValue() - slider.Minimum()) /
+								(slider.Maximum() - slider.Minimum()));
 			});
 
 	return *this;
