@@ -497,9 +497,15 @@ class PathView::Internals {
 											auto	dataView = dragEventArgs.DataView();
 											if (dataView.Contains(StandardDataFormats::StorageItems())) {
 												// Look for a lone folder - anything else is not a destination
-												IStorageItemVectorView	storageItems =
-																				co_await
-																						dataView.GetStorageItemsAsync();
+												IStorageItemVectorView	storageItems(nullptr);
+												try {
+													// Get storage items
+													storageItems = co_await dataView.GetStorageItemsAsync();
+												} catch (const winrt::hresult_error&) {
+													// Unable to get storage items
+													deferral.Complete();
+													co_return;
+												}
 												hasFolder = storageItems.Size() == 1;
 												if (hasFolder)
 													// One item - is it a folder
@@ -560,13 +566,19 @@ class PathView::Internals {
 											setIsDropTarget(false);
 
 											// Get the folder
-											auto	deferral = dragEventArgs.GetDeferral();
-											auto	weakPathView = mPathView.get_weak();
+											auto					deferral = dragEventArgs.GetDeferral();
+											auto					weakPathView = mPathView.get_weak();
+											IStorageItemVectorView	storageItems(nullptr);
+											try {
+												// Get storage items
+												storageItems = co_await dragEventArgs.DataView().GetStorageItemsAsync();
+											} catch (const winrt::hresult_error&) {
+												// Unable to get storage items
+												deferral.Complete();
+												co_return;
+											}
 
-											IStorageItemVectorView	storageItems =
-																			co_await dragEventArgs.DataView()
-																					.GetStorageItemsAsync();
-											winrt::hstring			folderPath;
+											winrt::hstring	folderPath;
 											if ((storageItems.Size() == 1) &&
 													storageItems.GetAt(0).IsOfType(StorageItemTypes::Folder))
 												// Have folder

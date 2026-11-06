@@ -80,9 +80,12 @@ void DropTargetView::OnDragLeave(const DragEventArgs& dragEventArgs) const
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-IAsyncAction DropTargetView::OnDrop(const DragEventArgs& dragEventArgs) const
+IAsyncAction DropTargetView::OnDrop(const DragEventArgs& dragEventArgs)
 //----------------------------------------------------------------------------------------------------------------------
 {
+	// Keep alive across co_await
+	auto	strongThis = get_strong();
+
 	// Check if handling Drop
 	if (!DragAndDropCoordinator::shared().shouldHandleDrop(*this, dragEventArgs))
 		// Not handling drop

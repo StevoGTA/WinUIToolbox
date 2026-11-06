@@ -963,6 +963,13 @@ void OutlineView::Internals::setOutlineViewColumns(const std::vector<OutlineView
 	}
 	mColumns.clear();
 
+	// Reset header interaction state
+	mPressedHeaderColumnIndex = -1;
+	mIsDraggingColumn = false;
+	mDropColumnIndex = -1;
+	mResizingColumnIndex = -1;
+	mDragIndicatorRect.Visibility(Visibility::Collapsed);
+
 	// Compose columns
 	for (const OutlineViewColumn& outlineViewColumn : outlineViewColumns) {
 		// Setup
@@ -1868,7 +1875,7 @@ void OutlineView::Internals::layoutTrailingBackgroundRects()
 		// Place - the alternation continues from the last row
 		for (uint32_t row = getRowCount(); top < bottom; row++, top += mRowHeight) {
 			// Check row - odd rows carry the alternating background
-			if ((row % 2) == 0)
+			if ((row & 1) == 0)
 				continue;
 
 			// Get background rect
@@ -1926,7 +1933,7 @@ void OutlineView::Internals::updateRowVisuals(RealizedRow& realizedRow)
 	// Update - odd rows carry the alternating background, and the selection covers it as on macOS
 	realizedRow.mBackgroundRect.Fill(mAlternatingRowBackgroundBrush);
 	realizedRow.mBackgroundRect.Visibility(
-			((mAlternatingRowBackgroundBrush != nullptr) && ((realizedRow.mRow % 2) == 1) && !isSelected) ?
+			((mAlternatingRowBackgroundBrush != nullptr) && ((realizedRow.mRow & 1) == 1) && !isSelected) ?
 					Visibility::Visible : Visibility::Collapsed);
 	realizedRow.mHighlightRect.Fill(
 			isSelected ?
@@ -4193,7 +4200,7 @@ void OutlineView::ScrollItemIntoView(const winrt::hstring& identifier)
 uint32_t OutlineView::GetSelectedCount() const
 //----------------------------------------------------------------------------------------------------------------------
 {
-	return (uint32_t) mInternals->mSelectedIdentifiers.size();
+	return (uint32_t) mInternals->getSelectedIdentifiersInRowOrder().size();
 }
 
 //----------------------------------------------------------------------------------------------------------------------

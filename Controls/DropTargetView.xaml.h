@@ -38,7 +38,7 @@ namespace winrt::WinUIToolbox::implementation {
 							// Control methods
 			void			OnDragOver(const DragEventArgs& dragEventArgs) const;
 			void			OnDragLeave(const DragEventArgs& dragEventArgs) const;
-			IAsyncAction	OnDrop(const DragEventArgs& dragEventArgs) const;
+			IAsyncAction	OnDrop(const DragEventArgs& dragEventArgs);
 
 							// Event methods
 			event_token		StorageItemsEvent(const IStorageItemVectorViewEventHandler& handler);
