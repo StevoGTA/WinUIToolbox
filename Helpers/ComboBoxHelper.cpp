@@ -5,14 +5,24 @@
 #include "ComboBoxHelper.h"
 
 #include "winrt\Microsoft.UI.Xaml.Controls.Primitives.h"
+#include "winrt\Microsoft.UI.Xaml.Input.h"
 #include "winrt\Windows.Foundation.Collections.h"
+#include "winrt\Windows.System.h"
 
 using namespace winrt;
 using namespace winrt::Microsoft::UI::Xaml;
 
+using CollectionChange = winrt::Windows::Foundation::Collections::CollectionChange;
 using ComboBoxItem = winrt::Microsoft::UI::Xaml::Controls::ComboBoxItem;
+template <typename T> using IObservableVector = winrt::Windows::Foundation::Collections::IObservableVector<T>;
+using IVectorChangedEventArgs = winrt::Windows::Foundation::Collections::IVectorChangedEventArgs;
+using KeyEventHandler = winrt::Microsoft::UI::Xaml::Input::KeyEventHandler;
+using KeyRoutedEventArgs = winrt::Microsoft::UI::Xaml::Input::KeyRoutedEventArgs;
 using NavigationViewItemSeparator = winrt::Microsoft::UI::Xaml::Controls::NavigationViewItemSeparator;
 using SelectionChangedEventArgs = winrt::Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs;
+using TappedEventHandler = winrt::Microsoft::UI::Xaml::Input::TappedEventHandler;
+using TappedRoutedEventArgs = winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs;
+using VirtualKey = winrt::Windows::System::VirtualKey;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: Local data
@@ -352,6 +362,114 @@ ComboBoxHelper& ComboBoxHelper::setEditable(bool editable)
 {
 	// Set editable
 	getComboBox().IsEditable(editable);
+
+	return *this;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+ComboBoxHelper& ComboBoxHelper::setItemChosenProc(std::function<void(const IInspectable& value)> proc)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup - a choice is reported once: a selection change reports it, and an item chosen in the drop-down reports it
+	//	only when no selection change has since the drop-down opened and the item is still the selected one (choosing
+	//	the item already selected raises no SelectionChanged).  Items may report before or after SelectionChanged.
+	auto	choiceReported = std::make_shared<bool>(false);
+	auto	report =
+				[proc, choiceReported](const ComboBoxItem& comboBoxItem) {
+					// Items with a tag only (skip plain strings, separators and section titles)
+					auto	tag = comboBoxItem.Tag().try_as<SComboBoxItemTag>();
+					if (tag == nullptr)
+						return;
+
+					// Update
+					*choiceReported = true;
+
+					// Check tag
+					if (tag->hasProc())
+						// Proc
+						tag->callProc();
+					else
+						// Value
+						proc(tag->getValue());
+				};
+	auto	setupItem =
+				[report, choiceReported](const IInspectable& item) {
+					// ComboBoxItems only
+					auto	comboBoxItem = item.try_as<ComboBoxItem>();
+					if (comboBoxItem == nullptr)
+						return;
+
+					// Report taps - the ComboBox commits the choice first, so these are taken even when already handled
+					comboBoxItem.AddHandler(UIElement::TappedEvent(),
+							box_value(
+									TappedEventHandler(
+											[report, choiceReported](const IInspectable& sender,
+													const TappedRoutedEventArgs& tappedRoutedEventArgs){
+												// Check if chosen again
+												auto	chosenComboBoxItem = sender.as<ComboBoxItem>();
+												if (!*choiceReported && chosenComboBoxItem.IsSelected())
+													// Report
+													report(chosenComboBoxItem);
+											})),
+							true);
+
+					// Report Enter or Space in the open drop-down
+					comboBoxItem.AddHandler(UIElement::KeyDownEvent(),
+							box_value(
+									KeyEventHandler(
+											[report, choiceReported](const IInspectable& sender,
+													const KeyRoutedEventArgs& keyRoutedEventArgs){
+												// Check key
+												if (((keyRoutedEventArgs.Key() != VirtualKey::Enter) &&
+																(keyRoutedEventArgs.Key() != VirtualKey::Space)) ||
+														keyRoutedEventArgs.KeyStatus().WasKeyDown)
+													return;
+
+												// Check if chosen again
+												auto	chosenComboBoxItem = sender.as<ComboBoxItem>();
+												if (!*choiceReported && chosenComboBoxItem.IsSelected())
+													// Report
+													report(chosenComboBoxItem);
+											})),
+							true);
+				};
+
+	// Setup selection changes
+	getComboBox().SelectionChanged(
+			[report](const IInspectable& sender, const SelectionChangedEventArgs& selectionChangedEventArgs) {
+				// Check if handling events
+				if (sender == sComboBoxInUpdate)
+					return;
+
+				// Skip if no added item (e.g. selection cleared)
+				if (selectionChangedEventArgs.AddedItems().Size() == 0)
+					return;
+
+				// Report
+				auto	comboBoxItem = selectionChangedEventArgs.AddedItems().GetAt(0).try_as<ComboBoxItem>();
+				if (comboBoxItem != nullptr)
+					report(comboBoxItem);
+			});
+	getComboBox().DropDownOpened([choiceReported](const IInspectable& sender, const IInspectable& args){
+		// Start a new choice
+		*choiceReported = false;
+	});
+
+	// Setup items already added
+	for (const IInspectable& item : getComboBox().Items())
+		// Setup item
+		setupItem(item);
+
+	// Setup items added later
+	getComboBox().Items().VectorChanged(
+			[setupItem](const IObservableVector<IInspectable>& sender,
+					const IVectorChangedEventArgs& vectorChangedEventArgs){
+				// Check change
+				if ((vectorChangedEventArgs.CollectionChange() == CollectionChange::ItemInserted) ||
+						(vectorChangedEventArgs.CollectionChange() == CollectionChange::ItemChanged))
+					// Setup item
+					setupItem(sender.GetAt(vectorChangedEventArgs.Index()));
+			});
 
 	return *this;
 }

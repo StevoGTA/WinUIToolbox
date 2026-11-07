@@ -61,6 +61,8 @@ class ComboBoxHelper : public ControlHelper<ComboBox, ComboBoxHelper> {
 
 				ComboBoxHelper& setEditable(bool editable = true);
 
+				ComboBoxHelper& setItemChosenProc(std::function<void(const IInspectable& value)> proc);
+
 				ComboBoxHelper& setSelectedValueChangedProc(std::function<void(const IInspectable& value)> proc);
 				ComboBoxHelper& setSelectedIntValueChangedProc(std::function<void(int value)> proc);
 				ComboBoxHelper& setSelectionChangedProc(std::function<void()> proc);
