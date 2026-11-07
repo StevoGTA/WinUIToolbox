@@ -15,9 +15,12 @@
 #include "winrt\Microsoft.UI.Xaml.Controls.Primitives.h"
 #include "winrt\Microsoft.UI.Xaml.Input.h"
 #include "winrt\Microsoft.UI.Xaml.Media.h"
+#include "winrt\Microsoft.UI.Xaml.Media.Imaging.h"
 #include "winrt\Microsoft.UI.Xaml.Shapes.h"
 #include "winrt\Windows.Foundation.h"
 #include "winrt\Windows.Foundation.Collections.h"
+#include "winrt\Windows.Graphics.Imaging.h"
+#include "winrt\Windows.Storage.Streams.h"
 #include "winrt\Windows.System.h"
 #include "winrt\Windows.UI.Core.h"
 #include "winrt\Windows.UI.Xaml.Interop.h"
@@ -40,6 +43,8 @@ using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Controls;
 
 using Application = winrt::Microsoft::UI::Xaml::Application;
+using BitmapAlphaMode = winrt::Windows::Graphics::Imaging::BitmapAlphaMode;
+using BitmapPixelFormat = winrt::Windows::Graphics::Imaging::BitmapPixelFormat;
 using Brush = winrt::Microsoft::UI::Xaml::Media::Brush;
 using CharacterReceivedRoutedEventArgs = winrt::Microsoft::UI::Xaml::Input::CharacterReceivedRoutedEventArgs;
 using ContextRequestedEventArgs = winrt::Microsoft::UI::Xaml::Input::ContextRequestedEventArgs;
@@ -48,6 +53,7 @@ using CellProvider = OutlineViewCellProvider;
 using DataSource = OutlineViewDataSource;
 using DragStartingEventArgs = winrt::Microsoft::UI::Xaml::DragStartingEventArgs;
 using FontWeights = winrt::Microsoft::UI::Text::FontWeights;
+using IBuffer = winrt::Windows::Storage::Streams::IBuffer;
 using InputCursor = winrt::Microsoft::UI::Input::InputCursor;
 using InputKeyboardSource = winrt::Microsoft::UI::Input::InputKeyboardSource;
 using InputSystemCursor = winrt::Microsoft::UI::Input::InputSystemCursor;
@@ -59,12 +65,15 @@ using PointerPoint = winrt::Microsoft::UI::Input::PointerPoint;
 using RangeBaseValueChangedEventArgs = winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs;
 using Rect = winrt::Windows::Foundation::Rect;
 using RectangleGeometry = winrt::Microsoft::UI::Xaml::Media::RectangleGeometry;
+using RenderTargetBitmap = winrt::Microsoft::UI::Xaml::Media::Imaging::RenderTargetBitmap;
 using RowHeightProvider = OutlineViewRowHeightProvider;
 using ScrollBar = winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollBar;
 using ScrollingIndicatorMode = winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollingIndicatorMode;
 using Size = winrt::Windows::Foundation::Size;
+using SoftwareBitmap = winrt::Windows::Graphics::Imaging::SoftwareBitmap;
 using SolidColorBrush = winrt::Microsoft::UI::Xaml::Media::SolidColorBrush;
 using SortDescriptor = OutlineViewDataSource::SortDescriptor;
+using StreamsBuffer = winrt::Windows::Storage::Streams::Buffer;
 using TranslateTransform = winrt::Microsoft::UI::Xaml::Media::TranslateTransform;
 using VirtualKey = winrt::Windows::System::VirtualKey;
 
@@ -450,8 +459,7 @@ class OutlineView::Internals {
 
 														// Instance methods - drag and drop
 				void									startItemDrag();
-				void									itemDragStarting(
-															const DragStartingEventArgs& dragStartingEventArgs);
+				winrt::fire_and_forget					itemDragStarting(DragStartingEventArgs dragStartingEventArgs);
 				void									dragOver(const DragEventArgs& dragEventArgs);
 				void									dragLeave();
 				void									drop(const DragEventArgs& dragEventArgs);
@@ -566,6 +574,7 @@ class OutlineView::Internals {
 		PointerPoint													mPressedPointerPoint;
 		bool															mDidStartItemDrag;
 		std::vector<std::wstring>										mDragIdentifiers;
+		std::optional<uint32_t>											mDragRow;
 		Shapes::Rectangle												mDropTargetRect;
 		Shapes::Rectangle												mDropInsertLineRect;
 		std::optional<std::wstring>										mDropIdentifier;
@@ -3264,31 +3273,83 @@ void OutlineView::Internals::startItemDrag()
 			isRowSelected(*mPressedRow) ?
 					getSelectedIdentifiersInRowOrder() :
 					std::vector<std::wstring>(1, mRowEntries[*mPressedRow].mIdentifier);
+	mDragRow = mPressedRow;
 
 	// Start - DragStarting follows, where the handler fills the data
 	mOutlineView.StartDragAsync(mPressedPointerPoint);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-void OutlineView::Internals::itemDragStarting(const DragStartingEventArgs& dragStartingEventArgs)
+winrt::fire_and_forget OutlineView::Internals::itemDragStarting(DragStartingEventArgs dragStartingEventArgs)
 //----------------------------------------------------------------------------------------------------------------------
 {
 	// Raise event - the handler fills the data, or refuses the drag
+	winrt::WinUIToolbox::OutlineView							outlineView = getProjectedOutlineView();
 	winrt::WinUIToolbox::OutlineViewItemDragStartingEventArgs	args =
 																		winrt::make<OutlineViewItemDragStartingEventArgs>(
 																				sToHStrings(mDragIdentifiers),
 																				dragStartingEventArgs.Data(),
 																				dragStartingEventArgs
 																						.AllowedOperations());
-	mItemDragStartingEvent(getProjectedOutlineView(), args);
+	mItemDragStartingEvent(outlineView, args);
 
-	// Apply
-	if (args.Cancel())
+	// Check if refused
+	if (args.Cancel()) {
 		// Refused
 		dragStartingEventArgs.Cancel(true);
-	else
-		// Going ahead
-		dragStartingEventArgs.AllowedOperations(args.AllowedOperations());
+
+		co_return;
+	}
+
+	// Going ahead
+	dragStartingEventArgs.AllowedOperations(args.AllowedOperations());
+
+	// Drag image - the pressed row as it shows.  Rows are not elements of their own, so without one the system would
+	//	picture the element that started the drag - the whole view.
+	if (!mDragRow.has_value() || (*mDragRow >= getRowCount()) || (mViewportWidth <= 0.0))
+		// No row
+		co_return;
+
+	double	rowY = getRowY(*mDragRow);
+	double	rowHeight = getRowHeight(*mDragRow);
+	Point	anchorPoint{mPressedPoint.X, mPressedPoint.Y - (float) rowY};
+
+	// Render the view - the drag waits for the image
+	auto				deferral = dragStartingEventArgs.GetDeferral();
+	RenderTargetBitmap	renderTargetBitmap;
+	co_await renderTargetBitmap.RenderAsync(outlineView);
+	IBuffer				pixels = co_await renderTargetBitmap.GetPixelsAsync();
+
+	// Crop the row - pixels are BGRA, premultiplied, in physical pixels
+	int32_t	pixelWidth = renderTargetBitmap.PixelWidth();
+	int32_t	pixelHeight = renderTargetBitmap.PixelHeight();
+	double	actualWidth = outlineView.ActualWidth();
+	double	scale = (actualWidth > 0.0) ? (double) pixelWidth / actualWidth : 1.0;
+	int32_t	left = 0;
+	int32_t	right = std::clamp((int32_t) std::ceil(mViewportWidth * scale), 0, pixelWidth);
+	int32_t	top = std::clamp((int32_t) std::floor(rowY * scale), 0, pixelHeight);
+	int32_t	bottom = std::clamp((int32_t) std::ceil((rowY + rowHeight) * scale), top, pixelHeight);
+	if ((right > left) && (bottom > top) && (pixels.Length() >= (uint32_t) (pixelWidth * pixelHeight * 4))) {
+		// Copy the row's lines
+		uint32_t		cropWidth = (uint32_t) (right - left);
+		uint32_t		cropHeight = (uint32_t) (bottom - top);
+		StreamsBuffer	streamsBuffer(cropWidth * cropHeight * 4);
+		streamsBuffer.Length(cropWidth * cropHeight * 4);
+		for (uint32_t line = 0; line < cropHeight; line++)
+			// Copy line
+			std::copy_n(pixels.data() + (((size_t) (top + line) * pixelWidth) + left) * 4, cropWidth * 4,
+					streamsBuffer.data() + ((size_t) line * cropWidth * 4));
+
+		// Set - the anchor is where the pointer holds the image
+		SoftwareBitmap	softwareBitmap(BitmapPixelFormat::Bgra8, (int32_t) cropWidth, (int32_t) cropHeight,
+								BitmapAlphaMode::Premultiplied);
+		softwareBitmap.CopyFromBuffer(streamsBuffer);
+		dragStartingEventArgs.DragUI().SetContentFromSoftwareBitmap(softwareBitmap,
+				Point{(float) (anchorPoint.X * scale), (float) (anchorPoint.Y * scale)});
+	}
+
+	// Done
+	deferral.Complete();
 }
 
 //----------------------------------------------------------------------------------------------------------------------
