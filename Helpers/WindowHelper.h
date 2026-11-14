@@ -16,6 +16,14 @@ using XamlRoot = winrt::Microsoft::UI::Xaml::XamlRoot;
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: WindowHelper
+/*
+	Window size comes from the XAML of the window's content (its root element):
+		- MinWidth / MinHeight on the root - the window never gets smaller than this (applied by note, so for any
+			noted window), and an owned window opens at this size and can be resized.
+		- Neither on the root - an owned window sizes itself to its content: its natural width and height (give the
+			root a Width when its content stretches), no larger than the screen's work area, beyond which the content
+			scrolls.  It follows the content as that changes, and cannot be resized.
+*/
 
 class WindowHelper {
 	// Types
@@ -37,9 +45,6 @@ class WindowHelper {
 
 								// Instance methods
 				HWND			getWindowHandle() const;
-
-				WindowHelper&	setContentSize(double width, double height);
-				WindowHelper&	setMinimumContentSize(double width, double height);
 
 				WindowHelper&	setModal(bool modal, double scrimOpacity = 0.6);
 				WindowHelper&	setPlacement(Placement placement);

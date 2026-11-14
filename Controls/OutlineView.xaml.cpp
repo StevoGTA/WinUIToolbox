@@ -3075,7 +3075,7 @@ bool OutlineView::Internals::beginEdit(uint32_t row, const std::wstring& columnI
 			case VirtualKey::Escape:
 				// Escape
 				keyRoutedEventArgs.Handled(true);
-				endEdit(false, OutlineViewEditEndReason::Other);
+				endEdit(false, OutlineViewEditEndReason::Cancel);
 				break;
 
 			case VirtualKey::Tab:
@@ -3145,7 +3145,7 @@ void OutlineView::Internals::endEdit(bool commit, OutlineViewEditEndReason reaso
 	mIsEndingEditing = false;
 
 	// Raise event
-	if (commit && mEditEndedEvent && (row < getRowCount()))
+	if ((commit || (reason == OutlineViewEditEndReason::Cancel)) && mEditEndedEvent && (row < getRowCount()))
 		mEditEndedEvent(getProjectedOutlineView(),
 				winrt::make<OutlineViewEditEndedEventArgs>(winrt::hstring(mRowEntries[row].mIdentifier),
 						winrt::hstring(columnIdentifier), winrt::hstring(text), reason));
@@ -4380,7 +4380,7 @@ void OutlineView::CommitEdit()
 void OutlineView::CancelEdit()
 //----------------------------------------------------------------------------------------------------------------------
 {
-	mInternals->endEdit(false, OutlineViewEditEndReason::Other);
+	mInternals->endEdit(false, OutlineViewEditEndReason::Cancel);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -17,7 +17,13 @@
 #include "winrt\Windows.UI.h"
 #include "microsoft.ui.xaml.window.h"
 
+#include <commctrl.h>
+
+#include <algorithm>
 #include <cmath>
+#include <limits>
+
+#pragma comment(lib, "comctl32.lib")
 
 using AppWindow = winrt::Microsoft::UI::Windowing::AppWindow;
 using AppWindowChangedEventArgs = winrt::Microsoft::UI::Windowing::AppWindowChangedEventArgs;
@@ -32,6 +38,8 @@ using OverlappedPresenter = winrt::Microsoft::UI::Windowing::OverlappedPresenter
 using PointerRoutedEventArgs = winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs;
 using Popup = winrt::Microsoft::UI::Xaml::Controls::Primitives::Popup;
 using RoutedEventArgs = winrt::Microsoft::UI::Xaml::RoutedEventArgs;
+using ScrollBarVisibility = winrt::Microsoft::UI::Xaml::Controls::ScrollBarVisibility;
+using ScrollViewer = winrt::Microsoft::UI::Xaml::Controls::ScrollViewer;
 using SizeChangedEventArgs = winrt::Microsoft::UI::Xaml::SizeChangedEventArgs;
 using SizeInt32 = winrt::Windows::Graphics::SizeInt32;
 using SolidColorBrush = winrt::Microsoft::UI::Xaml::Media::SolidColorBrush;
@@ -59,6 +67,7 @@ class OwnedWindowController {
 		void	installScrim();
 		void	updateScrimSize();
 		void	removeScrim();
+		void	sizeToContent() const;
 		void	wireButtons();
 		void	teardown();
 
@@ -70,6 +79,9 @@ class OwnedWindowController {
 				WindowHelper::Placement	mPlacement;
 				std::function<void()>	mCommitProc;
 				std::function<void()>	mCancelProc;
+
+				FrameworkElement		mSizedContent{nullptr};
+				winrt::event_token		mSizedContentLayoutUpdatedToken{};
 
 				HWND					mOwnerHWND = nullptr;
 				HWND					mChildHWND = nullptr;
@@ -95,19 +107,59 @@ void OwnedWindowController::present()
 	// limit).  GWLP_HWNDPARENT (-8) sets the OWNER despite the "PARENT" name.
 	::SetWindowLongPtrW(mChildHWND, GWLP_HWNDPARENT, (LONG_PTR) mOwnerHWND);
 
-	// Remove the child's title bar - it is moved only with the owner.  Keep a border so it reads as a distinct window,
-	//	and keep the content size (removing the title bar would otherwise hand its height to the content).
+	// Wire optional Commit / Cancel buttons if present in the child content (before sizing may rehost the content).
+	wireButtons();
+
+	// Size - content with a MinWidth / MinHeight opens at that size and can be resized (WindowHelper::note keeps it
+	//	from getting smaller), and any other content sizes the window to itself.
 	AppWindow			childAppWindow = mChild.AppWindow();
 	OverlappedPresenter	overlappedPresenter = childAppWindow.Presenter().try_as<OverlappedPresenter>();
+	FrameworkElement	content = mChild.Content().try_as<FrameworkElement>();
+	if ((content != nullptr) && ((content.MinWidth() > 0.0) || (content.MinHeight() > 0.0))) {
+		// Open at the minimum size - a dimension without a minimum keeps its current size
+		double		scale = (double) ::GetDpiForWindow(mChildHWND) / (double) USER_DEFAULT_SCREEN_DPI;
+		SizeInt32	clientSize = childAppWindow.ClientSize();
+		childAppWindow.ResizeClient(
+				SizeInt32{
+						(content.MinWidth() > 0.0) ? (int32_t) std::ceil(content.MinWidth() * scale) : clientSize.Width,
+						(content.MinHeight() > 0.0) ?
+								(int32_t) std::ceil(content.MinHeight() * scale) : clientSize.Height});
+	} else if (content != nullptr) {
+		// Size to the content - which decides the size
+		mSizedContent = content;
+
+		if (overlappedPresenter != nullptr)
+			overlappedPresenter.IsResizable(false);
+
+		// Measure without limits and size to it now, so the window is first shown at its size
+		mSizedContent.Measure(
+				winrt::Windows::Foundation::Size{std::numeric_limits<float>::infinity(),
+						std::numeric_limits<float>::infinity()});
+		sizeToContent();
+
+		// Host the content in a ScrollViewer - it is measured without a height limit, so its desired height is all of
+		//	it, and it scrolls once that is more than the room on screen
+		ScrollViewer	scrollViewer;
+		scrollViewer.HorizontalScrollBarVisibility(ScrollBarVisibility::Disabled);
+		scrollViewer.VerticalScrollBarVisibility(ScrollBarVisibility::Auto);
+		mChild.Content(scrollViewer);
+		scrollViewer.Content(mSizedContent);
+
+		// Follow the content's desired size after every layout pass (resizing changes only the viewport, never the
+		//	desired size, so this settles).  This also corrects the first size should measuring before being shown
+		//	come up short.
+		mSizedContentLayoutUpdatedToken =
+				mSizedContent.LayoutUpdated([this](const IInspectable&, const IInspectable&){ sizeToContent(); });
+	}
+
+	// Remove the child's title bar - it is moved only with the owner.  Keep a border so it reads as a distinct window,
+	//	and keep the content size (removing the title bar would otherwise hand its height to the content).
 	if (overlappedPresenter != nullptr) {
 		// Remove title bar
 		SizeInt32	clientSize = childAppWindow.ClientSize();
 		overlappedPresenter.SetBorderAndTitleBar(true, false);
 		childAppWindow.ResizeClient(clientSize);
 	}
-
-	// Wire optional Commit / Cancel buttons if present in the child content.
-	wireButtons();
 
 	// Install the modal scrim over the owner content.
 	if (mModal)
@@ -121,6 +173,10 @@ void OwnedWindowController::present()
 					reposition();
 					updateScrimSize();
 				}
+
+				// Where the owner is changes the room we have on screen
+				if ((args.DidPositionChange() || args.DidSizeChange()) && (mSizedContent != nullptr))
+					sizeToContent();
 			});
 
 	// Re-center when the child content changes size (e.g. once the minimum content size takes effect).
@@ -237,6 +293,56 @@ void OwnedWindowController::removeScrim()
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+void OwnedWindowController::sizeToContent() const
+{
+	// Setup
+	winrt::Windows::Foundation::Size	desiredSize = mSizedContent.DesiredSize();
+	if ((desiredSize.Width <= 0.0f) || (desiredSize.Height <= 0.0f))
+		// Not measured yet
+		return;
+
+	double	scale = (double) ::GetDpiForWindow(mChildHWND) / (double) USER_DEFAULT_SCREEN_DPI;
+
+	// Get the room on screen - the work area's width, and from where the window's top is placed down to the bottom of
+	//	the work area, each less the window's own chrome.  An owned window may extend past its owner.
+	MONITORINFO	monitorInfo{sizeof(MONITORINFO)};
+	::GetMonitorInfoW(::MonitorFromWindow(mOwnerHWND, MONITOR_DEFAULTTONEAREST), &monitorInfo);
+
+	LONG	top = monitorInfo.rcWork.top;
+	if (mPlacement == WindowHelper::Placement::kCenteredBelowOwnerTitleBar) {
+		// Just below the owner's title bar
+		POINT	ownerClientOrigin = {0, 0};
+		::ClientToScreen(mOwnerHWND, &ownerClientOrigin);
+		top = (std::max)(top, ownerClientOrigin.y);
+	}
+
+	RECT	childWindowRect;
+	::GetWindowRect(mChildHWND, &childWindowRect);
+
+	RECT	childClientRect;
+	::GetClientRect(mChildHWND, &childClientRect);
+
+	LONG	chromeWidth =
+					(childWindowRect.right - childWindowRect.left) - (childClientRect.right - childClientRect.left);
+	LONG	chromeHeight =
+					(childWindowRect.bottom - childWindowRect.top) - (childClientRect.bottom - childClientRect.top);
+
+	// Get the desired size in physical pixels, no larger than the room on screen
+	int32_t	width =
+					(std::min)((int32_t) std::ceil(desiredSize.Width * scale),
+							(int32_t) (monitorInfo.rcWork.right - monitorInfo.rcWork.left - chromeWidth));
+	int32_t	height =
+					(std::min)((int32_t) std::ceil(desiredSize.Height * scale),
+							(int32_t) (monitorInfo.rcWork.bottom - top - chromeHeight));
+
+	// Resize if needed
+	AppWindow	appWindow = mChild.AppWindow();
+	SizeInt32	clientSize = appWindow.ClientSize();
+	if ((width != clientSize.Width) || (height != clientSize.Height))
+		appWindow.ResizeClient(SizeInt32{width, height});
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 void OwnedWindowController::wireButtons()
 {
 	// Setup
@@ -300,6 +406,12 @@ void OwnedWindowController::teardown()
 		mChildSizeChangedToken = {};
 	}
 
+	// Revoke size to content
+	if ((mSizedContentLayoutUpdatedToken.value != 0) && (mSizedContent != nullptr)) {
+		mSizedContent.LayoutUpdated(mSizedContentLayoutUpdatedToken);
+		mSizedContentLayoutUpdatedToken = {};
+	}
+
 	// Remove the scrim
 	removeScrim();
 
@@ -317,42 +429,71 @@ void OwnedWindowController::teardown()
 
 class WindowHelper::Internals {
 	public:
-					Internals(Window window) :
-						mWindow(window),
-								mModal(true), mScrimOpacity(0.6),
-								mPlacement(WindowHelper::Placement::kCenteredBelowOwnerTitleBar)
-						{}
+		struct MinimumContentSize {
+			double	mWidth;
+			double	mHeight;
+		};
 
-		static void	applyMinimumContentSize(const AppWindow& appWindow, double rasterizationScale, double width,
-							double height)
-						{
-							// Setup
-							OverlappedPresenter	overlappedPresenter =
-														appWindow.Presenter().try_as<OverlappedPresenter>();
-							if (overlappedPresenter == nullptr)
-								// Not overlapped (full screen, compact overlay), so there is nothing to constrain
-								return;
+	public:
+									Internals(Window window) :
+										mWindow(window),
+												mModal(true), mScrimOpacity(0.6),
+												mPlacement(WindowHelper::Placement::kCenteredBelowOwnerTitleBar)
+										{}
 
-							// Get the non-client area (title bar, borders).  Both sizes are physical pixels, so the
-							//	difference is the chrome.
-							SizeInt32	windowSize = appWindow.Size();
-							SizeInt32	clientSize = appWindow.ClientSize();
-							if ((clientSize.Width <= 0) || (clientSize.Height <= 0))
-								// Not laid out yet, so the chrome cannot be determined - a later call will get it
-								return;
+		static	LRESULT CALLBACK	minimumContentSizeSubclassProc(HWND hWnd, UINT message, WPARAM wParam,
+											LPARAM lParam, UINT_PTR subclassID, DWORD_PTR refData)
+										{
+											// Setup
+											const	MinimumContentSize&	minimumContentSize =
+																				*((MinimumContentSize*) refData);
 
-							// Convert the requested content size from DIPs to physical pixels and add the chrome
-							int32_t	minimumWidth =
-											(int32_t) std::ceil(width * rasterizationScale) +
-													(windowSize.Width - clientSize.Width);
-							int32_t	minimumHeight =
-											(int32_t) std::ceil(height * rasterizationScale) +
-													(windowSize.Height - clientSize.Height);
+											// Check message
+											switch (message) {
+												case WM_GETMINMAXINFO: {
+													// Let the window have its say first - ours only ever enlarges it
+													LRESULT	result = ::DefSubclassProc(hWnd, message, wParam, lParam);
 
-							// Set
-							overlappedPresenter.PreferredMinimumWidth(minimumWidth);
-							overlappedPresenter.PreferredMinimumHeight(minimumHeight);
-						}
+													// Setup - the content size in physical pixels at the window's
+													//	current scale, grown by the window's own frame at that scale.
+													//	Asked at every resize, so it always matches the display.
+													UINT	dpi = ::GetDpiForWindow(hWnd);
+													double	scale = (double) dpi / (double) USER_DEFAULT_SCREEN_DPI;
+
+													RECT	rect;
+													rect.left = 0;
+													rect.top = 0;
+													rect.right = (LONG) std::ceil(minimumContentSize.mWidth * scale);
+													rect.bottom = (LONG) std::ceil(minimumContentSize.mHeight * scale);
+													::AdjustWindowRectExForDpi(&rect,
+															(DWORD) ::GetWindowLongPtrW(hWnd, GWL_STYLE), FALSE,
+															(DWORD) ::GetWindowLongPtrW(hWnd, GWL_EXSTYLE), dpi);
+
+													// Update
+													MINMAXINFO*	minMaxInfo = (MINMAXINFO*) lParam;
+													minMaxInfo->ptMinTrackSize.x =
+															(std::max)(minMaxInfo->ptMinTrackSize.x, rect.right -
+																	rect.left);
+													minMaxInfo->ptMinTrackSize.y =
+															(std::max)(minMaxInfo->ptMinTrackSize.y, rect.bottom -
+																	rect.top);
+
+													return result;
+												}
+
+												case WM_NCDESTROY:
+													// Cleanup
+													::RemoveWindowSubclass(hWnd, minimumContentSizeSubclassProc,
+															subclassID);
+													delete (MinimumContentSize*) refData;
+													break;
+
+												default:
+													break;
+											}
+
+											return ::DefSubclassProc(hWnd, message, wParam, lParam);
+										}
 
 				Window					mWindow;
 
@@ -398,78 +539,6 @@ HWND WindowHelper::getWindowHandle() const
 	mInternals->mWindow.as<IWindowNative>().get()->get_WindowHandle(&hWnd);
 
 	return hWnd;
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-WindowHelper& WindowHelper::setContentSize(double width, double height)
-//----------------------------------------------------------------------------------------------------------------------
-{
-	// Setup - the window's DPI is known before it is shown, unlike its XamlRoot's rasterization scale
-	AppWindow	appWindow = mInternals->mWindow.AppWindow();
-	if (appWindow == nullptr)
-		// No AppWindow
-		return *this;
-
-	double	scale = (double) ::GetDpiForWindow(getWindowHandle()) / (double) USER_DEFAULT_SCREEN_DPI;
-
-	// Resize from DIPs to physical pixels
-	appWindow.ResizeClient(SizeInt32{(int32_t) std::ceil(width * scale), (int32_t) std::ceil(height * scale)});
-
-	return *this;
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-WindowHelper& WindowHelper::setMinimumContentSize(double width, double height)
-//----------------------------------------------------------------------------------------------------------------------
-{
-	// Setup
-	AppWindow	appWindow = mInternals->mWindow.AppWindow();
-	if (appWindow == nullptr)
-		// No AppWindow
-		return *this;
-
-	// Check if the XamlRoot is already available
-	UIElement	content = mInternals->mWindow.Content();
-	XamlRoot	xamlRoot = (content != nullptr) ? content.XamlRoot() : nullptr;
-	if (xamlRoot != nullptr) {
-		// Apply now and track scale changes
-		Internals::applyMinimumContentSize(appWindow, xamlRoot.RasterizationScale(), width, height);
-
-		xamlRoot.Changed(
-				[appWindow, width, height](const XamlRoot& xamlRoot,
-						const XamlRootChangedEventArgs& xamlRootChangedEventArgs){
-					// Rasterization scale may have changed (moved to a display with different scaling)
-					Internals::applyMinimumContentSize(appWindow, xamlRoot.RasterizationScale(), width, height);
-				});
-	} else if (content != nullptr) {
-		// No XamlRoot yet (typically called from the Window constructor), so wait until the content is loaded
-		FrameworkElement	frameworkElement = content.try_as<FrameworkElement>();
-		if (frameworkElement == nullptr)
-			// Cannot know when we are loaded
-			return *this;
-
-		frameworkElement.Loaded(
-				[appWindow, width, height](const IInspectable& sender, const RoutedEventArgs& routedEventArgs){
-					// Setup
-					XamlRoot	xamlRoot = sender.as<FrameworkElement>().XamlRoot();
-					if (xamlRoot == nullptr)
-						// No XamlRoot
-						return;
-
-					// Apply now and track scale changes
-					Internals::applyMinimumContentSize(appWindow, xamlRoot.RasterizationScale(), width, height);
-
-					xamlRoot.Changed(
-							[appWindow, width, height](const XamlRoot& xamlRoot,
-									const XamlRootChangedEventArgs& xamlRootChangedEventArgs){
-								// Rasterization scale may have changed
-								Internals::applyMinimumContentSize(appWindow, xamlRoot.RasterizationScale(), width,
-										height);
-							});
-				});
-	}
-
-	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -560,6 +629,20 @@ void WindowHelper::note(Window window)
 		// Remove
 		Internals::mWindows.erase(find(Internals::mWindows.begin(), Internals::mWindows.end(), window));
 	});
+
+	// Keep the content from getting smaller than its MinWidth / MinHeight - Windows asks at every resize
+	//	(WM_GETMINMAXINFO), so the minimum is always worked out at the window's current scale
+	FrameworkElement	content = window.Content().try_as<FrameworkElement>();
+	if ((content != nullptr) && ((content.MinWidth() > 0.0) || (content.MinHeight() > 0.0))) {
+		// Install
+		Internals::MinimumContentSize*	minimumContentSize =
+												new Internals::MinimumContentSize{content.MinWidth(),
+														content.MinHeight()};
+		if (!::SetWindowSubclass(WindowHelper(window).getWindowHandle(),
+				Internals::minimumContentSizeSubclassProc, 0, (DWORD_PTR) minimumContentSize))
+			// Not installed
+			delete minimumContentSize;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------------------------
