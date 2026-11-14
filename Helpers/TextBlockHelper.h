@@ -31,7 +31,7 @@ class TextBlockHelper : public FrameworkElementHelper<TextBlock, TextBlockHelper
 
 							// Instance methods
 		TextBlockHelper&	setEnabled(bool enabled)
-								{ return setOpacity(enabled ? 1.0 : 0.5); }
+								{ return setEnabledOpacity(enabled); }
 
 		TextBlockHelper&	setFontStyle(FontStyle fontStyle)
 								{ getTextBlock().FontStyle(fontStyle); return *this; }

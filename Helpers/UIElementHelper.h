@@ -10,6 +10,11 @@ using UIElement = winrt::Microsoft::UI::Xaml::UIElement;
 using Visibility = winrt::Microsoft::UI::Xaml::Visibility;
 
 //----------------------------------------------------------------------------------------------------------------------
+// MARK: Constants
+
+static	const	double	kUIElementDisabledOpacity = 0.4;
+
+//----------------------------------------------------------------------------------------------------------------------
 // MARK: UIElementHelper
 
 template <typename C, typename H> class UIElementHelper : public DependencyObjectHelper<C, H> {
@@ -20,6 +25,8 @@ template <typename C, typename H> class UIElementHelper : public DependencyObjec
 		virtual		~UIElementHelper() {}
  
 					// Instance methods
+				H&	setEnabledOpacity(bool enabled)
+						{ return setOpacity(enabled ? 1.0 : kUIElementDisabledOpacity); }
 				H&	setOpacity(double opacity)
 						{ getUIElement().Opacity(opacity); return (H&) *this; }
 				H&	setVisibility(Visibility visibility)
