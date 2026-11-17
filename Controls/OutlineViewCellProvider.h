@@ -34,15 +34,15 @@ struct OutlineViewCellProviderRInspectable :
 		public winrt::implements<OutlineViewCellProviderRInspectable, winrt::Windows::Foundation::IInspectable> {
 	// Methods
 	public:
-									// Lifecycle methods
-									OutlineViewCellProviderRInspectable(
-											OutlineViewCellProvider& outlineViewCellProvider) :
-										mOutlineViewCellProvider(outlineViewCellProvider)
-										{}
+												// Lifecycle methods
+		explicit								OutlineViewCellProviderRInspectable(
+														OutlineViewCellProvider& outlineViewCellProvider) :
+													mOutlineViewCellProvider(outlineViewCellProvider)
+													{}
 
-									// Instance methods
-		OutlineViewCellProvider&	GetReference() const
-										{ return mOutlineViewCellProvider; }
+												// Instance methods
+					OutlineViewCellProvider&	GetReference() const
+													{ return mOutlineViewCellProvider; }
 
 	// Properties
 	private:

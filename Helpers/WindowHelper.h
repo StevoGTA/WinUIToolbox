@@ -31,29 +31,29 @@ class WindowHelper {
 
 	// Methods
 	public:
-								// Lifecycle methods
-								WindowHelper(Window window);
-								~WindowHelper();
+									// Lifecycle methods
+		explicit					WindowHelper(Window window);
+									~WindowHelper();
 
-								// Instance methods
-				HWND			getWindowHandle() const;
+									// Instance methods
+					HWND			getWindowHandle() const;
 
-				WindowHelper&	setContentSize(double width, double height);
-				WindowHelper&	setMinimumContentSize(double width, double height);
+					WindowHelper&	setContentSize(double width, double height);
+					WindowHelper&	setMinimumContentSize(double width, double height);
 
-				WindowHelper&	setModal(bool modal, double scrimOpacity = 0.6);
-				WindowHelper&	setPlacement(Placement placement);
-				WindowHelper&	setClosedProc(std::function<void()> closedProc);
-				WindowHelper&	setCancelProc(std::function<void()> cancelProc);
-				WindowHelper&	setCommitProc(std::function<void()> commitProc);
+					WindowHelper&	setModal(bool modal, double scrimOpacity = 0.6);
+					WindowHelper&	setPlacement(Placement placement);
+					WindowHelper&	setClosedProc(std::function<void()> closedProc);
+					WindowHelper&	setCancelProc(std::function<void()> cancelProc);
+					WindowHelper&	setCommitProc(std::function<void()> commitProc);
 
-				void			presentAsOwnedFrom(Window owner);
-				void			presentAsOwnedFrom(XamlRoot ownerXamlRoot);
+					void			presentAsOwnedFrom(Window owner);
+					void			presentAsOwnedFrom(XamlRoot ownerXamlRoot);
 
-								// Class methods
-		static	void			note(Window window);
-		static	Window			getFor(UIElement uiElement);
-		static	Window			getFor(XamlRoot xamlRoot);
+									// Class methods
+		static		void			note(Window window);
+		static		Window			getFor(UIElement uiElement);
+		static		Window			getFor(XamlRoot xamlRoot);
 
 	// Properties
 	private:

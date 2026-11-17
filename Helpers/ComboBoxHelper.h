@@ -32,47 +32,47 @@ class ComboBoxHelper : public ControlHelper<ComboBox, ComboBoxHelper> {
 
 	// Methods
 	public:
-								// Lifecycle methods
-								ComboBoxHelper(ComboBox comboBox, Options options = kOptionsNone);
-								ComboBoxHelper() : ComboBoxHelper(ComboBox()) {}
-	
-								// Instance methods
-				ComboBoxHelper&	addItem(const winrt::hstring& displayName, const IInspectable& value,
-										bool isSelected = false);
-				ComboBoxHelper& addItem(const winrt::hstring& displayName, int value, bool isSelected = false)
-									{ return addItem(displayName, winrt::box_value<int>(value), isSelected); }
-				ComboBoxHelper& addItem(const winrt::hstring& displayName, std::function<void()> proc,
-										bool isSelected = false);
-				ComboBoxHelper& addItem(const winrt::hstring& string);
-				ComboBoxHelper& addSectionTitleItem(const winrt::hstring& title);
-				ComboBoxHelper& addSeparatorItem();
+									// Lifecycle methods
+		explicit					ComboBoxHelper(ComboBox comboBox, Options options = kOptionsNone);
+									ComboBoxHelper() : ComboBoxHelper(ComboBox()) {}
 
-				IInspectable	getSelectedValue() const;
-				int				getSelectedIntValue() const;
-				winrt::hstring	getText() const;
+									// Instance methods
+					ComboBoxHelper&	addItem(const winrt::hstring& displayName, const IInspectable& value,
+											bool isSelected = false);
+					ComboBoxHelper& addItem(const winrt::hstring& displayName, int value, bool isSelected = false)
+										{ return addItem(displayName, winrt::box_value<int>(value), isSelected); }
+					ComboBoxHelper& addItem(const winrt::hstring& displayName, std::function<void()> proc,
+											bool isSelected = false);
+					ComboBoxHelper& addItem(const winrt::hstring& string);
+					ComboBoxHelper& addSectionTitleItem(const winrt::hstring& title);
+					ComboBoxHelper& addSeparatorItem();
 
-				void			selectIndex(uint32_t index) const;
-				bool			selectItemWithTag(const winrt::hstring& string) const;
-				bool			selectItemWithTag(int value) const;
-				bool			selectItemWithTag(std::function<bool(const IInspectable& value)> tagValueCompareProc)
-										const;
+					IInspectable	getSelectedValue() const;
+					int				getSelectedIntValue() const;
+					winrt::hstring	getText() const;
 
-				ComboBoxHelper& setDropDownOpenedProc(std::function<void()> proc);
+					void			selectIndex(uint32_t index) const;
+					bool			selectItemWithTag(const winrt::hstring& string) const;
+					bool			selectItemWithTag(int value) const;
+					bool			selectItemWithTag(
+											std::function<bool(const IInspectable& value)> tagValueCompareProc) const;
 
-				ComboBoxHelper& setEditable(bool editable = true);
+					ComboBoxHelper& setDropDownOpenedProc(std::function<void()> proc);
 
-				ComboBoxHelper& setItemChosenProc(std::function<void(const IInspectable& value)> proc);
+					ComboBoxHelper& setEditable(bool editable = true);
 
-				ComboBoxHelper& setSelectedValueChangedProc(std::function<void(const IInspectable& value)> proc);
-				ComboBoxHelper& setSelectedIntValueChangedProc(std::function<void(int value)> proc);
-				ComboBoxHelper& setSelectionChangedProc(std::function<void()> proc);
+					ComboBoxHelper& setItemChosenProc(std::function<void(const IInspectable& value)> proc);
 
-				ComboBoxHelper& setText(const winrt::hstring& text, bool addIfNotFound = true);
-				ComboBoxHelper& setTextChangedProc(std::function<void(const winrt::hstring& text)> proc);
+					ComboBoxHelper& setSelectedValueChangedProc(std::function<void(const IInspectable& value)> proc);
+					ComboBoxHelper& setSelectedIntValueChangedProc(std::function<void(int value)> proc);
+					ComboBoxHelper& setSelectionChangedProc(std::function<void()> proc);
 
-				ComboBox		getComboBox() const
-									{ return getControl(); }
+					ComboBoxHelper& setText(const winrt::hstring& text, bool addIfNotFound = true);
+					ComboBoxHelper& setTextChangedProc(std::function<void(const winrt::hstring& text)> proc);
 
-								// Class methods
-		static	bool			getIntFromTag(const IInspectable& tag, int& outInt);
+					ComboBox		getComboBox() const
+										{ return getControl(); }
+
+									// Class methods
+		static		bool			getIntFromTag(const IInspectable& tag, int& outInt);
 };

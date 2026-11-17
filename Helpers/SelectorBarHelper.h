@@ -19,54 +19,55 @@ using SelectorBarSelectionChangedEventArgs = winrt::Microsoft::UI::Xaml::Control
 class SelectorBarHelper : public ControlHelper<SelectorBar, SelectorBarHelper> {
 	// Methods
 	public:
-							// Lifecycle methods
-							SelectorBarHelper(SelectorBar selectorBar) : ControlHelper(selectorBar) {}
-							SelectorBarHelper() : ControlHelper(SelectorBar()) {}
- 
-							// Instance methods
-		SelectorBarHelper&	add(const SelectorBarItem& selectorBarItem)
-								{ getSelectorBar().Items().Append(selectorBarItem); return *this; }
-		SelectorBarHelper&	removeAll()
-								{ getSelectorBar().Items().Clear(); return *this; }
+										// Lifecycle methods
+		explicit						SelectorBarHelper(SelectorBar selectorBar) : ControlHelper(selectorBar) {}
+										SelectorBarHelper() : ControlHelper(SelectorBar()) {}
 
-		int					getSelectedItemIndex() const
-								{
-									// Get index
-									uint32_t	index;
-									getSelectorBar().Items().IndexOf(getSelectorBar().SelectedItem(), index);
+										// Instance methods
+					SelectorBarHelper&	add(const SelectorBarItem& selectorBarItem)
+											{ getSelectorBar().Items().Append(selectorBarItem); return *this; }
+					SelectorBarHelper&	removeAll()
+											{ getSelectorBar().Items().Clear(); return *this; }
 
-									return index;
-								}
+					int					getSelectedItemIndex() const
+											{
+												// Get index
+												uint32_t	index;
+												getSelectorBar().Items().IndexOf(getSelectorBar().SelectedItem(),
+														index);
 
-		bool				getSelectedIntTag(int& outInt) const
-								{
-									// Get selected item
-									auto	selectedItem = getSelectorBar().SelectedItem();
-									if (!selectedItem)
-										// No selected item
-										return false;
+												return index;
+											}
 
-									return getTagAsInt(selectedItem.Tag(), outInt);
-								}
-		int					getSelectedIntTag(int defaultValue) const
-								{
-									// Get selected item
-									auto	selectedItem = getSelectorBar().SelectedItem();
-									if (!selectedItem)
-										// No selected item
-										return defaultValue;
+					bool				getSelectedIntTag(int& outInt) const
+											{
+												// Get selected item
+												auto	selectedItem = getSelectorBar().SelectedItem();
+												if (!selectedItem)
+													// No selected item
+													return false;
 
-									// Get value
-									int	value;
+												return getTagAsInt(selectedItem.Tag(), outInt);
+											}
+					int					getSelectedIntTag(int defaultValue) const
+											{
+												// Get selected item
+												auto	selectedItem = getSelectorBar().SelectedItem();
+												if (!selectedItem)
+													// No selected item
+													return defaultValue;
 
-									return getTagAsInt(selectedItem.Tag(), value) ? value : defaultValue;
-								}
-		SelectorBarHelper&	setSelectedIntTag(int value);
+												// Get value
+												int	value;
 
-		SelectorBarHelper&	setSelectedItemChangedProc(
-									std::function<void(int index, const SelectorBarItem& selectorBarItem)>
-											selectedItemChangedProc);
+												return getTagAsInt(selectedItem.Tag(), value) ? value : defaultValue;
+											}
+					SelectorBarHelper&	setSelectedIntTag(int value);
 
-		SelectorBar			getSelectorBar() const
-								{ return getControl(); }
+					SelectorBarHelper&	setSelectedItemChangedProc(
+												std::function<void(int index, const SelectorBarItem& selectorBarItem)>
+														selectedItemChangedProc);
+
+					SelectorBar			getSelectorBar() const
+											{ return getControl(); }
 };

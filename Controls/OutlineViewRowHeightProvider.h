@@ -29,15 +29,16 @@ struct OutlineViewRowHeightProviderRInspectable :
 				winrt::Windows::Foundation::IInspectable> {
 	// Methods
 	public:
-										// Lifecycle methods
-										OutlineViewRowHeightProviderRInspectable(
-												OutlineViewRowHeightProvider& outlineViewRowHeightProvider) :
-											mOutlineViewRowHeightProvider(outlineViewRowHeightProvider)
-											{}
+													// Lifecycle methods
+		explicit									OutlineViewRowHeightProviderRInspectable(
+															OutlineViewRowHeightProvider&
+																	outlineViewRowHeightProvider) :
+														mOutlineViewRowHeightProvider(outlineViewRowHeightProvider)
+														{}
 
-										// Instance methods
-		OutlineViewRowHeightProvider&	GetReference() const
-											{ return mOutlineViewRowHeightProvider; }
+													// Instance methods
+					OutlineViewRowHeightProvider&	GetReference() const
+														{ return mOutlineViewRowHeightProvider; }
 
 	// Properties
 	private:

@@ -15,16 +15,17 @@ using TimeSpan = winrt::Windows::Foundation::TimeSpan;
 class TimePickerHelper : public ControlHelper<TimePicker, TimePickerHelper> {
 	// Methods
 	public:
-							// Lifecycle methods
-							TimePickerHelper(TimePicker timePicker) : ControlHelper(timePicker) {}
-							TimePickerHelper() : ControlHelper(TimePicker()) {}
+										// Lifecycle methods
+		explicit						TimePickerHelper(TimePicker timePicker) : ControlHelper(timePicker) {}
+										TimePickerHelper() : ControlHelper(TimePicker()) {}
 
-							// Instance methods
-		TimePickerHelper&	setTimeSpan(const TimeSpan& timeSpan);
-		TimePickerHelper&	setChangedProc(
-									std::function<void(const TimeSpan& oldTimeSpan, const TimeSpan& newTimeSpan)>
-											changedProc);
+										// Instance methods
+					TimePickerHelper&	setTimeSpan(const TimeSpan& timeSpan);
+					TimePickerHelper&	setChangedProc(
+												std::function<void(const TimeSpan& oldTimeSpan,
+																const TimeSpan& newTimeSpan)>
+														changedProc);
 
-		TimePicker			getTimePicker() const
-								{ return getControl(); }
+					TimePicker			getTimePicker() const
+											{ return getControl(); }
 };

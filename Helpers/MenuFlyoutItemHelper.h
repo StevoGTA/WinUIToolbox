@@ -16,20 +16,22 @@ using RoutedEventArgs = winrt::Microsoft::UI::Xaml::RoutedEventArgs;
 class MenuFlyoutItemHelper : public ControlHelper<MenuFlyoutItem, MenuFlyoutItemHelper> {
 	// Methods
 	public:
-								// Lifecycle methods
-								MenuFlyoutItemHelper(MenuFlyoutItem menuFlyoutItem) : ControlHelper(menuFlyoutItem) {}
- 
-								// Class methods
-		static	MenuFlyoutItem	forGroupTitle(const winrt::param::hstring& title)
-									{
-										// Create MenuFlyoutItem
-										MenuFlyoutItem menuFlyoutItem;
-										menuFlyoutItem.Text(title);
-										menuFlyoutItem.IsEnabled(false);
+									// Lifecycle methods
+		explicit					MenuFlyoutItemHelper(MenuFlyoutItem menuFlyoutItem) :
+										ControlHelper(menuFlyoutItem)
+										{}
 
-										return menuFlyoutItem;
-									}
-		static	MenuFlyoutItem	forTitle(const winrt::param::hstring& title, std::function<bool()> validationProc,
-										std::function<void()> actionProc);
-		static	void			validate(MenuFlyoutItem menuFlyoutItem);
+									// Class methods
+		static		MenuFlyoutItem	forGroupTitle(const winrt::param::hstring& title)
+										{
+											// Create MenuFlyoutItem
+											MenuFlyoutItem menuFlyoutItem;
+											menuFlyoutItem.Text(title);
+											menuFlyoutItem.IsEnabled(false);
+
+											return menuFlyoutItem;
+										}
+		static		MenuFlyoutItem	forTitle(const winrt::param::hstring& title, std::function<bool()> validationProc,
+											std::function<void()> actionProc);
+		static		void			validate(MenuFlyoutItem menuFlyoutItem);
 };

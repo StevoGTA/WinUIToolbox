@@ -36,14 +36,14 @@ class ProgressContentDialog : public ContentDialog {
 
 	// Methods
 	public:
-								// Lifecycle methods
-								ProgressContentDialog(const Dispatching::DispatcherQueue& dispatcherQueue);
-								~ProgressContentDialog();
+											// Lifecycle methods
+		explicit							ProgressContentDialog(const Dispatching::DispatcherQueue& dispatcherQueue);
+											~ProgressContentDialog();
 
-								// Instance methods
-		CProgress::UpdateInfo	getProgressUpdateInfo() const;
-		void					perform(const I<CProgress>& progress, Proc proc, CancelProc cancelProc,
-										CompletionProc completionProc);
+											// Instance methods
+					CProgress::UpdateInfo	getProgressUpdateInfo() const;
+					void					perform(const I<CProgress>& progress, Proc proc, CancelProc cancelProc,
+													CompletionProc completionProc);
 
 	// Properties
 	private:

@@ -17,13 +17,13 @@ using Shape = winrt::Microsoft::UI::Xaml::Shapes::Shape;
 template <typename C, typename H> class ShapeHelper : public FrameworkElementHelper<C, H> {
 	// Methods
 	public:
-			// Lifecycle methods
-			ShapeHelper(C c) : FrameworkElementHelper(c) {}
+						// Lifecycle methods
+		explicit		ShapeHelper(C c) : FrameworkElementHelper(c) {}
 
-			// Instance methods
-		H&	setStrokeThickness(double value)
-				{ getShape().StrokeThickness(value); return (H&) *this; }
+						// Instance methods
+					H&	setStrokeThickness(double value)
+							{ getShape().StrokeThickness(value); return (H&) *this; }
 
-		C	getShape() const
-				{ return getFrameworkElement(); }
+					C	getShape() const
+							{ return getFrameworkElement(); }
 };

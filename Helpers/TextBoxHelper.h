@@ -22,37 +22,41 @@ using TextBox = winrt::Microsoft::UI::Xaml::Controls::TextBox;
 class TextBoxHelper : public ControlHelper<TextBox, TextBoxHelper> {
 	// Methods
 	public:
-						// Lifecycle methods
-						TextBoxHelper(TextBox textBox) : ControlHelper(textBox) {}
+									// Lifecycle methods
+		explicit					TextBoxHelper(TextBox textBox) : ControlHelper(textBox) {}
 
-						// Instance methods
-		TextBoxHelper&	setBorderBrush(const Brush& brush)
-							{ getTextBox().BorderBrush(brush); return *this; }
-		TextBoxHelper&	setBorderToDefault()
-							{
-								// Set to default
-								setBorderBrush(
-										Application::Current().Resources()
-												.TryLookup(winrt::box_value(L"TextControlBorderBrush")).as<Brush>());
+									// Instance methods
+					TextBoxHelper&	setBorderBrush(const Brush& brush)
+										{ getTextBox().BorderBrush(brush); return *this; }
+					TextBoxHelper&	setBorderToDefault()
+										{
+											// Set to default
+											setBorderBrush(
+													Application::Current().Resources()
+															.TryLookup(
+																	winrt::box_value(L"TextControlBorderBrush"))
+																			.as<Brush>());
 
-								return *this;
-							}
-		TextBoxHelper&	setBorderToError()
-							{
-								// Set to error
-								setBorderBrush(SolidColorBrush(winrt::Windows::UI::Colors::Red()));
+											return *this;
+										}
+					TextBoxHelper&	setBorderToError()
+										{
+											// Set to error
+											setBorderBrush(SolidColorBrush(winrt::Windows::UI::Colors::Red()));
 
-								return *this;
-							}
+											return *this;
+										}
 
-		TextBoxHelper&	setFocusState(FocusState focusState)
-							{ getTextBox().Focus(focusState); return *this; }
-		TextBoxHelper&	setKeyDownProc(std::function<void(const KeyRoutedEventArgs& keyRoutedEventArgs)> keyDownProc);
-		TextBoxHelper&	setText(const winrt::param::hstring& string);
-		TextBoxHelper&	setTextFilterProc(std::function<hstring(const hstring& string)> filterProc,
-								std::function<void()> wasFilteredProc = nullptr);
-		TextBoxHelper&	setTextChangedProc(std::function<void(const hstring& string)> textChangedProc);
+					TextBoxHelper&	setFocusState(FocusState focusState)
+										{ getTextBox().Focus(focusState); return *this; }
+					TextBoxHelper&	setKeyDownProc(
+											std::function<void(const KeyRoutedEventArgs& keyRoutedEventArgs)>
+													keyDownProc);
+					TextBoxHelper&	setText(const winrt::param::hstring& string);
+					TextBoxHelper&	setTextFilterProc(std::function<hstring(const hstring& string)> filterProc,
+											std::function<void()> wasFilteredProc = nullptr);
+					TextBoxHelper&	setTextChangedProc(std::function<void(const hstring& string)> textChangedProc);
 
-		TextBox			getTextBox() const
-							{ return getControl(); }
+					TextBox			getTextBox() const
+										{ return getControl(); }
 };

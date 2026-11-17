@@ -14,16 +14,16 @@ using RadioButton = winrt::Microsoft::UI::Xaml::Controls::RadioButton;
 class RadioButtonHelper : public ControlHelper<RadioButton, RadioButtonHelper> {
 	// Methods
 	public:
-							// Lifecycle methods
-							RadioButtonHelper(RadioButton radioButton) : ControlHelper(radioButton) {}
-							RadioButtonHelper() : ControlHelper(RadioButton()) {}
+										// Lifecycle methods
+		explicit						RadioButtonHelper(RadioButton radioButton) : ControlHelper(radioButton) {}
+										RadioButtonHelper() : ControlHelper(RadioButton()) {}
 
-							// Instance methods
-		RadioButtonHelper&	setGroupName(const winrt::param::hstring& groupName)
-								{ getRadioButton().GroupName(groupName); return *this; }
-		RadioButtonHelper&	setChecked(bool isChecked);
-		RadioButtonHelper&	setClickProc(std::function<void()> clickProc);
+										// Instance methods
+					RadioButtonHelper&	setGroupName(const winrt::param::hstring& groupName)
+											{ getRadioButton().GroupName(groupName); return *this; }
+					RadioButtonHelper&	setChecked(bool isChecked);
+					RadioButtonHelper&	setClickProc(std::function<void()> clickProc);
 
-		RadioButton			getRadioButton() const
-								{ return getControl(); }
+					RadioButton			getRadioButton() const
+											{ return getControl(); }
 };

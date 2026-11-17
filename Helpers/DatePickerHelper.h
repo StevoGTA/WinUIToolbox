@@ -15,16 +15,17 @@ using DateTime = winrt::Windows::Foundation::DateTime;
 class DatePickerHelper : public ControlHelper<DatePicker, DatePickerHelper> {
 	// Methods
 	public:
-							// Lifecycle methods
-							DatePickerHelper(DatePicker datePicker) : ControlHelper(datePicker) {}
-							DatePickerHelper() : ControlHelper(DatePicker()) {}
-	
-							// Instance methods
-		DatePickerHelper&	setDateTime(const DateTime& dateTime);
-		DatePickerHelper&	setChangedProc(
-									std::function<void(const DateTime& oldDateTime, const DateTime& newDateTIme)>
-											changedProc);
+										// Lifecycle methods
+		explicit						DatePickerHelper(DatePicker datePicker) : ControlHelper(datePicker) {}
+										DatePickerHelper() : ControlHelper(DatePicker()) {}
 
-		DatePicker			getDatePicker() const
-								{ return getControl(); }
+										// Instance methods
+					DatePickerHelper&	setDateTime(const DateTime& dateTime);
+					DatePickerHelper&	setChangedProc(
+												std::function<void(const DateTime& oldDateTime,
+																const DateTime& newDateTIme)>
+														changedProc);
+
+					DatePicker			getDatePicker() const
+											{ return getControl(); }
 };

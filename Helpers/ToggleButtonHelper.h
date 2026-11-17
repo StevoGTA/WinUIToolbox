@@ -16,14 +16,14 @@ using ToggleButton = winrt::Microsoft::UI::Xaml::Controls::Primitives::ToggleBut
 class ToggleButtonHelper : public ControlHelper<ToggleButton, ToggleButtonHelper> {
 	// Methods
 	public:
-							// Lifecycle methods
-							ToggleButtonHelper(ToggleButton toggleButton) : ControlHelper(toggleButton) {}
-							ToggleButtonHelper() : ControlHelper(ToggleButton()) {}
+										// Lifecycle methods
+		explicit						ToggleButtonHelper(ToggleButton toggleButton) : ControlHelper(toggleButton) {}
+										ToggleButtonHelper() : ControlHelper(ToggleButton()) {}
 
-							// Instance methods
-		ToggleButtonHelper&	setChecked(bool isChecked);
-		ToggleButtonHelper& setCheckedProc(std::function<void()> checkedProc);
+										// Instance methods
+					ToggleButtonHelper&	setChecked(bool isChecked);
+					ToggleButtonHelper& setCheckedProc(std::function<void()> checkedProc);
 
-		ToggleButton		getToggleButton() const
-								{ return getControl(); }
+					ToggleButton		getToggleButton() const
+											{ return getControl(); }
 };

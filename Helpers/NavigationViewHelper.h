@@ -18,16 +18,19 @@ using NavigationView = winrt::Microsoft::UI::Xaml::Controls::NavigationView;
 class NavigationViewHelper : public ControlHelper<NavigationView, NavigationViewHelper> {
 	// Methods
 	public:
-								// Lifecycle methods
-								NavigationViewHelper(NavigationView navigationView) : ControlHelper(navigationView) {}
+											// Lifecycle methods
+		explicit							NavigationViewHelper(NavigationView navigationView) :
+												ControlHelper(navigationView)
+												{}
 
-								// Instance methods
-		NavigationViewHelper&	setNavigationViewItemIsEnabled(int index, bool isEnabled);
+											// Instance methods
+					NavigationViewHelper&	setNavigationViewItemIsEnabled(int index, bool isEnabled);
 
-		NavigationViewHelper&	setLoadedProc(std::function<void()> loadedProc);
-		NavigationViewHelper&	setSelectedTagChangedProc(
-										std::function<void(const winrt::hstring& tag)> selectedTagChangedProc);
+					NavigationViewHelper&	setLoadedProc(std::function<void()> loadedProc);
+					NavigationViewHelper&	setSelectedTagChangedProc(
+													std::function<void(const winrt::hstring& tag)>
+															selectedTagChangedProc);
 
-		NavigationView			getNavigationView() const
-									{ return getControl(); }
+					NavigationView			getNavigationView() const
+												{ return getControl(); }
 };

@@ -57,14 +57,15 @@ struct OutlineViewDataSourceRInspectable :
 		public winrt::implements<OutlineViewDataSourceRInspectable, winrt::Windows::Foundation::IInspectable> {
 	// Methods
 	public:
-								// Lifecycle methods
-								OutlineViewDataSourceRInspectable(OutlineViewDataSource& outlineViewDataSource) :
-									mOutlineViewDataSource(outlineViewDataSource)
-									{}
+											// Lifecycle methods
+		explicit							OutlineViewDataSourceRInspectable(
+													OutlineViewDataSource& outlineViewDataSource) :
+												mOutlineViewDataSource(outlineViewDataSource)
+												{}
 
-								// Instance methods
-		OutlineViewDataSource&	GetReference() const
-									{ return mOutlineViewDataSource; }
+											// Instance methods
+					OutlineViewDataSource&	GetReference() const
+												{ return mOutlineViewDataSource; }
 
 	// Properties
 	private:

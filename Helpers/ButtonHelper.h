@@ -14,15 +14,15 @@ using Button = winrt::Microsoft::UI::Xaml::Controls::Button;
 class ButtonHelper : public ControlHelper<Button, ButtonHelper> {
 	// Methods
 	public:
-						// Lifecycle methods
-						ButtonHelper(Button button) : ControlHelper(button) {}
-						ButtonHelper() : ControlHelper(Button()) {}
+									// Lifecycle methods
+		explicit					ButtonHelper(Button button) : ControlHelper(button) {}
+									ButtonHelper() : ControlHelper(Button()) {}
 
-						// Instance methods
-		ButtonHelper&	setClickedProc(std::function<void()> clickedProc);
-		ButtonHelper&	setPointerEnteredProc(std::function<void()> pointerEnteredProc);
-		ButtonHelper&	setPointerExitedProc(std::function<void()> pointerExitedProc);
+									// Instance methods
+					ButtonHelper&	setClickedProc(std::function<void()> clickedProc);
+					ButtonHelper&	setPointerEnteredProc(std::function<void()> pointerEnteredProc);
+					ButtonHelper&	setPointerExitedProc(std::function<void()> pointerExitedProc);
 
-		Button			getButton() const
-							{ return getControl(); }
+					Button			getButton() const
+										{ return getControl(); }
 };

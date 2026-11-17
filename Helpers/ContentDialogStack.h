@@ -19,13 +19,13 @@ class ContentDialogStack {
 
 	// Methods
 	public:
-				// Lifecycle methods
-				ContentDialogStack(const XamlRoot& xamlRoot);
-				~ContentDialogStack();
+							// Lifecycle methods
+		explicit			ContentDialogStack(const XamlRoot& xamlRoot);
+							~ContentDialogStack();
 
-				// Instance methods
-		void	showAsync(const ContentDialog& contentDialog);
-		void	clear();
+							// Instance methods
+					void	showAsync(const ContentDialog& contentDialog);
+					void	clear();
 
 	// Properties
 	private:

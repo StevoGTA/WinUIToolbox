@@ -18,26 +18,28 @@ using MenuFlyoutSubItem = winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubIte
 class MenuFlyoutHelper : public DependencyObjectHelper<MenuFlyout, MenuFlyoutHelper> {
 	// Methods
 	public:
-							// Lifecycle methods
-							MenuFlyoutHelper(MenuFlyout menuFlyout);
- 
-							// Instance methods
-		MenuFlyoutHelper&	clear()
-								{ getMenuFlyout().Items().Clear(); return *this; }
+										// Lifecycle methods
+		explicit						MenuFlyoutHelper(MenuFlyout menuFlyout);
 
-		MenuFlyoutHelper&	addSectionTitle(const winrt::param::hstring& title)
-								{ getMenuFlyout().Items().Append(MenuFlyoutItemHelper::forGroupTitle(title));
-										return *this; }
-		MenuFlyoutHelper&	addSeparator()
-								{ getMenuFlyout().Items().Append(MenuFlyoutSeparator()); return *this; }
-		MenuFlyoutHelper&	addItem(const winrt::param::hstring& title, std::function<bool()> validationProc,
-									std::function<void()> actionProc)
-								{ getMenuFlyout().Items().Append(
-											MenuFlyoutItemHelper::forTitle(title, validationProc, actionProc));
-										return *this; }
-		MenuFlyoutHelper&	addSubItem(const MenuFlyoutSubItem& menuFlyoutSubItem)
-								{ getMenuFlyout().Items().Append(menuFlyoutSubItem); return *this; }
+										// Instance methods
+					MenuFlyoutHelper&	clear()
+											{ getMenuFlyout().Items().Clear(); return *this; }
 
-		MenuFlyout			getMenuFlyout() const
-								{ return getDependencyObject(); }
+					MenuFlyoutHelper&	addSectionTitle(const winrt::param::hstring& title)
+											{ getMenuFlyout().Items().Append(
+															MenuFlyoutItemHelper::forGroupTitle(title));
+													return *this; }
+					MenuFlyoutHelper&	addSeparator()
+											{ getMenuFlyout().Items().Append(MenuFlyoutSeparator()); return *this; }
+					MenuFlyoutHelper&	addItem(const winrt::param::hstring& title,
+												std::function<bool()> validationProc, std::function<void()> actionProc)
+											{ getMenuFlyout().Items().Append(
+														MenuFlyoutItemHelper::forTitle(title, validationProc,
+														actionProc));
+													return *this; }
+					MenuFlyoutHelper&	addSubItem(const MenuFlyoutSubItem& menuFlyoutSubItem)
+											{ getMenuFlyout().Items().Append(menuFlyoutSubItem); return *this; }
+
+					MenuFlyout			getMenuFlyout() const
+											{ return getDependencyObject(); }
 };

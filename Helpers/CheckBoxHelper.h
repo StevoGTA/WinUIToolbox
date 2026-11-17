@@ -16,14 +16,14 @@ using CheckBox = winrt::Microsoft::UI::Xaml::Controls::CheckBox;
 class CheckBoxHelper : public ControlHelper<CheckBox, CheckBoxHelper> {
 	// Methods
 	public:
-						// Lifecycle methods
-						CheckBoxHelper(CheckBox checkbox) : ControlHelper(checkbox) {}
-						CheckBoxHelper() : ControlHelper(CheckBox()) {}
+									// Lifecycle methods
+		explicit					CheckBoxHelper(CheckBox checkbox) : ControlHelper(checkbox) {}
+									CheckBoxHelper() : ControlHelper(CheckBox()) {}
 
-						// Instance methods
-		CheckBoxHelper&	setChecked(bool isChecked);
-		CheckBoxHelper&	setCheckedChangedProc(std::function<void(bool isChecked)> checkedChangedProc);
+									// Instance methods
+					CheckBoxHelper&	setChecked(bool isChecked);
+					CheckBoxHelper&	setCheckedChangedProc(std::function<void(bool isChecked)> checkedChangedProc);
 
-		CheckBox		getCheckBox() const
-							{ return getControl(); }
+					CheckBox		getCheckBox() const
+										{ return getControl(); }
 };

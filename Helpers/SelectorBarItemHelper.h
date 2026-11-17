@@ -19,18 +19,18 @@ using SymbolIcon = winrt::Microsoft::UI::Xaml::Controls::SymbolIcon;
 class SelectorBarItemHelper : public ControlHelper<SelectorBarItem, SelectorBarItemHelper> {
 	// Methods
 	public:
-								// Lifecycle methods
-								SelectorBarItemHelper(SelectorBarItem selectorBarItem) :
-									ControlHelper(selectorBarItem)
-									{}
-								SelectorBarItemHelper() : ControlHelper(SelectorBarItem()) {}
- 
-								// Instance methods
-		SelectorBarItemHelper&	setIcon(IconElement iconElement)
-									{ getSelectorBarItem().Icon(iconElement); return *this; }
-		SelectorBarItemHelper&	setSymbolIcon(Symbol symbol)
-									{ return setIcon(SymbolIcon(symbol)); }
+											// Lifecycle methods
+		explicit							SelectorBarItemHelper(SelectorBarItem selectorBarItem) :
+												ControlHelper(selectorBarItem)
+												{}
+											SelectorBarItemHelper() : ControlHelper(SelectorBarItem()) {}
 
-		SelectorBarItem			getSelectorBarItem() const
-									{ return getControl(); }
+											// Instance methods
+					SelectorBarItemHelper&	setIcon(IconElement iconElement)
+												{ getSelectorBarItem().Icon(iconElement); return *this; }
+					SelectorBarItemHelper&	setSymbolIcon(Symbol symbol)
+												{ return setIcon(SymbolIcon(symbol)); }
+
+					SelectorBarItem			getSelectorBarItem() const
+												{ return getControl(); }
 };

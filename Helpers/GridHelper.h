@@ -21,20 +21,20 @@ using SolidColorBrush = winrt::Microsoft::UI::Xaml::Media::SolidColorBrush;
 class GridHelper : public FrameworkElementHelper<Grid, GridHelper> {
 	// Methods
 	public:
-					// Lifecycle methods
-					GridHelper(Grid grid) : FrameworkElementHelper(grid) {}
-					GridHelper() : FrameworkElementHelper(Grid()) {}
+								// Lifecycle methods
+		explicit				GridHelper(Grid grid) : FrameworkElementHelper(grid) {}
+								GridHelper() : FrameworkElementHelper(Grid()) {}
 
-					// Instance methods
-		GridHelper&	add(UIElement uiElement, int columnIndex, int rowIndex);
+								// Instance methods
+					GridHelper&	add(UIElement uiElement, int columnIndex, int rowIndex);
 
-		GridHelper&	setBorderBrush(const Brush& brush)
-						{ getGrid().BorderBrush(brush); return *this; }
-		GridHelper&	setBorderBrush(const Color& color)
-						{ getGrid().BorderBrush(SolidColorBrush(color)); return *this; }
+					GridHelper&	setBorderBrush(const Brush& brush)
+									{ getGrid().BorderBrush(brush); return *this; }
+					GridHelper&	setBorderBrush(const Color& color)
+									{ getGrid().BorderBrush(SolidColorBrush(color)); return *this; }
 
-		GridHelper&	setEnabled(bool enabled);
+					GridHelper&	setEnabled(bool enabled);
 
-		Grid		getGrid() const
-						{ return getFrameworkElement(); }
+					Grid		getGrid() const
+									{ return getFrameworkElement(); }
 };

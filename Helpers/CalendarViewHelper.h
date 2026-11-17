@@ -18,16 +18,17 @@ using DateTimes = winrt::Windows::Foundation::Collections::IVectorView<DateTime>
 class CalendarViewHelper : public ControlHelper<CalendarView, CalendarViewHelper> {
 	// Methods
 	public:
-							// Lifecycle methods
-							CalendarViewHelper(CalendarView calendarView) : ControlHelper(calendarView) {}
-							CalendarViewHelper() : ControlHelper(CalendarView()) {}
+										// Lifecycle methods
+		explicit						CalendarViewHelper(CalendarView calendarView) : ControlHelper(calendarView) {}
+										CalendarViewHelper() : ControlHelper(CalendarView()) {}
 
-							// Instance methods
-		CalendarViewHelper&	setSelectedDateTime(const DateTime& dateTime);
-		CalendarViewHelper&	setChangedProc(
-									std::function<void(const DateTimes& addedDates, const DateTimes& removedDates)>
-											changedProc);
+										// Instance methods
+					CalendarViewHelper&	setSelectedDateTime(const DateTime& dateTime);
+					CalendarViewHelper&	setChangedProc(
+												std::function<void(const DateTimes& addedDates,
+																const DateTimes& removedDates)>
+														changedProc);
 
-		CalendarView		getCalendarView() const
-								{ return getControl(); }
+					CalendarView		getCalendarView() const
+											{ return getControl(); }
 };

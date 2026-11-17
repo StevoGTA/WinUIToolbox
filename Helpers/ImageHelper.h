@@ -30,16 +30,16 @@ class ImageHelper : public FrameworkElementHelper<Image, ImageHelper> {
 
 	// Methods
 	public:
-						// Lifecycle methods
-						ImageHelper(Image image) : FrameworkElementHelper(image) {}
+									// Lifecycle methods
+		explicit					ImageHelper(Image image) : FrameworkElementHelper(image) {}
 
-						// Instance methods
-		ImageHelper&	setImageData(const IRandomAccessStream& randomAccessStream);
-		ImageHelper&	setImageData(const std::vector<uint8_t>& imageData);
-		ImageHelper&	setImageData(const uint8_t* imageDataPtr, size_t byteCount);
+									// Instance methods
+					ImageHelper&	setImageData(const IRandomAccessStream& randomAccessStream);
+					ImageHelper&	setImageData(const std::vector<uint8_t>& imageData);
+					ImageHelper&	setImageData(const uint8_t* imageDataPtr, size_t byteCount);
 
-		ImageHelper&	set(const ThemedSVG& themedSVG);
+					ImageHelper&	set(const ThemedSVG& themedSVG);
 
-		Image			getImage() const
-							{ return getFrameworkElement(); }
+					Image			getImage() const
+										{ return getFrameworkElement(); }
 };

@@ -18,32 +18,32 @@ using StackPanel = winrt::Microsoft::UI::Xaml::Controls::StackPanel;
 class StackPanelHelper : public FrameworkElementHelper<StackPanel, StackPanelHelper> {
 	// Methods
 	public:
-							// Lifecycle methods
-							StackPanelHelper(StackPanel stackPanel) : FrameworkElementHelper(stackPanel) {}
-							StackPanelHelper() : FrameworkElementHelper(StackPanel()) {}
+										// Lifecycle methods
+		explicit						StackPanelHelper(StackPanel stackPanel) : FrameworkElementHelper(stackPanel) {}
+										StackPanelHelper() : FrameworkElementHelper(StackPanel()) {}
 
-							// Instance methods
-		StackPanelHelper&	setOrientation(Orientation orientation)
-								{ getStackPanel().Orientation(orientation); return *this; }
-		StackPanelHelper&	setSpacing(double spacing)
-								{ getStackPanel().Spacing(spacing); return *this; }
-		StackPanelHelper&	setEnabled(bool enabled);
-		StackPanelHelper&	add(UIElement uiElement)
-								{ getStackPanel().Children().Append(uiElement); return *this; }
-		StackPanelHelper&	remove(UIElement uiElement)
-								{
-									// Setup
-									auto	children = getStackPanel().Children();
+										// Instance methods
+					StackPanelHelper&	setOrientation(Orientation orientation)
+											{ getStackPanel().Orientation(orientation); return *this; }
+					StackPanelHelper&	setSpacing(double spacing)
+											{ getStackPanel().Spacing(spacing); return *this; }
+					StackPanelHelper&	setEnabled(bool enabled);
+					StackPanelHelper&	add(UIElement uiElement)
+											{ getStackPanel().Children().Append(uiElement); return *this; }
+					StackPanelHelper&	remove(UIElement uiElement)
+											{
+												// Setup
+												auto	children = getStackPanel().Children();
 
-									// Get index
-									uint32_t	index;
-									if (children.IndexOf(uiElement, index))
-										// Remove
-										children.RemoveAt(index);
+												// Get index
+												uint32_t	index;
+												if (children.IndexOf(uiElement, index))
+													// Remove
+													children.RemoveAt(index);
 
-									return *this;
-								}
+												return *this;
+											}
 
-		StackPanel			getStackPanel() const
-								{ return getFrameworkElement(); }
+					StackPanel			getStackPanel() const
+											{ return getFrameworkElement(); }
 };

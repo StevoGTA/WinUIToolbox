@@ -108,12 +108,12 @@ namespace winrt::WinUIToolbox::implementation {
 	struct OutlineViewItemEventArgs : OutlineViewItemEventArgsT<OutlineViewItemEventArgs> {
 		// Methods
 		public:
-					// Lifecycle methods
-					OutlineViewItemEventArgs(const hstring& identifier) : mIdentifier(identifier) {}
+								// Lifecycle methods
+			explicit			OutlineViewItemEventArgs(const hstring& identifier) : mIdentifier(identifier) {}
 
-					// Property methods
-			hstring	Identifier() const
-						{ return mIdentifier; }
+								// Property methods
+						hstring	Identifier() const
+									{ return mIdentifier; }
 
 		// Properties
 		private:
@@ -146,15 +146,15 @@ namespace winrt::WinUIToolbox::implementation {
 			OutlineViewSelectionChangedEventArgsT<OutlineViewSelectionChangedEventArgs> {
 		// Methods
 		public:
-									// Lifecycle methods
-									OutlineViewSelectionChangedEventArgs(
-											const IVectorView<hstring>& selectedIdentifiers) :
-										mSelectedIdentifiers(selectedIdentifiers)
-										{}
+												// Lifecycle methods
+			explicit							OutlineViewSelectionChangedEventArgs(
+														const IVectorView<hstring>& selectedIdentifiers) :
+													mSelectedIdentifiers(selectedIdentifiers)
+													{}
 
-									// Property methods
-			IVectorView<hstring>	SelectedIdentifiers() const
-										{ return mSelectedIdentifiers; }
+												// Property methods
+						IVectorView<hstring>	SelectedIdentifiers() const
+													{ return mSelectedIdentifiers; }
 
 		// Properties
 		private:
@@ -166,16 +166,16 @@ namespace winrt::WinUIToolbox::implementation {
 			OutlineViewSortDescriptionsChangedEventArgsT<OutlineViewSortDescriptionsChangedEventArgs> {
 		// Methods
 		public:
-													// Lifecycle methods
-													OutlineViewSortDescriptionsChangedEventArgs(
-															const IVectorView<OutlineViewSortDescription>&
-																	sortDescriptions) :
-														mSortDescriptions(sortDescriptions)
-														{}
+																// Lifecycle methods
+			explicit											OutlineViewSortDescriptionsChangedEventArgs(
+																		const IVectorView<OutlineViewSortDescription>&
+																				sortDescriptions) :
+																	mSortDescriptions(sortDescriptions)
+																	{}
 
-													// Property methods
-			IVectorView<OutlineViewSortDescription>	SortDescriptions() const
-														{ return mSortDescriptions; }
+																// Property methods
+						IVectorView<OutlineViewSortDescription>	SortDescriptions() const
+																	{ return mSortDescriptions; }
 
 		// Properties
 		private:
@@ -186,14 +186,14 @@ namespace winrt::WinUIToolbox::implementation {
 	struct OutlineViewColumnEventArgs : OutlineViewColumnEventArgsT<OutlineViewColumnEventArgs> {
 		// Methods
 		public:
-					// Lifecycle methods
-					OutlineViewColumnEventArgs(const hstring& columnIdentifier) :
-						mColumnIdentifier(columnIdentifier)
-						{}
+								// Lifecycle methods
+			explicit			OutlineViewColumnEventArgs(const hstring& columnIdentifier) :
+									mColumnIdentifier(columnIdentifier)
+									{}
 
-					// Property methods
-			hstring	ColumnIdentifier() const
-						{ return mColumnIdentifier; }
+								// Property methods
+						hstring	ColumnIdentifier() const
+									{ return mColumnIdentifier; }
 
 		// Properties
 		private:

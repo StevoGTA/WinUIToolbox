@@ -20,13 +20,15 @@ class DispatcherQueueHelper {
 
 	// Methods
 	public:
-								// Lifecycle methods
-								DispatcherQueueHelper(
-										DispatcherQueue dispatcherQueue = DispatcherQueue::GetForCurrentThread());
-								~DispatcherQueueHelper();
+											// Lifecycle methods
+		explicit							DispatcherQueueHelper(
+													DispatcherQueue dispatcherQueue =
+															DispatcherQueue::GetForCurrentThread());
+											~DispatcherQueueHelper();
 
-								// Instance methods
-		DispatcherQueueHelper&	tryEnqueueAfterMilliseconds(std::function<void()> proc, long long milliseconds);
+											// Instance methods
+					DispatcherQueueHelper&	tryEnqueueAfterMilliseconds(std::function<void()> proc,
+													long long milliseconds);
 
 	// Properties
 	private:

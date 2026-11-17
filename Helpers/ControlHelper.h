@@ -25,57 +25,58 @@ using Thickness = winrt::Microsoft::UI::Xaml::Thickness;
 template <typename C, typename H> class ControlHelper : public FrameworkElementHelper<C, H> {
 	// Methods
 	public:
-			// Lifecycle methods
-			ControlHelper(C c) : FrameworkElementHelper(c) {}
- 
-			// Instance methods
-		H&	setBackground(const Brush& brush)
-				{ getControl().Background(brush); return (H&) *this; }
-		H&	setBackground(const Color& color)
-				{ getControl().Background(SolidColorBrush(color)); return (H&) *this; }
+						// Lifecycle methods
+		explicit		ControlHelper(C c) : FrameworkElementHelper(c) {}
 
-		H&	setBorderBrush(const Brush& brush)
-				{ getControl().BorderBrush(brush); return (H&) *this; }
-		H&	setBorderBrush(const Color& color)
-				{ getControl().BorderBrush(SolidColorBrush(color)); return (H&) *this; }
+						// Instance methods
+					H&	setBackground(const Brush& brush)
+							{ getControl().Background(brush); return (H&) *this; }
+					H&	setBackground(const Color& color)
+							{ getControl().Background(SolidColorBrush(color)); return (H&) *this; }
 
-		H&	setBorderThickness(double uniformLength)
-				{ getControl().BorderThickness(ThicknessHelper::FromUniformLength(uniformLength)); return (H&) *this; }
-		H&	setBorderThickness(double left, double top, double right, double bottom)
-				{ getControl().BorderThickness(ThicknessHelper::FromLengths(left, top, right, bottom));
-						return (H&) *this; }
+					H&	setBorderBrush(const Brush& brush)
+							{ getControl().BorderBrush(brush); return (H&) *this; }
+					H&	setBorderBrush(const Color& color)
+							{ getControl().BorderBrush(SolidColorBrush(color)); return (H&) *this; }
 
-		H&	setContent(const UIElement& uiElement)
-				{ getControl().Content(uiElement); return (H&) *this; }
+					H&	setBorderThickness(double uniformLength)
+							{ getControl().BorderThickness(ThicknessHelper::FromUniformLength(uniformLength));
+									return (H&) *this; }
+					H&	setBorderThickness(double left, double top, double right, double bottom)
+							{ getControl().BorderThickness(ThicknessHelper::FromLengths(left, top, right, bottom));
+									return (H&) *this; }
 
-		H&	setContentAsFontIcon(const winrt::param::hstring& glyph, double fontSize) const
-				{
-					// Create FontIcon
-					auto	fontIcon = FontIcon();
-					fontIcon.Glyph(glyph);
-					fontIcon.FontSize(fontSize);
+					H&	setContent(const UIElement& uiElement)
+							{ getControl().Content(uiElement); return (H&) *this; }
 
-					// Set Content
-					getControl().Content(fontIcon);
+					H&	setContentAsFontIcon(const winrt::param::hstring& glyph, double fontSize) const
+							{
+								// Create FontIcon
+								auto	fontIcon = FontIcon();
+								fontIcon.Glyph(glyph);
+								fontIcon.FontSize(fontSize);
 
-					return (H&) *this;
-				}
+								// Set Content
+								getControl().Content(fontIcon);
 
-		H&	setEnabled(bool enabled)
-				{ getControl().IsEnabled(enabled); return (H&) *this; }
-		H&	setEnabledChanged(std::function<void(bool isEnabled)> enabledChangedProc)
-				{
-					// Set
-					getControl().IsEnabledChanged(
-							[enabledChangedProc](const IInspectable& sender,
-									const DependencyPropertyChangedEventArgs& args){
-								// Call proc
-								enabledChangedProc(sender.as<C>().IsEnabled());
-							});
+								return (H&) *this;
+							}
 
-					return (H&) *this;
-				}
+					H&	setEnabled(bool enabled)
+							{ getControl().IsEnabled(enabled); return (H&) *this; }
+					H&	setEnabledChanged(std::function<void(bool isEnabled)> enabledChangedProc)
+							{
+								// Set
+								getControl().IsEnabledChanged(
+										[enabledChangedProc](const IInspectable& sender,
+												const DependencyPropertyChangedEventArgs& args){
+											// Call proc
+											enabledChangedProc(sender.as<C>().IsEnabled());
+										});
 
-		C	getControl() const
-				{ return getFrameworkElement(); }
+								return (H&) *this;
+							}
+
+					C	getControl() const
+							{ return getFrameworkElement(); }
 };

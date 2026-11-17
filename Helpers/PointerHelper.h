@@ -59,20 +59,20 @@ class PointerHelper {
 
 	// Methods
 	public:
-				// Lifecycle methods
-				PointerHelper(const UIElement& uiElement);
-				~PointerHelper();
+							// Lifecycle methods
+		explicit			PointerHelper(const UIElement& uiElement);
+							~PointerHelper();
 
-				// Instance methods
-		void	enablePromotePressedToDrag(const TimeSpan& timeSpan = std::chrono::milliseconds{150});
+							// Instance methods
+					void	enablePromotePressedToDrag(const TimeSpan& timeSpan = std::chrono::milliseconds{150});
 
-		void	setEnteredProc(EnteredProc enteredProc);
-		void	setMovedProc(MovedProc movedProc);
-		void	setExitedProc(ExitedProc exitedProc);
+					void	setEnteredProc(EnteredProc enteredProc);
+					void	setMovedProc(MovedProc movedProc);
+					void	setExitedProc(ExitedProc exitedProc);
 
-		void	setPressedProc(PressedProc pressedProc);
-		void	setDraggedProc(DraggedProc draggedProc);
-		void	setReleasedProc(ReleasedProc releasedProc);
+					void	setPressedProc(PressedProc pressedProc);
+					void	setDraggedProc(DraggedProc draggedProc);
+					void	setReleasedProc(ReleasedProc releasedProc);
 
 	// Properties
 	private:

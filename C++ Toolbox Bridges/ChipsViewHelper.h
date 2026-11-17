@@ -22,13 +22,13 @@ using ChipsView = winrt::WinUIToolbox::ChipsView;
 class ChipsViewHelper : public ControlHelper<ChipsView, ChipsViewHelper> {
 	// Methods
 	public:
-							// Lifecycle methods
-							ChipsViewHelper(ChipsView chipsView) : ControlHelper(chipsView) {}
+										// Lifecycle methods
+		explicit						ChipsViewHelper(ChipsView chipsView) : ControlHelper(chipsView) {}
 
-							// Instance methods
-		ChipsViewHelper&	setChipInfos(const TArray<SChipInfo>& chipInfos);
-		ChipsViewHelper&	setChipInfo(const SChipInfo& chipInfo);
+										// Instance methods
+					ChipsViewHelper&	setChipInfos(const TArray<SChipInfo>& chipInfos);
+					ChipsViewHelper&	setChipInfo(const SChipInfo& chipInfo);
 
-		ChipsView			getChipsView() const
-								{ return getControl(); }
+					ChipsView			getChipsView() const
+											{ return getControl(); }
 };

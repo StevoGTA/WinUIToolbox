@@ -17,25 +17,25 @@ using IInspectable = winrt::Windows::Foundation::IInspectable;
 template <typename C, typename H> class DependencyObjectHelper {
 	// Methods
 	public:
-					// Lifecycle methods
-					DependencyObjectHelper(C c) : mC(c) {}
-		virtual		~DependencyObjectHelper() {}
+						// Lifecycle methods
+		explicit		DependencyObjectHelper(C c) : mC(c) {}
+		virtual			~DependencyObjectHelper() {}
 
-					// Instance methods
-				H&	setGridPosition(int columnIndex, int rowIndex) const
-						{
-							// Set
-							mC.SetValue(Grid::ColumnProperty(), winrt::box_value(columnIndex));
-							mC.SetValue(Grid::RowProperty(), winrt::box_value(rowIndex));
+						// Instance methods
+					H&	setGridPosition(int columnIndex, int rowIndex) const
+							{
+								// Set
+								mC.SetValue(Grid::ColumnProperty(), winrt::box_value(columnIndex));
+								mC.SetValue(Grid::RowProperty(), winrt::box_value(rowIndex));
 
-							return (H&) *this;
-						}
+								return (H&) *this;
+							}
 
-				H&	setValue(const DependencyProperty& dependencyProperty, const IInspectable& value) const
-						{ mC.SetValue(dependencyProperty, value); return (H&) *this; }
+					H&	setValue(const DependencyProperty& dependencyProperty, const IInspectable& value) const
+							{ mC.SetValue(dependencyProperty, value); return (H&) *this; }
 
-				C	getDependencyObject() const
-						{ return mC; }
+					C	getDependencyObject() const
+							{ return mC; }
 
 	// Properties
 	private:

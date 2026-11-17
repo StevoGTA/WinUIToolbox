@@ -25,37 +25,39 @@ using TextWrapping = winrt::Microsoft::UI::Xaml::TextWrapping;
 class TextBlockHelper : public FrameworkElementHelper<TextBlock, TextBlockHelper> {
 	// Methods
 	public:
-							// Lifecycle methods
-							TextBlockHelper(TextBlock textBlock) : FrameworkElementHelper(textBlock) {}
-							TextBlockHelper() : FrameworkElementHelper(TextBlock()) {}
+										// Lifecycle methods
+		explicit						TextBlockHelper(TextBlock textBlock) : FrameworkElementHelper(textBlock) {}
+										TextBlockHelper() : FrameworkElementHelper(TextBlock()) {}
 
-							// Instance methods
-		TextBlockHelper&	setEnabled(bool enabled)
-								{ return setOpacity(enabled ? 1.0 : 0.5); }
+										// Instance methods
+					TextBlockHelper&	setEnabled(bool enabled)
+											{ return setOpacity(enabled ? 1.0 : 0.5); }
 
-		TextBlockHelper&	setFontStyle(FontStyle fontStyle)
-								{ getTextBlock().FontStyle(fontStyle); return *this; }
+					TextBlockHelper&	setFontStyle(FontStyle fontStyle)
+											{ getTextBlock().FontStyle(fontStyle); return *this; }
 
-		TextBlockHelper&	setForeground(const Brush& brush)
-								{ getTextBlock().Foreground(brush); return *this; }
-		TextBlockHelper&	setForeground(const Color& color)
-								{ getTextBlock().Foreground(SolidColorBrush(color)); return *this; }
-		TextBlockHelper&	setForegroundToDefault()
-								{
-									// Set to default
-									setForeground(
-											Application::Current().Resources()
-													.TryLookup(winrt::box_value(L"DefaultTextForegroundThemeBrush"))
-													.as<Brush>());
+					TextBlockHelper&	setForeground(const Brush& brush)
+											{ getTextBlock().Foreground(brush); return *this; }
+					TextBlockHelper&	setForeground(const Color& color)
+											{ getTextBlock().Foreground(SolidColorBrush(color)); return *this; }
+					TextBlockHelper&	setForegroundToDefault()
+											{
+												// Set to default
+												setForeground(
+														Application::Current().Resources()
+																.TryLookup(
+																		winrt::box_value(
+																				L"DefaultTextForegroundThemeBrush"))
+																.as<Brush>());
 
-									return *this;
-								}
+												return *this;
+											}
 
-		TextBlockHelper&	setText(const winrt::param::hstring& text)
-								{ getTextBlock().Text(text); return *this; }
-		TextBlockHelper&	setTextWrapping(TextWrapping textWrapping)
-								{ getTextBlock().TextWrapping(textWrapping); return *this; }
+					TextBlockHelper&	setText(const winrt::param::hstring& text)
+											{ getTextBlock().Text(text); return *this; }
+					TextBlockHelper&	setTextWrapping(TextWrapping textWrapping)
+											{ getTextBlock().TextWrapping(textWrapping); return *this; }
 
-		TextBlock			getTextBlock() const
-								{ return getFrameworkElement(); }
+					TextBlock			getTextBlock() const
+											{ return getFrameworkElement(); }
 };

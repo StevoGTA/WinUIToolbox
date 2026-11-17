@@ -15,16 +15,16 @@ using Visibility = winrt::Microsoft::UI::Xaml::Visibility;
 template <typename C, typename H> class UIElementHelper : public DependencyObjectHelper<C, H> {
 	// Methods
 	public:
-					// Lifecycle methods
-					UIElementHelper(C c) : DependencyObjectHelper(c) {}
-		virtual		~UIElementHelper() {}
- 
-					// Instance methods
-				H&	setOpacity(double opacity)
-						{ getUIElement().Opacity(opacity); return (H&) *this; }
-				H&	setVisibility(Visibility visibility)
-						{ getUIElement().Visibility(visibility); return (H&) *this; }
+						// Lifecycle methods
+		explicit		UIElementHelper(C c) : DependencyObjectHelper(c) {}
+		virtual			~UIElementHelper() {}
 
-				C	getUIElement() const
-						{ return getDependencyObject(); }
+						// Instance methods
+					H&	setOpacity(double opacity)
+							{ getUIElement().Opacity(opacity); return (H&) *this; }
+					H&	setVisibility(Visibility visibility)
+							{ getUIElement().Visibility(visibility); return (H&) *this; }
+
+					C	getUIElement() const
+							{ return getDependencyObject(); }
 };

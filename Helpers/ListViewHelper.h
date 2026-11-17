@@ -18,12 +18,12 @@ using ListView = winrt::Microsoft::UI::Xaml::Controls::ListView;
 class ListViewHelper : public ControlHelper<ListView, ListViewHelper> {
 	// Methods
 	public:
-						// Lifecycle methods
-						ListViewHelper(ListView listView) : ControlHelper(listView) {}
+									// Lifecycle methods
+		explicit					ListViewHelper(ListView listView) : ControlHelper(listView) {}
 
-						// Instance methods
-		ListViewHelper&	setSelectionChangedProc(std::function<void()> selectionChangedProc);
+									// Instance methods
+					ListViewHelper&	setSelectionChangedProc(std::function<void()> selectionChangedProc);
 
-		ListView		getListView() const
-							{ return getControl(); }
+					ListView		getListView() const
+										{ return getControl(); }
 };
