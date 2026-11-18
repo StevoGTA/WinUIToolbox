@@ -28,7 +28,7 @@ NavigationViewHelper& NavigationViewHelper::setNavigationViewItemIsEnabled(int i
 	// Setup
 	NavigationViewItem	navigationViewItem = getNavigationView().MenuItems().GetAt(index).as<NavigationViewItem>();
 	navigationViewItem.IsEnabled(isEnabled);
-	navigationViewItem.Opacity(isEnabled ? 1.0 : 0.5);
+	navigationViewItem.Opacity(isEnabled ? 1.0 : kUIElementDisabledOpacity);
 
 	return *this;
 }
