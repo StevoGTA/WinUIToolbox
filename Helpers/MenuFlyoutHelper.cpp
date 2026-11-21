@@ -6,7 +6,27 @@
 
 #include "winrt\Microsoft.UI.Xaml.Controls.Primitives.h"
 
+using MenuFlyoutItemBase = winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItemBase;
 using MenuFlyoutSubItem = winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem;
+
+//----------------------------------------------------------------------------------------------------------------------
+// MARK: Local procs
+
+//----------------------------------------------------------------------------------------------------------------------
+static void sValidate(const winrt::Windows::Foundation::Collections::IVector<MenuFlyoutItemBase>& items)
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Iterate items
+	for (auto const& item : items) {
+		// Check kind
+		if (auto menuFlyoutItem = item.try_as<MenuFlyoutItem>())
+			// Item
+			MenuFlyoutItemHelper::validate(menuFlyoutItem);
+		else if (auto menuFlyoutSubItem = item.try_as<MenuFlyoutSubItem>())
+			// Submenu
+			sValidate(menuFlyoutSubItem.Items());
+	}
+}
 
 //----------------------------------------------------------------------------------------------------------------------
 // MARK: MenuFlyoutHelper
@@ -17,23 +37,9 @@ using MenuFlyoutSubItem = winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubIte
 MenuFlyoutHelper::MenuFlyoutHelper(MenuFlyout menuFlyout) : DependencyObjectHelper(menuFlyout)
 //----------------------------------------------------------------------------------------------------------------------
 {
-	// Setup
-	menuFlyout.Opening(
-			[this, menuFlyout](const IInspectable& sender, const IInspectable& args){
-				// Check if should enable items
-				for (auto item : menuFlyout.Items()) {
-					// Check if MenuFlyoutItem
-					if (auto menuFlyoutItem = item.try_as<MenuFlyoutItem>())
-						// Validate
-						MenuFlyoutItemHelper::validate(menuFlyoutItem);
-					else if (auto menuFlyoutSubItem = item.try_as<MenuFlyoutSubItem>()) {
-						// Validate sub items (skip separators / non-item children)
-						for (auto subItem : menuFlyoutSubItem.Items())
-							// Check if MenuFlyoutItem
-							if (auto menuFlyoutSubMenuItem = subItem.try_as<MenuFlyoutItem>())
-								// Validate
-								MenuFlyoutItemHelper::validate(menuFlyoutSubMenuItem);
-					}
-				}
-			});
+	// Set opening handler
+	menuFlyout.Opening([](const IInspectable& sender, const IInspectable& args){
+		// Validate
+		sValidate(sender.as<MenuFlyout>().Items());
+	});
 }

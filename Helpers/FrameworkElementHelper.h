@@ -54,7 +54,7 @@ template <typename C, typename H> class FrameworkElementHelper : public UIElemen
 					bool	getTagAsInt(int& outValue)
 								{ return getTagAsInt(getFrameworkElement().Tag(), outValue); }
 					H&		setTag(int value)
-								{ getFrameworkElement().Tag(box_value(value)); return (H&) *this; }
+								{ getFrameworkElement().Tag(winrt::box_value(value)); return (H&) *this; }
 
 					H&		setVerticalAlignment(VerticalAlignment verticalAlignment)
 								{ getFrameworkElement().VerticalAlignment(verticalAlignment); return (H&) *this; }

@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <memory>
 
 #pragma comment(lib, "comctl32.lib")
 
@@ -591,6 +592,70 @@ WindowHelper& WindowHelper::setCommitProc(std::function<void()> commitProc)
 	mInternals->mCommitProc = commitProc;
 
 	return *this;
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+void WindowHelper::present()
+//----------------------------------------------------------------------------------------------------------------------
+{
+	// Setup
+	Window				window = mInternals->mWindow;
+	AppWindow			appWindow = window.AppWindow();
+	OverlappedPresenter	overlappedPresenter = appWindow.Presenter().try_as<OverlappedPresenter>();
+	FrameworkElement	content = window.Content().try_as<FrameworkElement>();
+	double				scale = (double) ::GetDpiForWindow(getWindowHandle()) / (double) USER_DEFAULT_SCREEN_DPI;
+
+	// Size - content with a MinWidth / MinHeight opens at that size and can be resized (note keeps it from getting
+	//	smaller), and any other content sizes the window to itself
+	if ((content != nullptr) && ((content.MinWidth() > 0.0) || (content.MinHeight() > 0.0))) {
+		// Open at the minimum size - a dimension without a minimum keeps its current size
+		SizeInt32	clientSize = appWindow.ClientSize();
+		appWindow.ResizeClient(
+				SizeInt32{
+						(content.MinWidth() > 0.0) ? (int32_t) std::ceil(content.MinWidth() * scale) : clientSize.Width,
+						(content.MinHeight() > 0.0) ?
+								(int32_t) std::ceil(content.MinHeight() * scale) : clientSize.Height});
+	} else if (content != nullptr) {
+		// Size to the content, which then decides the size - now, so the window is first shown close to its size, and
+		//	again once loaded, when templated controls measure fully
+		auto	sizeToContent =
+						[appWindow, scale](FrameworkElement frameworkElement){
+							// Measure without limits
+							frameworkElement.Measure(
+									winrt::Windows::Foundation::Size{std::numeric_limits<float>::infinity(),
+											std::numeric_limits<float>::infinity()});
+
+							// Resize
+							winrt::Windows::Foundation::Size	desiredSize = frameworkElement.DesiredSize();
+							appWindow.ResizeClient(
+									SizeInt32{(int32_t) std::ceil(desiredSize.Width * scale),
+											(int32_t) std::ceil(desiredSize.Height * scale)});
+						};
+		sizeToContent(content);
+
+		std::shared_ptr<winrt::event_token>	loadedToken = std::make_shared<winrt::event_token>();
+		*loadedToken =
+				content.Loaded(
+						[sizeToContent, loadedToken]
+								(const IInspectable& sender, const RoutedEventArgs& routedEventArgs){
+									// Once only - the element comes from the sender so the handler doesn't hold it
+									FrameworkElement	frameworkElement = sender.as<FrameworkElement>();
+									frameworkElement.Loaded(*loadedToken);
+
+									// Size to the content
+									sizeToContent(frameworkElement);
+								});
+
+		if (overlappedPresenter != nullptr) {
+			// Fixed size
+			overlappedPresenter.IsResizable(false);
+			overlappedPresenter.IsMaximizable(false);
+		}
+	}
+
+	// Retain past this scope (registry) and show
+	note(window);
+	window.Activate();
 }
 
 //----------------------------------------------------------------------------------------------------------------------

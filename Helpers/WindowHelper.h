@@ -19,10 +19,11 @@ using XamlRoot = winrt::Microsoft::UI::Xaml::XamlRoot;
 /*
 	Window size comes from the XAML of the window's content (its root element):
 		- MinWidth / MinHeight on the root - the window never gets smaller than this (applied by note, so for any
-			noted window), and an owned window opens at this size and can be resized.
+			noted window), and an owned or presented window opens at this size and can be resized.
 		- Neither on the root - an owned window sizes itself to its content: its natural width and height (give the
 			root a Width when its content stretches), no larger than the screen's work area, beyond which the content
-			scrolls.  It follows the content as that changes, and cannot be resized.
+			scrolls.  It follows the content as that changes, and cannot be resized.  A presented window opens at
+			its content's natural size and cannot be resized.
 */
 
 class WindowHelper {
@@ -52,6 +53,7 @@ class WindowHelper {
 					WindowHelper&	setCancelProc(std::function<void()> cancelProc);
 					WindowHelper&	setCommitProc(std::function<void()> commitProc);
 
+					void			present();
 					void			presentAsOwnedFrom(Window owner);
 					void			presentAsOwnedFrom(XamlRoot ownerXamlRoot);
 
